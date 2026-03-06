@@ -37,16 +37,15 @@ const SECTIONS_CONFIG = {
     title: "Entry Sheet (QC)",
     password: "6699",
     groups: {
-      "Fan Rojonigondha": ["In-charge", "Engineer", "QC Checker"]
+      "Fan QC": ["In-charge", "Engineer", "QC Checker"]
     }
   }
 };
 
-function getAppState() {
-  const stored = localStorage.getItem('manpowerData');
-  if (stored) {
-    return JSON.parse(stored);
-  }
+let globalAppState = null;
+let currentActivePageId = null;
+
+function createDefaultState() {
   const state = {};
   for (const [pageKey, pageData] of Object.entries(SECTIONS_CONFIG)) {
     state[pageKey] = {};
@@ -69,12 +68,19 @@ function getAppState() {
     let wkr = state.anik["Fan Assemble"].find(x => x.designation === "Worker");
     if (wkr) { wkr.authorized = 36; wkr.existing = 36; wkr.present = 35; wkr.absent = 1; }
   }
-  saveAppState(state);
   return state;
 }
 
+function getAppState() {
+  return globalAppState || createDefaultState();
+}
+
 function saveAppState(state) {
-  localStorage.setItem('manpowerData', JSON.stringify(state));
+  if (window.firebaseSet && window.firebaseDb) {
+    window.firebaseSet(window.firebaseRef(window.firebaseDb, 'mep_dashboard_state'), state);
+  } else {
+    localStorage.setItem('manpowerData', JSON.stringify(state));
+  }
 }
 
 function calculateRow(row) {
@@ -103,6 +109,7 @@ function generateSidebar(activePage) {
 }
 
 function renderEntryPage(pageId) {
+  currentActivePageId = pageId;
   document.getElementById('sidebar').innerHTML = generateSidebar(pageId);
   const config = SECTIONS_CONFIG[pageId];
 
@@ -111,7 +118,7 @@ function renderEntryPage(pageId) {
   // Check if already authenticated this session
   const authed = sessionStorage.getItem('auth_' + pageId);
   if (authed === 'true') {
-    _renderEntryContent(pageId);
+    if (globalAppState) _renderEntryContent(pageId);
     return;
   }
 
@@ -124,10 +131,15 @@ function renderEntryPage(pageId) {
         <h2 style="margin:0 0 0.5rem 0; color:#1e293b; font-size:1.3rem; font-weight:700;">Password Required</h2>
         <p style="color:#64748b; font-size:0.9rem; margin-bottom:1.5rem;">Enter your PIN to access <strong>${config.title}</strong></p>
         <div style="display:flex; justify-content:center; gap:0.5rem; margin-bottom:1rem;" id="pin-container">
-          <input type="password" maxlength="1" class="pin-box" id="pin1" inputmode="numeric" pattern="[0-9]*" style="width:48px; height:56px; text-align:center; font-size:1.5rem; font-weight:700; border:2px solid #cbd5e1; border-radius:10px; background:rgba(255,255,255,0.9); color:#1e293b; outline:none; transition:border-color 0.2s;">
-          <input type="password" maxlength="1" class="pin-box" id="pin2" inputmode="numeric" pattern="[0-9]*" style="width:48px; height:56px; text-align:center; font-size:1.5rem; font-weight:700; border:2px solid #cbd5e1; border-radius:10px; background:rgba(255,255,255,0.9); color:#1e293b; outline:none; transition:border-color 0.2s;">
-          <input type="password" maxlength="1" class="pin-box" id="pin3" inputmode="numeric" pattern="[0-9]*" style="width:48px; height:56px; text-align:center; font-size:1.5rem; font-weight:700; border:2px solid #cbd5e1; border-radius:10px; background:rgba(255,255,255,0.9); color:#1e293b; outline:none; transition:border-color 0.2s;">
-          <input type="password" maxlength="1" class="pin-box" id="pin4" inputmode="numeric" pattern="[0-9]*" style="width:48px; height:56px; text-align:center; font-size:1.5rem; font-weight:700; border:2px solid #cbd5e1; border-radius:10px; background:rgba(255,255,255,0.9); color:#1e293b; outline:none; transition:border-color 0.2s;">
+          <input type="password" maxlength="1" class="pin-box" id="pin1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" style="width:48px; height:56px; text-align:center; font-size:1.5rem; font-weight:700; border:2px solid #cbd5e1; border-radius:10px; background:rgba(255,255,255,0.9); color:#1e293b; outline:none; transition:border-color 0.2s;">
+          <input type="password" maxlength="1" class="pin-box" id="pin2" inputmode="numeric" pattern="[0-9]*" autocomplete="off" style="width:48px; height:56px; text-align:center; font-size:1.5rem; font-weight:700; border:2px solid #cbd5e1; border-radius:10px; background:rgba(255,255,255,0.9); color:#1e293b; outline:none; transition:border-color 0.2s;">
+          <input type="password" maxlength="1" class="pin-box" id="pin3" inputmode="numeric" pattern="[0-9]*" autocomplete="off" style="width:48px; height:56px; text-align:center; font-size:1.5rem; font-weight:700; border:2px solid #cbd5e1; border-radius:10px; background:rgba(255,255,255,0.9); color:#1e293b; outline:none; transition:border-color 0.2s;">
+          <input type="password" maxlength="1" class="pin-box" id="pin4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" style="width:48px; height:56px; text-align:center; font-size:1.5rem; font-weight:700; border:2px solid #cbd5e1; border-radius:10px; background:rgba(255,255,255,0.9); color:#1e293b; outline:none; transition:border-color 0.2s;">
+        </div>
+        <div style="margin-bottom:0.8rem;">
+          <button type="button" id="toggle-pin" style="background:none; border:none; cursor:pointer; font-size:0.85rem; color:#64748b; font-weight:600; display:flex; align-items:center; gap:4px; margin:0 auto;" onclick="const pins=document.querySelectorAll('.pin-box'); const isHidden=pins[0].type==='password'; pins.forEach(p=>p.type=isHidden?'text':'password'); this.innerHTML=isHidden?'🙈 Hide PIN':'👁️ Show PIN';">
+            👁️ Show PIN
+          </button>
         </div>
         <div id="pin-error" style="color:#ef4444; font-size:0.85rem; min-height:1.5rem; margin-bottom:0.5rem;"></div>
         <button id="pin-submit" style="width:100%; padding:0.7rem; background:linear-gradient(135deg, #eab308, #ca8a04); color:white; border:none; border-radius:10px; font-size:1rem; font-weight:700; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s; box-shadow:0 4px 14px rgba(234,179,8,0.4);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(234,179,8,0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(234,179,8,0.4)';">
@@ -213,10 +225,10 @@ function _renderEntryContent(pageId) {
 
     html += `<tr class="total-row">
         <td>Total</td>
-        <td class="sum-auth"><div style="width:60px; text-align:center; margin:0 auto;">${sums.auth}</div></td>
-        <td class="sum-exist"><div style="width:60px; text-align:center; margin:0 auto;">${sums.exist}</div></td>
-        <td class="sum-pres"><div style="width:60px; text-align:center; margin:0 auto;">${sums.pres}</div></td>
-        <td class="sum-abs"><div style="width:60px; text-align:center; margin:0 auto;">${sums.abs}</div></td>
+        <td class="sum-auth" style="text-align: center;">${sums.auth}</td>
+        <td class="sum-exist" style="text-align: center;">${sums.exist}</td>
+        <td class="sum-pres" style="text-align: center;">${sums.pres}</td>
+        <td class="sum-abs" style="text-align: center;">${sums.abs}</td>
       </tr>
       </tbody></table></div>`;
 
@@ -243,6 +255,25 @@ function _renderEntryContent(pageId) {
   });
 
   document.getElementById('btn-save').addEventListener('click', () => {
+    // Add history notification
+    const now = new Date();
+    if (!state.history) state.history = [];
+
+    // Formatting: 06 March 26
+    const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
+    // Formatting: 10:45 PM
+    const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    state.history.unshift({
+      page: SECTIONS_CONFIG[pageId].title,
+      time: timeFormatter.format(now),
+      date: dateFormatter.format(now),
+      timestamp: Date.now()
+    });
+    // Keep max 20 history items
+    if (state.history.length > 20) state.history.pop();
+    localStorage.setItem('has_new_notifications', 'true');
+
     saveAppState(state);
     alert('Entry Updated & Saved to Dashboard Successfully!');
     window.location.href = 'index.html';
@@ -307,6 +338,7 @@ function calculateDashboardData(state) {
       let auth = 0, exist = 0, pres = 0, abs = 0;
 
       for (const [pageId, groups] of Object.entries(state)) {
+        if (pageId === 'history') continue;
         if (cfg.filters.page && pageId !== cfg.filters.page) continue;
         if (cfg.filters.excludePage && pageId === cfg.filters.excludePage) continue;
 
@@ -360,13 +392,76 @@ function calculateDashboardData(state) {
   return values;
 }
 
-function renderDashboard() {
-  document.getElementById('sidebar').innerHTML = generateSidebar('index');
-  const state = getAppState();
-  const calculatedData = calculateDashboardData(state);
+window.renderDashboard = function () {
+  currentActivePageId = 'index';
+  if (globalAppState) {
+    _performDashboardRender();
+  }
+}
 
-  const container = document.getElementById('dashboard-container');
-  container.innerHTML = `
+function _performDashboardRender() {
+  try {
+    document.getElementById('sidebar').innerHTML = generateSidebar('index');
+
+    // Clear all entry page auth so password is required again
+    Object.keys(SECTIONS_CONFIG).forEach(key => sessionStorage.removeItem('auth_' + key));
+
+    const state = getAppState();
+    const calculatedData = calculateDashboardData(state);
+
+    const hasNewNoti = localStorage.getItem('has_new_notifications') === 'true';
+    const historyList = (state.history || []).map(h => `
+    <div style="padding:0.8rem 1rem; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:6px; transition:background 0.2s; cursor:default;" onmouseover="this.style.background='var(--glass-bg)'" onmouseout="this.style.background='transparent'">
+      <div style="font-weight:700; font-size:0.95rem; color:var(--text-dark); display:flex; align-items:center; gap:6px;">
+        <svg width="14" height="14" fill="none" stroke="#ca8a04" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+        ${h.page} Updated
+      </div>
+      <div style="font-size:0.8rem; color:var(--text-light); display:flex; justify-content:space-between; font-weight:500;">
+        <span>📅 ${h.date}</span>
+        <span>🕒 ${h.time}</span>
+      </div>
+    </div>
+  `).join('') || '<div style="padding:1.5rem; text-align:center; color:var(--text-light); font-size:0.95rem; font-weight:500;">No recent updates</div>';
+
+    const container = document.getElementById('dashboard-container');
+    container.innerHTML = `
+    <!-- Top right notification and reminder bells -->
+    <div style="position: fixed; top: 1.5rem; right: 2.5rem; z-index: 9999; display: flex; gap: 1rem;" class="no-print">
+      
+      <!-- Reminder Button -->
+      <div class="reminder-container" style="position:relative;">
+        <button id="reminder-btn" class="no-print" style="background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:50%; width:50px; height:50px; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position:relative; backdrop-filter:blur(8px);" onmouseover="this.style.transform='scale(1.05)'; this.style.background='rgba(255,255,255,0.7)';" onmouseout="this.style.transform='scale(1)'; this.style.background='var(--glass-bg)';" onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
+          <svg width="24" height="24" fill="none" stroke="var(--text-dark)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span id="reminder-badge" style="position:absolute; top:12px; right:12px; width:10px; height:10px; background:#eab308; border-radius:50%; border:2px solid white; display:none; box-shadow:0 0 8px rgba(234,179,8,0.6);"></span>
+        </button>
+        
+        <div id="reminder-dropdown" class="glass-card no-print" style="position:absolute; top:65px; left:auto; right:-10px; width:340px; z-index:100; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: top right; animation: scaleIn 0.2s ease-out;">
+          <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4); display:flex; justify-content:space-between; align-items:center;">
+             <span>Pending Today</span>
+             <span id="reminder-count" style="background:#eab308; color:white; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:700;">0</span>
+          </div>
+          <div id="reminder-list" style="max-height:350px; overflow-y:auto; padding:0;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification Bell -->
+      <div class="notification-container" style="position:relative;">
+        <button id="noti-btn" class="no-print" style="background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:50%; width:50px; height:50px; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position:relative; backdrop-filter:blur(8px);" onmouseover="this.style.transform='scale(1.05)'; this.style.background='rgba(255,255,255,0.7)';" onmouseout="this.style.transform='scale(1)'; this.style.background='var(--glass-bg)';" onclick="event.stopPropagation(); const d = document.getElementById('noti-dropdown'); const r = document.getElementById('reminder-dropdown'); if(r) r.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; document.getElementById('noti-badge').style.display='none'; localStorage.removeItem('has_new_notifications');">
+          <svg width="24" height="24" fill="none" stroke="var(--text-dark)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span id="noti-badge" style="position:absolute; top:12px; right:12px; width:10px; height:10px; background:#ef4444; border-radius:50%; border:2px solid white; display:${hasNewNoti ? 'block' : 'none'}; box-shadow:0 0 8px rgba(239,68,68,0.6);"></span>
+        </button>
+        
+        <div id="noti-dropdown" class="glass-card no-print" style="position:absolute; top:65px; left:auto; right:-10px; width:340px; z-index:100; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: top right; animation: scaleIn 0.2s ease-out;">
+          <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4);">History Update</div>
+          <div id="noti-list" style="max-height:350px; overflow-y:auto; padding:0;">
+            ${historyList}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom right export button -->
     <div style="position: fixed; bottom: 2.5rem; right: 2.5rem; z-index: 9999;" class="no-print">
       <button onclick="exportReport()" style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-family: 'Inter', sans-serif; font-size: 1.05rem; padding: 1rem 1.8rem; box-shadow: 0 10px 30px rgba(202, 138, 4, 0.4); background: linear-gradient(135deg, #eab308, #ca8a04); color: white; border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); letter-spacing: 0.02em;" onmouseover="this.style.transform='translateY(-6px) scale(1.02)'; this.style.boxShadow='0 15px 35px rgba(202, 138, 4, 0.5)';" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(202, 138, 4, 0.4)';">
         <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -375,14 +470,14 @@ function renderDashboard() {
     </div>
   `;
 
-  const mainCard = document.createElement('div');
-  mainCard.className = 'glass-card';
-  mainCard.id = 'export-content';
+    const mainCard = document.createElement('div');
+    mainCard.className = 'glass-card';
+    mainCard.id = 'export-content';
 
-  const today = new Date();
-  const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    const today = new Date();
+    const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
-  let html = `
+    let html = `
     <div class="report-header-flex">
       <div class="report-title-container">
         <h2 style="color:#854d0e; font-size:2.4rem; font-weight:800; margin-bottom: 8px; letter-spacing: -0.02em; font-family: 'Inter', sans-serif;">MEP FAN LTD.</h2>
@@ -390,7 +485,7 @@ function renderDashboard() {
         <p style="font-weight:600; font-size: 1.05rem; color:#475569; letter-spacing: 0.15em; font-family: 'Inter', sans-serif; text-transform: uppercase;">MEP FAN ATTENDANCE REPORT</p>
       </div>
 
-      <div class="clock-widget" id="clock-widget">
+        <div class="clock-widget" id="clock-widget">
         <div class="analog-clock">
           <div class="clock-face">
             <div class="number number-12">12</div>
@@ -426,21 +521,21 @@ function renderDashboard() {
         </thead>
         <tbody>`;
 
-  for (const row of EXACT_DASHBOARD_ROWS) {
-    const data = calculatedData[row.id];
-    const mgmtIds = ['R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10'];
-    let rowClass = row.isTotal ? 'total-row' : (mgmtIds.includes(row.id) ? 'management-row' : '');
+    for (const row of EXACT_DASHBOARD_ROWS) {
+      const data = calculatedData[row.id] || { auth: 0, exist: 0, pres: 0, abs: 0 };
+      const mgmtIds = ['R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10'];
+      let rowClass = row.isTotal ? 'total-row' : (mgmtIds.includes(row.id) ? 'management-row' : '');
 
-    html += `<tr class="${rowClass}">`;
+      html += `<tr class="${rowClass}">`;
 
-    if (row.section !== undefined) {
-      if (row.rowspan) {
-        if (row.section === 'Fan QC') {
-          html += `<td rowspan="${row.rowspan}" style="font-weight:700; font-size: 0.95rem; vertical-align:middle; text-align:center; background:rgba(255,255,255,0.35); border-right:1px solid rgba(255,255,255,0.6); color:#1e293b; padding: 0.5rem;">
+      if (row.section !== undefined) {
+        if (row.rowspan) {
+          if (row.section === 'Fan QC') {
+            html += `<td rowspan="${row.rowspan}" style="font-weight:700; font-size: 0.95rem; vertical-align:middle; text-align:center; background:rgba(255,255,255,0.35); border-right:1px solid rgba(255,255,255,0.6); color:#1e293b; padding: 0.5rem;">
             ${row.section}
           </td>`;
-        } else {
-          html += `<td rowspan="${row.rowspan}" style="font-weight:700; vertical-align:middle; text-align:center; background:rgba(255,255,255,0.35); border-right:1px solid rgba(255,255,255,0.6); padding: 0.5rem;">
+          } else {
+            html += `<td rowspan="${row.rowspan}" style="font-weight:700; vertical-align:middle; text-align:center; background:rgba(255,255,255,0.35); border-right:1px solid rgba(255,255,255,0.6); padding: 0.5rem;">
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
               <span style="color:#32cd32; font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em;">${row.section}</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="44" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -449,29 +544,40 @@ function renderDashboard() {
               </svg>
             </div>
           </td>`;
+          }
+        } else {
+          html += `<td style="font-weight:700; color:#713f12;">${row.section}</td>`;
         }
-      } else {
-        html += `<td style="font-weight:700; color:#713f12;">${row.section}</td>`;
       }
-    }
 
-    html += `
+      html += `
       <td style="font-weight:500;">${row.designation}</td>
       <td style="text-align: center;">${data.auth}</td>
       <td style="text-align: center;">${data.exist}</td>
       <td style="text-align: center;">${data.pres}</td>
       <td style="text-align: center; ${data.abs > 0 ? 'color:#dc2626; font-weight:800;' : ''}">${data.abs}</td>
     </tr>`;
+    }
+
+    html += `</tbody></table></div>`;
+
+    mainCard.innerHTML = html;
+    container.appendChild(mainCard);
+
+    if (window.clockInterval) clearInterval(window.clockInterval);
+    window.clockInterval = setInterval(updateClock, 1000);
+    updateClock();
+
+    // Initialize reminder badge silently on load
+    updateReminderList(true);
+
+  } catch (err) {
+    document.getElementById('dashboard-container').innerHTML = `<div style="padding: 2rem; margin: 2rem; background: #fee2e2; border-left: 6px solid #b91c1c; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-radius: 8px;">
+      <h3 style="color:#b91c1c; margin-top:0; font-family:'Inter', sans-serif;">🚨 Dashboard Render Crushed</h3>
+      <p style="color:#7f1d1d; font-family:monospace; font-size:1.1rem; font-weight:bold;">${err.message}</p>
+      <pre style="background:rgba(255,255,255,0.5); padding:1rem; border-radius:4px; overflow-x:auto; color:#450a0a; font-family:monospace; font-size:0.85rem; border:1px solid #fecaca;">${err.stack}</pre>
+    </div>`;
   }
-
-  html += `</tbody></table></div>`;
-
-  mainCard.innerHTML = html;
-  container.appendChild(mainCard);
-
-  if (window.clockInterval) clearInterval(window.clockInterval);
-  window.clockInterval = setInterval(updateClock, 1000);
-  updateClock();
 }
 
 function updateClock() {
@@ -503,10 +609,9 @@ function updateClock() {
   let s = seconds.toString().padStart(2, '0');
   digitalTime.textContent = `${h}:${m}:${s} ${ampm}`;
 
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  clockDate.textContent = now.toLocaleDateString('en-US', options);
+  const options = { day: '2-digit', month: 'long', year: '2-digit' };
+  clockDate.textContent = now.toLocaleDateString('en-GB', options);
 }
-
 
 function exportReport() {
   const content = document.getElementById('export-content');
@@ -569,7 +674,7 @@ const THEMES = [
   { id: 'slate', name: 'Charcoal Slate', swatch: 'linear-gradient(135deg, #94a3b8, #64748b)' }
 ];
 
-function setTheme(themeId) {
+function setTheme(themeId, fromRemote = false) {
   if (themeId === 'amber') {
     document.body.removeAttribute('data-theme');
   } else {
@@ -581,6 +686,10 @@ function setTheme(themeId) {
   document.querySelectorAll('.theme-option').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.theme === themeId);
   });
+
+  if (!fromRemote && window.firebaseSet && window.firebaseDb) {
+    window.firebaseSet(window.firebaseRef(window.firebaseDb, 'mep_theme_state'), themeId);
+  }
 }
 
 function initThemePicker() {
@@ -619,5 +728,175 @@ function initThemePicker() {
   setTheme(savedTheme);
 }
 
-// Auto-initialize theme picker on page load
-document.addEventListener('DOMContentLoaded', initThemePicker);
+// ═══════════════════════════════════════════════════
+// 60fps SCROLL REVEAL ANIMATIONS
+// ═══════════════════════════════════════════════════
+
+function initScrollReveal() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.08,
+    rootMargin: '0px 0px -40px 0px'
+  });
+
+  // Observe all scroll-reveal elements
+  document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+  // Also observe table rows that enter viewport on scroll
+  document.querySelectorAll('tbody tr').forEach((row, i) => {
+    if (row.getBoundingClientRect().top > window.innerHeight) {
+      row.style.opacity = '0';
+      row.style.transform = 'translate3d(0, 20px, 0)';
+      row.style.transition = `opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.02}s, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.02}s`;
+
+      const rowObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.style.opacity = '1';
+            e.target.style.transform = 'translate3d(0, 0, 0)';
+            rowObserver.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      rowObserver.observe(row);
+    }
+  });
+}
+
+// Firebase Synchronization Listener
+function setupFirebaseListener() {
+  if (window.firebaseOnValue && window.firebaseDb) {
+    // Sync state
+    const stateRef = window.firebaseRef(window.firebaseDb, 'mep_dashboard_state');
+    window.firebaseOnValue(stateRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        globalAppState = data;
+      } else {
+        globalAppState = createDefaultState();
+        saveAppState(globalAppState);
+      }
+
+      // Re-trigger visual rendering without reload
+      if (currentActivePageId === 'index') {
+        _performDashboardRender();
+      } else if (currentActivePageId) {
+        const authed = sessionStorage.getItem('auth_' + currentActivePageId);
+        if (authed === 'true') {
+          _renderEntryContent(currentActivePageId);
+        }
+      }
+    });
+
+    // Sync active theme
+    const themeRef = window.firebaseRef(window.firebaseDb, 'mep_theme_state');
+    window.firebaseOnValue(themeRef, (snapshot) => {
+      const themeId = snapshot.val();
+      if (themeId) {
+        setTheme(themeId, true);
+      }
+    });
+  } else {
+    // Fallback if SDK failed to load
+    globalAppState = getAppState();
+    if (currentActivePageId === 'index') {
+      _performDashboardRender();
+    }
+  }
+}
+
+// Auto-initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  initThemePicker();
+  setupFirebaseListener();
+
+  // Restore scroll position after reload
+  const scrollPos = sessionStorage.getItem('dashboardScrollPos');
+  if (scrollPos) {
+    setTimeout(() => window.scrollTo(0, parseInt(scrollPos)), 50);
+  }
+
+  setTimeout(initScrollReveal, 100);
+});
+
+window.addEventListener('beforeunload', () => {
+  sessionStorage.setItem('dashboardScrollPos', window.scrollY);
+});
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', (e) => {
+  const notiBtn = document.getElementById('noti-btn');
+  const notiDropdown = document.getElementById('noti-dropdown');
+  const remBtn = document.getElementById('reminder-btn');
+  const remDropdown = document.getElementById('reminder-dropdown');
+
+  if (notiBtn && notiDropdown && !notiBtn.contains(e.target) && !notiDropdown.contains(e.target)) {
+    notiDropdown.style.display = 'none';
+  }
+
+  if (remBtn && remDropdown && !remBtn.contains(e.target) && !remDropdown.contains(e.target)) {
+    remDropdown.style.display = 'none';
+  }
+});
+
+// Reminder Logic
+window.updateReminderList = function (silent = false) {
+  const state = getAppState();
+  const now = new Date();
+  const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
+  const todayStr = dateFormatter.format(now);
+  const history = state.history || [];
+
+  // Find which sections have been updated today
+  const updatedTodayMap = {};
+  history.forEach(h => {
+    if (h.date === todayStr) {
+      updatedTodayMap[h.page] = true;
+    }
+  });
+
+  const missingSections = [];
+  // Loop through all configured pages to find missing ones
+  for (const [pageKey, config] of Object.entries(SECTIONS_CONFIG)) {
+    if (!updatedTodayMap[config.title]) {
+      missingSections.push({ title: config.title, id: pageKey });
+    }
+  }
+
+  const badge = document.getElementById('reminder-badge');
+  const countSpan = document.getElementById('reminder-count');
+  const list = document.getElementById('reminder-list');
+
+  if (badge) {
+    if (missingSections.length > 0) {
+      badge.style.display = 'block';
+      if (countSpan) countSpan.textContent = missingSections.length;
+    } else {
+      badge.style.display = 'none';
+      if (countSpan) countSpan.textContent = '0';
+    }
+  }
+
+  if (list && !silent) {
+    if (missingSections.length === 0) {
+      list.innerHTML = '<div style="padding:1.5rem; text-align:center; color:#10b981; font-size:0.95rem; font-weight:600;"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" style="display:block; margin:0 auto 8px auto;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>All sheets updated today!</div>';
+    } else {
+      list.innerHTML = missingSections.map(s => `
+        <a href="entry_${s.id.replace('qc', 'qc')}.html" style="text-decoration:none; padding:0.8rem 1rem; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; transition:background 0.2s;" onmouseover="this.style.background='var(--glass-bg)'" onmouseout="this.style.background='transparent'">
+          <div style="font-weight:600; font-size:0.95rem; color:var(--text-dark); display:flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" fill="none" stroke="#ef4444" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            ${s.title}
+          </div>
+          <span style="font-size:0.75rem; font-weight:700; color:#ef4444; background:rgba(239,68,68,0.1); padding:2px 8px; border-radius:8px;">Missing</span>
+        </a>
+      `).join('');
+    }
+  }
+};

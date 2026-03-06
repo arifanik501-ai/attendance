@@ -6,11 +6,224 @@
   --text-light: #555555;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ── 60fps GPU-Accelerated Animations ── */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fadeSlideLeft {
+  from {
+    opacity: 0;
+    transform: translate3d(-25px, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fadeSlideRight {
+  from {
+    opacity: 0;
+    transform: translate3d(25px, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale3d(0.92, 0.92, 1);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+/* Scroll-reveal base class */
+.scroll-reveal {
+  opacity: 0;
+  transform: translate3d(0, 30px, 0);
+  will-change: opacity, transform;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Entrance animations on page load */
+.glass-card {
+  animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.report-header-flex {
+  animation: fadeSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.table-container {
+  animation: fadeSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+
+/* Staggered row entrance */
+tbody tr {
+  animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+tbody tr:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+tbody tr:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+tbody tr:nth-child(3) {
+  animation-delay: 0.11s;
+}
+
+tbody tr:nth-child(4) {
+  animation-delay: 0.14s;
+}
+
+tbody tr:nth-child(5) {
+  animation-delay: 0.17s;
+}
+
+tbody tr:nth-child(6) {
+  animation-delay: 0.20s;
+}
+
+tbody tr:nth-child(7) {
+  animation-delay: 0.23s;
+}
+
+tbody tr:nth-child(8) {
+  animation-delay: 0.26s;
+}
+
+tbody tr:nth-child(9) {
+  animation-delay: 0.29s;
+}
+
+tbody tr:nth-child(10) {
+  animation-delay: 0.32s;
+}
+
+tbody tr:nth-child(11) {
+  animation-delay: 0.35s;
+}
+
+tbody tr:nth-child(12) {
+  animation-delay: 0.38s;
+}
+
+tbody tr:nth-child(13) {
+  animation-delay: 0.41s;
+}
+
+tbody tr:nth-child(14) {
+  animation-delay: 0.44s;
+}
+
+tbody tr:nth-child(15) {
+  animation-delay: 0.47s;
+}
+
+tbody tr:nth-child(16) {
+  animation-delay: 0.50s;
+}
+
+tbody tr:nth-child(17) {
+  animation-delay: 0.53s;
+}
+
+tbody tr:nth-child(18) {
+  animation-delay: 0.56s;
+}
+
+tbody tr:nth-child(19) {
+  animation-delay: 0.59s;
+}
+
+tbody tr:nth-child(20) {
+  animation-delay: 0.62s;
+}
+
+tbody tr:nth-child(n+21) {
+  animation-delay: 0.65s;
+}
+
+/* Sidebar entrance */
+.sidebar {
+  animation: fadeSlideLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.nav-link {
+  animation: fadeSlideLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.nav-link:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.nav-link:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.nav-link:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.nav-link:nth-child(4) {
+  animation-delay: 0.25s;
+}
+
+.nav-link:nth-child(5) {
+  animation-delay: 0.3s;
+}
+
+.nav-link:nth-child(6) {
+  animation-delay: 0.35s;
+}
+
+.nav-link:nth-child(7) {
+  animation-delay: 0.4s;
+}
+
+/* Disable animations for JPG export */
+.a4-report,
+.a4-report * {
+  animation: none !important;
+  transition: none !important;
 }
 
 body {
@@ -163,6 +376,16 @@ td {
   font-size: 0.75rem;
   border-bottom: 1px solid rgba(133, 77, 14, 0.08);
   white-space: nowrap;
+}
+
+.a4-report th,
+.a4-report td {
+  font-size: 0.65rem !important;
+  padding: 0.2rem 0.2rem !important;
+}
+
+.a4-report .report-header-flex {
+  padding: 1rem 1rem !important;
 }
 
 th {
@@ -1213,4 +1436,26 @@ body[data-theme="slate"] {
 [data-theme="slate"] .a4-report .report-header-flex {
   background: rgba(203, 213, 225, 0.4);
   border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Notification UI */
+.show-noti {
+  display: flex !important;
+}
+
+#noti-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+#noti-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#noti-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+#noti-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
 }

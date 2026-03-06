@@ -1,3 +1,20 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
+  authDomain: "whatsapp-c10ef.firebaseapp.com",
+  databaseURL: "https://whatsapp-c10ef-default-rtdb.firebaseio.com",
+  projectId: "whatsapp-c10ef",
+  storageBucket: "whatsapp-c10ef.firebasestorage.app",
+  messagingSenderId: "675053106773",
+  appId: "1:675053106773:web:b7078468691a07ecfec6dc",
+  measurementId: "G-89Z8WBJ3R0"
+};
+
+// Initialize Firebase immediately if the SDK is loaded globally
+if (typeof firebase !== 'undefined') {
+  firebase.initializeApp(firebaseConfig);
+  window.firebaseDb = firebase.database();
+}
+
 const SECTIONS_CONFIG = {
   anik: {
     title: "Entry Sheet (Anik)",
@@ -13,8 +30,8 @@ const SECTIONS_CONFIG = {
     title: "Entry Sheet (Monir)",
     password: "2222",
     groups: {
-      "Power Press & Stamping": ["In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Worker", "Jr. Officer"],
-      "Fan Dalai & Die Casting": ["Engineer", "Jr. Engineer", "Worker"]
+      "Power Press & Stamping": ["In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Worker"],
+      "Fan Dalai & Die Casting": ["Engineer", "Jr. Officer", "Worker"]
     }
   },
   anwar: {
@@ -72,12 +89,46 @@ function createDefaultState() {
 }
 
 function getAppState() {
-  return globalAppState || createDefaultState();
+  let stateToReturn = globalAppState || createDefaultState();
+
+  // NORMALIZE DATA: Sync historical loaded state with current SECTIONS_CONFIG structure
+  for (const [pageKey, pageData] of Object.entries(SECTIONS_CONFIG)) {
+    if (stateToReturn[pageKey]) {
+      // 1. Remove deleted groups
+      for (const groupName of Object.keys(stateToReturn[pageKey])) {
+        if (!pageData.groups[groupName]) {
+          delete stateToReturn[pageKey][groupName];
+        }
+      }
+
+      // 2. Filter deleted designations & handle new ones
+      for (const [groupName, designations] of Object.entries(pageData.groups)) {
+        if (stateToReturn[pageKey][groupName]) {
+          // Remove old
+          stateToReturn[pageKey][groupName] = stateToReturn[pageKey][groupName].filter(r => designations.includes(r.designation));
+
+          // Add new
+          const existingDesigs = stateToReturn[pageKey][groupName].map(r => r.designation);
+          for (const newDesig of designations) {
+            if (!existingDesigs.includes(newDesig)) {
+              stateToReturn[pageKey][groupName].push({
+                designation: newDesig, authorized: 0, existing: 0, present: 0, absent: 0
+              });
+            }
+          }
+
+          // Enforce config array order
+          stateToReturn[pageKey][groupName].sort((a, b) => designations.indexOf(a.designation) - designations.indexOf(b.designation));
+        }
+      }
+    }
+  }
+  return stateToReturn;
 }
 
 function saveAppState(state) {
-  if (window.firebaseSet && window.firebaseDb) {
-    window.firebaseSet(window.firebaseRef(window.firebaseDb, 'mep_dashboard_state'), state);
+  if (window.firebaseDb) {
+    window.firebaseDb.ref('mep_dashboard_state').set(state);
   } else {
     localStorage.setItem('manpowerData', JSON.stringify(state));
   }
@@ -188,11 +239,12 @@ function _renderEntryContent(pageId) {
   const container = document.getElementById('report-container');
   container.innerHTML = '';
 
-  for (const [groupName, rows] of Object.entries(pageState)) {
-    const card = document.createElement('div');
-    card.className = 'glass-card';
+  setTimeout(() => {
+    for (const [groupName, rows] of Object.entries(pageState)) {
+      const card = document.createElement('div');
+      card.className = 'glass-card';
 
-    let html = `<h3>${groupName}</h3>
+      let html = `<h3>${groupName}</h3>
       <div class="table-container">
         <table>
           <thead>
@@ -206,24 +258,24 @@ function _renderEntryContent(pageId) {
           </thead>
           <tbody>`;
 
-    let sums = { auth: 0, exist: 0, pres: 0, abs: 0 };
+      let sums = { auth: 0, exist: 0, pres: 0, abs: 0 };
 
-    rows.forEach((row, index) => {
-      sums.auth += parseInt(row.authorized) || 0;
-      sums.exist += parseInt(row.existing) || 0;
-      sums.pres += parseInt(row.present) || 0;
-      sums.abs += parseInt(row.absent) || 0;
+      rows.forEach((row, index) => {
+        sums.auth += parseInt(row.authorized) || 0;
+        sums.exist += parseInt(row.existing) || 0;
+        sums.pres += parseInt(row.present) || 0;
+        sums.abs += parseInt(row.absent) || 0;
 
-      html += `<tr>
+        html += `<tr>
         <td style="font-weight:500;">${row.designation}</td>
         <td style="text-align: center;"><input type="number" min="0" data-group="${groupName}" data-index="${index}" data-field="authorized" value="${row.authorized}" class="entry-input"></td>
         <td style="text-align: center;"><input type="number" min="0" data-group="${groupName}" data-index="${index}" data-field="existing" value="${row.existing}" class="entry-input"></td>
         <td style="text-align: center;"><input type="number" min="0" data-group="${groupName}" data-index="${index}" data-field="present" value="${row.present}" class="entry-input"></td>
         <td class="absent-val" style="font-weight:600; color:#ef4444;">${row.absent}</td>
       </tr>`;
-    });
+      });
 
-    html += `<tr class="total-row">
+      html += `<tr class="total-row">
         <td>Total</td>
         <td class="sum-auth" style="text-align: center;">${sums.auth}</td>
         <td class="sum-exist" style="text-align: center;">${sums.exist}</td>
@@ -232,52 +284,58 @@ function _renderEntryContent(pageId) {
       </tr>
       </tbody></table></div>`;
 
-    card.innerHTML = html;
-    container.appendChild(card);
-  }
+      card.innerHTML = html;
+      container.appendChild(card);
+    }
 
-  document.querySelectorAll('.entry-input').forEach(input => {
-    input.addEventListener('input', (e) => {
-      const g = e.target.getAttribute('data-group');
-      const i = e.target.getAttribute('data-index');
-      const f = e.target.getAttribute('data-field');
-      const val = parseInt(e.target.value) || 0;
+    document.querySelectorAll('.entry-input').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const g = e.target.getAttribute('data-group');
+        const i = e.target.getAttribute('data-index');
+        const f = e.target.getAttribute('data-field');
+        const val = parseInt(e.target.value) || 0;
 
-      state[pageId][g][i][f] = val;
+        state[pageId][g][i][f] = val;
 
-      if (f === 'existing' || f === 'present') {
-        calculateRow(state[pageId][g][i]);
-        e.target.closest('tr').querySelector('.absent-val').textContent = state[pageId][g][i].absent;
-      }
+        if (f === 'existing' || f === 'present') {
+          calculateRow(state[pageId][g][i]);
+          e.target.closest('tr').querySelector('.absent-val').textContent = state[pageId][g][i].absent;
+        }
 
-      updateGroupTotals(e.target.closest('table'), state[pageId][g]);
+        updateGroupTotals(e.target.closest('table'), state[pageId][g]);
+      });
     });
-  });
 
-  document.getElementById('btn-save').addEventListener('click', () => {
-    // Add history notification
-    const now = new Date();
-    if (!state.history) state.history = [];
+    // Re-init reveal to catch the new tables
+    initScrollReveal();
 
-    // Formatting: 06 March 26
-    const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
-    // Formatting: 10:45 PM
-    const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    document.getElementById('btn-save').addEventListener('click', () => {
+      // Add history notification
+      const now = new Date();
+      if (!state.history) state.history = [];
 
-    state.history.unshift({
-      page: SECTIONS_CONFIG[pageId].title,
-      time: timeFormatter.format(now),
-      date: dateFormatter.format(now),
-      timestamp: Date.now()
+      // Formatting: 06 March 26
+      const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
+      // Formatting: 10:45 PM
+      const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+      state.history.unshift({
+        page: SECTIONS_CONFIG[pageId].title,
+        time: timeFormatter.format(now),
+        date: dateFormatter.format(now),
+        timestamp: Date.now()
+      });
+      // Keep max 20 history items
+      if (state.history.length > 20) state.history.pop();
+      localStorage.setItem('has_new_notifications', 'true');
+
+      saveAppState(state);
+
+      alert('Entry Updated & Saved to Dashboard Successfully!');
+      window.location.href = 'index.html';
     });
-    // Keep max 20 history items
-    if (state.history.length > 20) state.history.pop();
-    localStorage.setItem('has_new_notifications', 'true');
 
-    saveAppState(state);
-    alert('Entry Updated & Saved to Dashboard Successfully!');
-    window.location.href = 'index.html';
-  });
+  }, 10); // End setTimeout macro task
 }
 
 function updateGroupTotals(table, rows) {
@@ -406,11 +464,13 @@ function _performDashboardRender() {
     // Clear all entry page auth so password is required again
     Object.keys(SECTIONS_CONFIG).forEach(key => sessionStorage.removeItem('auth_' + key));
 
-    const state = getAppState();
-    const calculatedData = calculateDashboardData(state);
+    // Yield to browser main thread so CSS animations can start instantly
+    setTimeout(() => {
+      const state = getAppState();
+      const calculatedData = calculateDashboardData(state);
 
-    const hasNewNoti = localStorage.getItem('has_new_notifications') === 'true';
-    const historyList = (state.history || []).map(h => `
+      const hasNewNoti = localStorage.getItem('has_new_notifications') === 'true';
+      const historyList = (state.history || []).map(h => `
     <div style="padding:0.8rem 1rem; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:6px; transition:background 0.2s; cursor:default;" onmouseover="this.style.background='var(--glass-bg)'" onmouseout="this.style.background='transparent'">
       <div style="font-weight:700; font-size:0.95rem; color:var(--text-dark); display:flex; align-items:center; gap:6px;">
         <svg width="14" height="14" fill="none" stroke="#ca8a04" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -423,8 +483,8 @@ function _performDashboardRender() {
     </div>
   `).join('') || '<div style="padding:1.5rem; text-align:center; color:var(--text-light); font-size:0.95rem; font-weight:500;">No recent updates</div>';
 
-    const container = document.getElementById('dashboard-container');
-    container.innerHTML = `
+      const container = document.getElementById('dashboard-container');
+      container.innerHTML = `
     <!-- Top right notification and reminder bells -->
     <div style="position: fixed; top: 1.5rem; right: 2.5rem; z-index: 9999; display: flex; gap: 1rem;" class="no-print">
       
@@ -470,14 +530,14 @@ function _performDashboardRender() {
     </div>
   `;
 
-    const mainCard = document.createElement('div');
-    mainCard.className = 'glass-card';
-    mainCard.id = 'export-content';
+      const mainCard = document.createElement('div');
+      mainCard.className = 'glass-card';
+      mainCard.id = 'export-content';
 
-    const today = new Date();
-    const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      const today = new Date();
+      const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
-    let html = `
+      let html = `
     <div class="report-header-flex">
       <div class="report-title-container">
         <h2 style="color:#854d0e; font-size:2.4rem; font-weight:800; margin-bottom: 8px; letter-spacing: -0.02em; font-family: 'Inter', sans-serif;">MEP FAN LTD.</h2>
@@ -521,21 +581,21 @@ function _performDashboardRender() {
         </thead>
         <tbody>`;
 
-    for (const row of EXACT_DASHBOARD_ROWS) {
-      const data = calculatedData[row.id] || { auth: 0, exist: 0, pres: 0, abs: 0 };
-      const mgmtIds = ['R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10'];
-      let rowClass = row.isTotal ? 'total-row' : (mgmtIds.includes(row.id) ? 'management-row' : '');
+      for (const row of EXACT_DASHBOARD_ROWS) {
+        const data = calculatedData[row.id] || { auth: 0, exist: 0, pres: 0, abs: 0 };
+        const mgmtIds = ['R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10'];
+        let rowClass = row.isTotal ? 'total-row' : (mgmtIds.includes(row.id) ? 'management-row' : '');
 
-      html += `<tr class="${rowClass}">`;
+        html += `<tr class="${rowClass}">`;
 
-      if (row.section !== undefined) {
-        if (row.rowspan) {
-          if (row.section === 'Fan QC') {
-            html += `<td rowspan="${row.rowspan}" style="font-weight:700; font-size: 0.95rem; vertical-align:middle; text-align:center; background:rgba(255,255,255,0.35); border-right:1px solid rgba(255,255,255,0.6); color:#1e293b; padding: 0.5rem;">
+        if (row.section !== undefined) {
+          if (row.rowspan) {
+            if (row.section === 'Fan QC') {
+              html += `<td rowspan="${row.rowspan}" style="font-weight:700; font-size: 0.95rem; vertical-align:middle; text-align:center; background:rgba(255,255,255,0.35); border-right:1px solid rgba(255,255,255,0.6); color:#1e293b; padding: 0.5rem;">
             ${row.section}
           </td>`;
-          } else {
-            html += `<td rowspan="${row.rowspan}" style="font-weight:700; vertical-align:middle; text-align:center; background:rgba(255,255,255,0.35); border-right:1px solid rgba(255,255,255,0.6); padding: 0.5rem;">
+            } else {
+              html += `<td rowspan="${row.rowspan}" style="font-weight:700; vertical-align:middle; text-align:center; background:rgba(255,255,255,0.35); border-right:1px solid rgba(255,255,255,0.6); padding: 0.5rem;">
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
               <span style="color:#32cd32; font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em;">${row.section}</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="44" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -544,39 +604,44 @@ function _performDashboardRender() {
               </svg>
             </div>
           </td>`;
+            }
+          } else {
+            html += `<td style="font-weight:700; color:#713f12;">${row.section}</td>`;
           }
-        } else {
-          html += `<td style="font-weight:700; color:#713f12;">${row.section}</td>`;
         }
-      }
 
-      html += `
+        html += `
       <td style="font-weight:500;">${row.designation}</td>
       <td style="text-align: center;">${data.auth}</td>
       <td style="text-align: center;">${data.exist}</td>
       <td style="text-align: center;">${data.pres}</td>
       <td style="text-align: center; ${data.abs > 0 ? 'color:#dc2626; font-weight:800;' : ''}">${data.abs}</td>
     </tr>`;
-    }
+      }
 
-    html += `</tbody></table></div>`;
+      html += `</tbody></table></div>`;
 
-    mainCard.innerHTML = html;
-    container.appendChild(mainCard);
+      mainCard.innerHTML = html;
+      container.appendChild(mainCard);
 
-    if (window.clockInterval) clearInterval(window.clockInterval);
-    window.clockInterval = setInterval(updateClock, 1000);
-    updateClock();
+      if (window.clockInterval) clearInterval(window.clockInterval);
+      window.clockInterval = setInterval(updateClock, 1000);
+      updateClock();
 
-    // Initialize reminder badge silently on load
-    updateReminderList(true);
+      // Initialize reminder badge silently on load
+      updateReminderList(true);
+
+    }); // End setTimeout macro-task
 
   } catch (err) {
-    document.getElementById('dashboard-container').innerHTML = `<div style="padding: 2rem; margin: 2rem; background: #fee2e2; border-left: 6px solid #b91c1c; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-radius: 8px;">
-      <h3 style="color:#b91c1c; margin-top:0; font-family:'Inter', sans-serif;">🚨 Dashboard Render Crushed</h3>
-      <p style="color:#7f1d1d; font-family:monospace; font-size:1.1rem; font-weight:bold;">${err.message}</p>
-      <pre style="background:rgba(255,255,255,0.5); padding:1rem; border-radius:4px; overflow-x:auto; color:#450a0a; font-family:monospace; font-size:0.85rem; border:1px solid #fecaca;">${err.stack}</pre>
-    </div>`;
+    console.error(err);
+    document.getElementById('dashboard-container').innerHTML = `
+      <div style="padding: 2rem; color: #ef4444; background: #fee2e2; border-radius: 8px; margin: 2rem; font-weight: bold;">
+        <h2>Dashboard Render Error</h2>
+        <pre>${err.stack}</pre>
+        <p>Please check the console for more details.</p>
+      </div>
+    `;
   }
 }
 
@@ -687,8 +752,8 @@ function setTheme(themeId, fromRemote = false) {
     btn.classList.toggle('active', btn.dataset.theme === themeId);
   });
 
-  if (!fromRemote && window.firebaseSet && window.firebaseDb) {
-    window.firebaseSet(window.firebaseRef(window.firebaseDb, 'mep_theme_state'), themeId);
+  if (!fromRemote && window.firebaseDb) {
+    window.firebaseDb.ref('mep_theme_state').set(themeId);
   }
 }
 
@@ -753,7 +818,7 @@ function initScrollReveal() {
     if (row.getBoundingClientRect().top > window.innerHeight) {
       row.style.opacity = '0';
       row.style.transform = 'translate3d(0, 20px, 0)';
-      row.style.transition = `opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.02}s, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.02}s`;
+      row.style.transition = `opacity 0.1s cubic-bezier(0.16, 1, 0.3, 1), transform 0.1s cubic-bezier(0.16, 1, 0.3, 1)`;
 
       const rowObserver = new IntersectionObserver((entries) => {
         entries.forEach(e => {
@@ -772,10 +837,9 @@ function initScrollReveal() {
 
 // Firebase Synchronization Listener
 function setupFirebaseListener() {
-  if (window.firebaseOnValue && window.firebaseDb) {
+  if (window.firebaseDb) {
     // Sync state
-    const stateRef = window.firebaseRef(window.firebaseDb, 'mep_dashboard_state');
-    window.firebaseOnValue(stateRef, (snapshot) => {
+    window.firebaseDb.ref('mep_dashboard_state').on('value', (snapshot) => {
       const data = snapshot.val();
       if (data) {
         globalAppState = data;
@@ -796,8 +860,7 @@ function setupFirebaseListener() {
     });
 
     // Sync active theme
-    const themeRef = window.firebaseRef(window.firebaseDb, 'mep_theme_state');
-    window.firebaseOnValue(themeRef, (snapshot) => {
+    window.firebaseDb.ref('mep_theme_state').on('value', (snapshot) => {
       const themeId = snapshot.val();
       if (themeId) {
         setTheme(themeId, true);
@@ -815,7 +878,23 @@ function setupFirebaseListener() {
 // Auto-initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   initThemePicker();
-  setupFirebaseListener();
+
+  let retryCount = 0;
+  const maxRetries = 20; // 10 seconds total
+
+  function trySetupFirebase() {
+    if (window.firebaseDb) {
+      setupFirebaseListener();
+    } else if (retryCount < maxRetries) {
+      retryCount++;
+      setTimeout(trySetupFirebase, 500);
+    } else {
+      console.warn("Firebase failed to load after 10 seconds, falling back to local storage.");
+      setupFirebaseListener(); // this will hit the fallback
+    }
+  }
+
+  trySetupFirebase();
 
   // Restore scroll position after reload
   const scrollPos = sessionStorage.getItem('dashboardScrollPos');

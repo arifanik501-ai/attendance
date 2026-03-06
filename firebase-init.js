@@ -22,3 +22,6 @@ window.firebaseOnValue = onValue;
 window.firebaseSet = set;
 window.firebaseGet = get;
 window.firebaseChild = child;
+
+// Notify app.js that Firebase is ready to use
+window.dispatchEvent(new Event('firebase-ready'));

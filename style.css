@@ -12,6 +12,16 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-y: scroll;
+  /* Forces scrollbar to prevent layout shift */
+  -webkit-overflow-scrolling: touch;
+  /* Momentum scrolling on iOS */
+  will-change: scroll-position;
+  /* GPU acceleration hint */
 }
 
 * {
@@ -269,6 +279,26 @@ h4 {
   position: fixed;
   height: 100vh;
   z-index: 10;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom Smooth Webkit Scrollbars for the Sidebar */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .sidebar .brand {
@@ -418,13 +448,35 @@ h4 {
 }
 
 .table-container {
-  overflow: hidden;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  will-change: transform, scroll-position;
   border-radius: 16px;
   border: none;
   background: rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 8px 32px rgba(200, 160, 20, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+/* Custom Smooth Webkit Scrollbars for the Tables */
+.table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
 }
 
 table {
@@ -619,43 +671,34 @@ input[type="number"]:focus {
 }
 
 .clock-widget {
-  background: transparent;
-  border-radius: 0;
-  padding: 0;
+  background: #f1f5f9;
+  border-radius: 24px;
+  padding: 1.5rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: none;
-  border: none;
-  min-width: 180px;
+  box-shadow:
+    12px 12px 24px rgba(148, 163, 184, 0.4),
+    -12px -12px 24px rgba(255, 255, 255, 0.9),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.4),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  min-width: 200px;
 }
 
 .analog-clock {
-  width: 110px;
-  height: 110px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   border: none;
   position: relative;
-  background: linear-gradient(145deg, #f8fafc, #e2e8f0);
-  margin-bottom: 1rem;
+  background: #f1f5f9;
+  margin: 0 auto 1.5rem auto;
   box-shadow:
-    0 0 0 4px rgba(99, 102, 241, 0.15),
-    0 0 0 8px rgba(99, 102, 241, 0.05),
-    inset 0 2px 8px rgba(0, 0, 0, 0.08),
-    0 8px 24px rgba(99, 102, 241, 0.12);
-  animation: clockPulse 3s ease-in-out infinite;
-}
-
-@keyframes clockPulse {
-
-  0%,
-  100% {
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15), 0 0 0 8px rgba(99, 102, 241, 0.05), inset 0 2px 8px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(99, 102, 241, 0.12);
-  }
-
-  50% {
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25), 0 0 0 12px rgba(99, 102, 241, 0.08), inset 0 2px 8px rgba(0, 0, 0, 0.08), 0 8px 30px rgba(99, 102, 241, 0.2);
-  }
+    15px 15px 30px rgba(148, 163, 184, 0.7),
+    -15px -15px 30px rgba(255, 255, 255, 1),
+    inset 2px 2px 5px rgba(255, 255, 255, 0.6),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.12);
 }
 
 .clock-face {
@@ -666,32 +709,32 @@ input[type="number"]:focus {
 
 .clock-face .number {
   position: absolute;
-  font-weight: 800;
-  font-size: 0.7rem;
-  color: #334155;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  letter-spacing: 0;
 }
 
 .number-12 {
-  top: 6px;
+  top: 8%;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .number-3 {
-  right: 8px;
+  right: 10%;
   top: 50%;
   transform: translateY(-50%);
 }
 
 .number-6 {
-  bottom: 6px;
+  bottom: 8%;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .number-9 {
-  left: 8px;
+  left: 10%;
   top: 50%;
   transform: translateY(-50%);
 }
@@ -706,96 +749,63 @@ input[type="number"]:focus {
 }
 
 .hour-hand {
-  width: 4px;
-  height: 26px;
-  background: linear-gradient(to top, #1e293b, #475569);
-  margin-left: -2px;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+  width: 3px;
+  height: 35px;
+  background: #64748b;
+  margin-left: -1.5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .min-hand {
-  width: 3px;
-  height: 34px;
-  background: linear-gradient(to top, #334155, #64748b);
-  margin-left: -1.5px;
-  box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+  width: 2px;
+  height: 50px;
+  background: #64748b;
+  margin-left: -1px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .second-hand {
   width: 1.5px;
-  height: 40px;
-  background: linear-gradient(to top, #ef4444, #f87171);
+  height: 56px;
+  background: #6366f1;
   margin-left: -0.75px;
-  box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
   transition: none;
 }
 
 .clock-center {
-  width: 10px;
-  height: 10px;
-  background: linear-gradient(135deg, #6366f1, #818cf8);
+  width: 8px;
+  height: 8px;
+  background: #6366f1;
   border-radius: 50%;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 2;
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6), 0 0 20px rgba(99, 102, 241, 0.2);
-  animation: centerGlow 2s ease-in-out infinite;
-}
-
-@keyframes centerGlow {
-
-  0%,
-  100% {
-    box-shadow: 0 0 10px rgba(99, 102, 241, 0.6), 0 0 20px rgba(99, 102, 241, 0.2);
-  }
-
-  50% {
-    box-shadow: 0 0 14px rgba(99, 102, 241, 0.8), 0 0 28px rgba(99, 102, 241, 0.35);
-  }
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .digital-time {
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: #0f172a;
-  letter-spacing: 0.08em;
-  font-family: 'Courier New', Courier, monospace;
-  margin-bottom: 0.3rem;
-  text-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
-  animation: digitFade 1s ease-in-out infinite;
-}
-
-@keyframes digitFade {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.85;
-  }
+  font-weight: 600;
+  font-size: 2.2rem;
+  color: #1e293b;
+  letter-spacing: -0.01em;
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 0.2rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .clock-location {
-  color: #6366f1;
-  font-weight: 600;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 0.4rem;
+  display: none;
 }
 
 .clock-date {
-  font-weight: 600;
-  font-size: 0.75rem;
-  color: #475569;
-  background: rgba(99, 102, 241, 0.08);
-  padding: 0.2rem 0.8rem;
-  border-radius: 12px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: #64748b;
+  background: transparent;
 }
 
 /* Adjust clock for A4 Print */
@@ -809,33 +819,47 @@ input[type="number"]:focus {
 }
 
 .a4-report .clock-widget {
-  padding: 0.5rem;
-  min-width: 150px;
-  border: none;
-  background: transparent;
-  box-shadow: none;
+  padding: 1.2rem;
+  min-width: 160px;
+  background: #f1f5f9;
+  border-radius: 20px;
+  box-shadow:
+    10px 10px 20px rgba(148, 163, 184, 0.4),
+    -10px -10px 20px rgba(255, 255, 255, 0.9),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.4),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .a4-report .analog-clock {
-  width: 60px;
-  height: 60px;
+  width: 100px;
+  height: 100px;
   margin-bottom: 0.5rem;
+  box-shadow:
+    8px 8px 15px rgba(148, 163, 184, 0.7),
+    -8px -8px 15px rgba(255, 255, 255, 1),
+    inset 1px 1px 3px rgba(255, 255, 255, 0.6),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .a4-report .hour-hand {
-  height: 15px;
+  height: 25px;
 }
 
 .a4-report .min-hand {
-  height: 22px;
+  height: 35px;
 }
 
 .a4-report .second-hand {
-  height: 26px;
+  height: 40px;
 }
 
 .a4-report .number {
-  font-size: 0.55rem;
+  font-size: 0.65rem;
+}
+
+.a4-report .digital-time {
+  font-size: 1.6rem;
 }
 
 /* Fix html2canvas vertical stacking failure for PDF/JPG export by gracefully reverting to standard horizontal */

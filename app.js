@@ -156,12 +156,12 @@ function calculateRow(row) {
 function generateSidebar(activePage) {
   const pages = [
     { id: 'index', title: 'Main Dashboard', url: 'index.html' },
-    { id: 'anik', title: 'Entry Sheet (Anik)', url: 'entry_anik.html' },
-    { id: 'takbir', title: 'Entry Sheet (Takbir)', url: 'entry_takbir.html' },
-    { id: 'monir', title: 'Entry Sheet (Monir)', url: 'entry_monir.html' },
-    { id: 'anwar', title: 'Entry Sheet (Anwar)', url: 'entry_anwar.html' },
-    { id: 'bikash', title: 'Entry Sheet (Bikash)', url: 'entry_bikash.html' },
-    { id: 'qc', title: 'Entry Sheet (QC)', url: 'entry_qc.html' }
+    { id: 'anik', title: 'Entry Sheet (Anik)', url: 'entry.html?page=anik' },
+    { id: 'takbir', title: 'Entry Sheet (Takbir)', url: 'entry.html?page=takbir' },
+    { id: 'monir', title: 'Entry Sheet (Monir)', url: 'entry.html?page=monir' },
+    { id: 'anwar', title: 'Entry Sheet (Anwar)', url: 'entry.html?page=anwar' },
+    { id: 'bikash', title: 'Entry Sheet (Bikash)', url: 'entry.html?page=bikash' },
+    { id: 'qc', title: 'Entry Sheet (QC)', url: 'entry.html?page=qc' }
   ];
 
   let html = `<div class="brand">MEP FAN LTD.</div><nav style="display:flex; flex-direction:column; gap:0.5rem;">`;
@@ -290,7 +290,7 @@ function _renderEntryContent(pageId) {
 
         html += `<tr>
         <td style="font-weight:500;">${row.designation}</td>
-        <td style="text-align: center;"><input type="number" min="0" data-group="${groupName}" data-index="${index}" data-field="authorized" value="${row.authorized}" class="entry-input"></td>
+        <td style="text-align: center; color: var(--text-dark); font-weight: 700; background: rgba(0,0,0,0.02);">${row.authorized}</td>
         <td style="text-align: center;"><input type="number" min="0" data-group="${groupName}" data-index="${index}" data-field="existing" value="${row.existing}" class="entry-input"></td>
         <td style="text-align: center;"><input type="number" min="0" data-group="${groupName}" data-index="${index}" data-field="present" value="${row.present}" class="entry-input"></td>
         <td class="absent-val" style="font-weight:600; color:#ef4444;">${row.absent}</td>
@@ -386,22 +386,22 @@ const EXACT_DASHBOARD_ROWS = [
   { id: 'R9', designation: 'Computer Operator', type: 'filter', filters: { excludePage: 'qc', designation: 'Computer Operator' } },
   { id: 'R10', designation: 'Technical Man', type: 'filter', filters: { excludePage: 'qc', designation: 'Technicalman' } },
 
-  { id: 'R11', section: 'Fan Assemble', designation: 'Worker', type: 'filter', filters: { group: 'Fan Assemble', designation: 'Worker' }, link: 'entry_anik.html' },
-  { id: 'R12', section: 'Fan Armature', designation: 'Worker', type: 'filter', filters: { group: 'Fan Armature', designation: 'Worker' }, link: 'entry_takbir.html' },
-  { id: 'R13', section: 'Fan Blade and Dimmer', designation: 'Worker', type: 'filter', filters: { group: 'Fan Dimmer & Blade', designation: 'Worker' }, link: 'entry_anik.html' },
-  { id: 'R14', section: 'Fan Replace', designation: 'Worker', type: 'filter', filters: { group: 'Fan Replace', designation: 'Worker' }, link: 'entry_takbir.html' },
-  { id: 'R15', section: 'Fan Lathe', designation: 'Worker', type: 'filter', filters: { group: 'Fan Lathe', designation: 'Worker' }, link: 'entry_anwar.html' },
-  { id: 'R16', section: 'Fan Auto Powder Coating', designation: 'Worker', type: 'filter', filters: { group: 'Fan Auto Powder Coating', designation: 'Worker' }, link: 'entry_anwar.html' },
-  { id: 'R17', section: 'Fan Rojonigondha', designation: 'Worker', type: 'filter', filters: { group: 'Fan Rojonigondha', designation: 'Worker', excludePage: 'qc' }, link: 'entry_bikash.html' },
-  { id: 'R18', section: 'Fan Sada Shapla', designation: 'Worker', type: 'filter', filters: { group: 'Fan Sada Shapla', designation: 'Worker' }, link: 'entry_bikash.html' },
-  { id: 'R19', section: 'Fan Power Press', designation: 'Worker', type: 'filter', filters: { group: 'Power Press & Stamping', designation: 'Worker' }, link: 'entry_monir.html' },
-  { id: 'R20', section: 'Fan Die Casting', designation: 'Worker', type: 'filter', filters: { group: 'Fan Dalai & Die Casting', designation: 'Worker' }, link: 'entry_monir.html' },
+  { id: 'R11', section: 'Fan Assemble', designation: 'Worker', type: 'filter', filters: { group: 'Fan Assemble', designation: 'Worker' }, link: 'entry.html?page=anik' },
+  { id: 'R12', section: 'Fan Armature', designation: 'Worker', type: 'filter', filters: { group: 'Fan Armature', designation: 'Worker' }, link: 'entry.html?page=takbir' },
+  { id: 'R13', section: 'Fan Blade and Dimmer', designation: 'Worker', type: 'filter', filters: { group: 'Fan Dimmer & Blade', designation: 'Worker' }, link: 'entry.html?page=anik' },
+  { id: 'R14', section: 'Fan Replace', designation: 'Worker', type: 'filter', filters: { group: 'Fan Replace', designation: 'Worker' }, link: 'entry.html?page=takbir' },
+  { id: 'R15', section: 'Fan Lathe', designation: 'Worker', type: 'filter', filters: { group: 'Fan Lathe', designation: 'Worker' }, link: 'entry.html?page=anwar' },
+  { id: 'R16', section: 'Fan Auto Powder Coating', designation: 'Worker', type: 'filter', filters: { group: 'Fan Auto Powder Coating', designation: 'Worker' }, link: 'entry.html?page=anwar' },
+  { id: 'R17', section: 'Fan Rojonigondha', designation: 'Worker', type: 'filter', filters: { group: 'Fan Rojonigondha', designation: 'Worker', excludePage: 'qc' }, link: 'entry.html?page=bikash' },
+  { id: 'R18', section: 'Fan Sada Shapla', designation: 'Worker', type: 'filter', filters: { group: 'Fan Sada Shapla', designation: 'Worker' }, link: 'entry.html?page=bikash' },
+  { id: 'R19', section: 'Fan Power Press', designation: 'Worker', type: 'filter', filters: { group: 'Power Press & Stamping', designation: 'Worker' }, link: 'entry.html?page=monir' },
+  { id: 'R20', section: 'Fan Die Casting', designation: 'Worker', type: 'filter', filters: { group: 'Fan Dalai & Die Casting', designation: 'Worker' }, link: 'entry.html?page=monir' },
 
   { id: 'R21', section: '', designation: 'Production Total', type: 'formula', formulaStr: 'SUM(R4:R20)', isTotal: true },
 
-  { id: 'R22', section: 'Fan QC', designation: '(QC) Incharge', rowspan: 3, type: 'filter', filters: { page: 'qc', designation: 'In-charge' }, link: 'entry_qc.html' },
-  { id: 'R23', designation: '(QC) Engineer', type: 'filter', filters: { page: 'qc', designation: 'Engineer' }, link: 'entry_qc.html' },
-  { id: 'R24', designation: '(QC) Checker', type: 'filter', filters: { page: 'qc', designation: 'QC Checker' }, link: 'entry_qc.html' },
+  { id: 'R22', section: 'Fan QC', designation: '(QC) Incharge', rowspan: 3, type: 'filter', filters: { page: 'qc', designation: 'In-charge' }, link: 'entry.html?page=qc' },
+  { id: 'R23', designation: '(QC) Engineer', type: 'filter', filters: { page: 'qc', designation: 'Engineer' }, link: 'entry.html?page=qc' },
+  { id: 'R24', designation: '(QC) Checker', type: 'filter', filters: { page: 'qc', designation: 'QC Checker' }, link: 'entry.html?page=qc' },
 
   { id: 'R25', section: '', designation: 'QC Total', type: 'formula', formulaStr: 'SUM(R22:R24)', isTotal: true },
 
@@ -690,11 +690,10 @@ function updateClock() {
   const hourDegrees = ((hour / 12) * 360) + ((mins / 60) * 30);
   hourHand.style.transform = `rotate(${hourDegrees}deg)`;
 
-  let h = hour % 12 || 12;
+  let h = String(hour % 12 || 12).padStart(2, '0');
   let ampm = hour >= 12 ? 'PM' : 'AM';
   let m = mins.toString().padStart(2, '0');
-  let s = seconds.toString().padStart(2, '0');
-  digitalTime.textContent = `${h}:${m}:${s} ${ampm}`;
+  digitalTime.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-top: 0.3rem; margin-left: 6px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
 
   const options = { day: '2-digit', month: 'long', year: '2-digit' };
   clockDate.textContent = now.toLocaleDateString('en-GB', options);
@@ -1040,7 +1039,7 @@ window.updateReminderList = function (silent = false) {
       list.innerHTML = '<div style="padding:1.5rem; text-align:center; color:#10b981; font-size:0.95rem; font-weight:600;"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" style="display:block; margin:0 auto 8px auto;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>All sheets updated today!</div>';
     } else {
       list.innerHTML = missingSections.map(s => `
-        <a href="entry_${s.id.replace('qc', 'qc')}.html" style="text-decoration:none; padding:0.8rem 1rem; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; transition:background 0.2s;" onmouseover="this.style.background='var(--glass-bg)'" onmouseout="this.style.background='transparent'">
+        <a href="entry.html?page=${s.id.replace('qc', 'qc')}" style="text-decoration:none; padding:0.8rem 1rem; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; transition:background 0.2s;" onmouseover="this.style.background='var(--glass-bg)'" onmouseout="this.style.background='transparent'">
           <div style="font-weight:600; font-size:0.95rem; color:var(--text-dark); display:flex; align-items:center; gap:8px;">
             <svg width="16" height="16" fill="none" stroke="#ef4444" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
             ${s.title}

@@ -21,8 +21,14 @@ const SECTIONS_CONFIG = {
     password: "2645",
     groups: {
       "Fan Assemble": ["Manager", "In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Worker"],
+      "Fan Dimmer & Blade": ["Engineer", "Worker"]
+    }
+  },
+  takbir: {
+    title: "Entry Sheet (Takbir)",
+    password: "9696",
+    groups: {
       "Fan Armature": ["Engineer", "Technicalman", "Worker"],
-      "Fan Dimmer & Blade": ["Engineer", "Worker"],
       "Fan Replace": ["Technicalman", "Worker"]
     }
   },
@@ -31,7 +37,7 @@ const SECTIONS_CONFIG = {
     password: "2222",
     groups: {
       "Power Press & Stamping": ["In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Worker"],
-      "Fan Dalai & Die Casting": ["Engineer", "Jr. Officer", "Worker"]
+      "Fan Dalai & Die Casting": ["Jr. Officer", "Worker"]
     }
   },
   anwar: {
@@ -93,33 +99,39 @@ function getAppState() {
 
   // NORMALIZE DATA: Sync historical loaded state with current SECTIONS_CONFIG structure
   for (const [pageKey, pageData] of Object.entries(SECTIONS_CONFIG)) {
-    if (stateToReturn[pageKey]) {
-      // 1. Remove deleted groups
-      for (const groupName of Object.keys(stateToReturn[pageKey])) {
-        if (!pageData.groups[groupName]) {
-          delete stateToReturn[pageKey][groupName];
-        }
+    if (!stateToReturn[pageKey]) {
+      stateToReturn[pageKey] = {};
+    }
+
+    // 1. Remove deleted groups
+    for (const groupName of Object.keys(stateToReturn[pageKey])) {
+      if (!pageData.groups[groupName]) {
+        delete stateToReturn[pageKey][groupName];
       }
+    }
 
-      // 2. Filter deleted designations & handle new ones
-      for (const [groupName, designations] of Object.entries(pageData.groups)) {
-        if (stateToReturn[pageKey][groupName]) {
-          // Remove old
-          stateToReturn[pageKey][groupName] = stateToReturn[pageKey][groupName].filter(r => designations.includes(r.designation));
+    // 2. Filter deleted designations & handle new ones
+    for (const [groupName, designations] of Object.entries(pageData.groups)) {
+      if (!stateToReturn[pageKey][groupName]) {
+        stateToReturn[pageKey][groupName] = designations.map(desig => ({
+          designation: desig, authorized: 0, existing: 0, present: 0, absent: 0
+        }));
+      } else {
+        // Remove old
+        stateToReturn[pageKey][groupName] = stateToReturn[pageKey][groupName].filter(r => designations.includes(r.designation));
 
-          // Add new
-          const existingDesigs = stateToReturn[pageKey][groupName].map(r => r.designation);
-          for (const newDesig of designations) {
-            if (!existingDesigs.includes(newDesig)) {
-              stateToReturn[pageKey][groupName].push({
-                designation: newDesig, authorized: 0, existing: 0, present: 0, absent: 0
-              });
-            }
+        // Add new
+        const existingDesigs = stateToReturn[pageKey][groupName].map(r => r.designation);
+        for (const newDesig of designations) {
+          if (!existingDesigs.includes(newDesig)) {
+            stateToReturn[pageKey][groupName].push({
+              designation: newDesig, authorized: 0, existing: 0, present: 0, absent: 0
+            });
           }
-
-          // Enforce config array order
-          stateToReturn[pageKey][groupName].sort((a, b) => designations.indexOf(a.designation) - designations.indexOf(b.designation));
         }
+
+        // Enforce config array order
+        stateToReturn[pageKey][groupName].sort((a, b) => designations.indexOf(a.designation) - designations.indexOf(b.designation));
       }
     }
   }
@@ -145,6 +157,7 @@ function generateSidebar(activePage) {
   const pages = [
     { id: 'index', title: 'Main Dashboard', url: 'index.html' },
     { id: 'anik', title: 'Entry Sheet (Anik)', url: 'entry_anik.html' },
+    { id: 'takbir', title: 'Entry Sheet (Takbir)', url: 'entry_takbir.html' },
     { id: 'monir', title: 'Entry Sheet (Monir)', url: 'entry_monir.html' },
     { id: 'anwar', title: 'Entry Sheet (Anwar)', url: 'entry_anwar.html' },
     { id: 'bikash', title: 'Entry Sheet (Bikash)', url: 'entry_bikash.html' },
@@ -153,7 +166,16 @@ function generateSidebar(activePage) {
 
   let html = `<div class="brand">MEP FAN LTD.</div><nav style="display:flex; flex-direction:column; gap:0.5rem;">`;
   pages.forEach(p => {
-    html += `<a href="${p.url}" class="nav-link ${activePage === p.id ? 'active' : ''}">${p.title}</a>`;
+    const isSpecialPrimary = p.id === 'anik' || p.id === 'takbir';
+    const isSpecialSecondary = p.id !== 'index' && !isSpecialPrimary;
+    const isMainDashboard = p.id === 'index';
+
+    let specialClass = '';
+    if (isSpecialPrimary) specialClass = 'special-entry-link';
+    if (isSpecialSecondary) specialClass = 'secondary-entry-link';
+    if (isMainDashboard) specialClass = 'main-dashboard-link';
+
+    html += `<a href="${p.url}" class="nav-link ${specialClass} ${activePage === p.id ? 'active' : ''}">${p.title}</a>`;
   });
   html += `</nav>`;
   return html;
@@ -365,9 +387,9 @@ const EXACT_DASHBOARD_ROWS = [
   { id: 'R10', designation: 'Technical Man', type: 'filter', filters: { excludePage: 'qc', designation: 'Technicalman' } },
 
   { id: 'R11', section: 'Fan Assemble', designation: 'Worker', type: 'filter', filters: { group: 'Fan Assemble', designation: 'Worker' }, link: 'entry_anik.html' },
-  { id: 'R12', section: 'Fan Armature', designation: 'Worker', type: 'filter', filters: { group: 'Fan Armature', designation: 'Worker' }, link: 'entry_anik.html' },
+  { id: 'R12', section: 'Fan Armature', designation: 'Worker', type: 'filter', filters: { group: 'Fan Armature', designation: 'Worker' }, link: 'entry_takbir.html' },
   { id: 'R13', section: 'Fan Blade and Dimmer', designation: 'Worker', type: 'filter', filters: { group: 'Fan Dimmer & Blade', designation: 'Worker' }, link: 'entry_anik.html' },
-  { id: 'R14', section: 'Fan Replace', designation: 'Worker', type: 'filter', filters: { group: 'Fan Replace', designation: 'Worker' }, link: 'entry_anik.html' },
+  { id: 'R14', section: 'Fan Replace', designation: 'Worker', type: 'filter', filters: { group: 'Fan Replace', designation: 'Worker' }, link: 'entry_takbir.html' },
   { id: 'R15', section: 'Fan Lathe', designation: 'Worker', type: 'filter', filters: { group: 'Fan Lathe', designation: 'Worker' }, link: 'entry_anwar.html' },
   { id: 'R16', section: 'Fan Auto Powder Coating', designation: 'Worker', type: 'filter', filters: { group: 'Fan Auto Powder Coating', designation: 'Worker' }, link: 'entry_anwar.html' },
   { id: 'R17', section: 'Fan Rojonigondha', designation: 'Worker', type: 'filter', filters: { group: 'Fan Rojonigondha', designation: 'Worker', excludePage: 'qc' }, link: 'entry_bikash.html' },

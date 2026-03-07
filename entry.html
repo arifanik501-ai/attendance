@@ -16,10 +16,18 @@
         <div class="page-header">
             <div>
                 <h1 id="page-title">Loading...</h1>
-
             </div>
-            <div>
-                <a href="index.html" class="btn" style="margin-right:0.5rem;">Back to Dashboard</a>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+                <a href="index.html" class="btn">Back to Dashboard</a>
+                <button id="btn-export" class="btn"
+                    style="display:flex; align-items:center; gap:0.4rem; background:rgba(255,255,255,0.8);">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Export
+                </button>
                 <button id="btn-save" class="btn btn-primary">Entry Update</button>
             </div>
         </div>
@@ -31,6 +39,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <!-- Firebase Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
     <script src="app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {

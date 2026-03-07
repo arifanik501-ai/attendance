@@ -331,6 +331,10 @@ function _renderEntryContent(pageId) {
     // Re-init reveal to catch the new tables
     initScrollReveal();
 
+    document.getElementById('btn-export').addEventListener('click', () => {
+      exportEntryReport(pageId, config.title);
+    });
+
     document.getElementById('btn-save').addEventListener('click', () => {
       // Add history notification
       const now = new Date();
@@ -358,6 +362,158 @@ function _renderEntryContent(pageId) {
     });
 
   }, 10); // End setTimeout macro task
+}
+
+function exportEntryReport(pageId, title) {
+  const content = document.getElementById('report-container');
+
+  const clone = content.cloneNode(true);
+  clone.classList.add('a4-report');
+
+  // Create header for the export
+  const header = document.createElement('div');
+  header.className = 'report-header-flex';
+  header.style.marginBottom = '20px';
+  header.style.display = 'flex';
+  header.style.justifyContent = 'space-between';
+  header.style.alignItems = 'flex-start';
+  header.innerHTML = `
+    <div class="report-title-container" style="padding:0; flex:1;">
+      <h2 style="color:#854d0e; font-size:2rem; font-weight:800; margin-bottom:4px; margin-top:0;">MEP FAN LTD.</h2>
+      <div class="theme-accent-line" style="width:120px; height:3px; background:#facc15; margin-bottom:8px; border-radius:3px;"></div>
+      <p style="font-weight:700; font-size:1.1rem; color:#475569; text-transform:uppercase; margin:0;">${title} Manpower Report</p>
+    </div>
+    <div style="text-align:right; flex-shrink:0;">
+      <div class="clock-widget" id="export-clock-widget" style="padding:0.8rem 1.5rem; min-width:150px; background:#ffffff; border-radius:12px; border:2px solid #e2e8f0; margin:0; box-shadow:none;">
+        <div class="analog-clock" style="width:90px; height:90px; margin:0 auto 0.5rem auto; border:3px solid #cbd5e1; background:#ffffff; box-shadow:none; position:relative; border-radius:50%;">
+          <div class="clock-face" style="position:relative; width:100%; height:100%;">
+            <div class="number number-12" style="position:absolute; font-weight:700; font-size:0.65rem; color:#64748b; top:8%; left:50%; transform:translateX(-50%);">12</div>
+            <div class="number number-3" style="position:absolute; font-weight:700; font-size:0.65rem; color:#64748b; right:10%; top:50%; transform:translateY(-50%);">3</div>
+            <div class="number number-6" style="position:absolute; font-weight:700; font-size:0.65rem; color:#64748b; bottom:8%; left:50%; transform:translateX(-50%);">6</div>
+            <div class="number number-9" style="position:absolute; font-weight:700; font-size:0.65rem; color:#64748b; left:10%; top:50%; transform:translateY(-50%);">9</div>
+            <div class="hand hour-hand" id="export-hour-hand" style="position:absolute; bottom:50%; left:50%; transform-origin:bottom; border-radius:6px; width:3px; height:25px; background:#334155; margin-left:-1.5px; box-shadow:none;"></div>
+            <div class="hand min-hand" id="export-min-hand" style="position:absolute; bottom:50%; left:50%; transform-origin:bottom; border-radius:6px; width:2px; height:35px; background:#334155; margin-left:-1px; box-shadow:none;"></div>
+            <div class="hand second-hand" id="export-second-hand" style="position:absolute; bottom:50%; left:50%; transform-origin:bottom; border-radius:6px; width:2px; height:40px; background:#dc2626; margin-left:-1px; box-shadow:none;"></div>
+            <div class="clock-center" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:6px; height:6px; background:#334155; border-radius:50%; z-index:2; box-shadow:none;"></div>
+          </div>
+        </div>
+        <div class="digital-time" id="export-digital-time" style="font-weight:600; font-size:1.5rem; color:#0f172a; letter-spacing:-0.02em; font-family:'Inter', sans-serif; margin-bottom:0.2rem; display:flex; align-items:flex-start; justify-content:center;">--:--:-- --</div>
+        <div class="clock-date" id="export-clock-date" style="font-weight:600; font-size:0.8rem; color:#475569; background:transparent;">--</div>
+      </div>
+    </div>
+  `;
+
+  clone.insertBefore(header, clone.firstChild);
+
+  // Directly initialize the export clock immediately before html2canvas processes it
+  const now = new Date();
+  const seconds = now.getSeconds();
+  const mins = now.getMinutes();
+  const hour = now.getHours();
+
+  const eHourHand = clone.querySelector('#export-hour-hand');
+  const eMinHand = clone.querySelector('#export-min-hand');
+  const eSecondHand = clone.querySelector('#export-second-hand');
+  const eDigital = clone.querySelector('#export-digital-time');
+  const eDate = clone.querySelector('#export-clock-date');
+
+  if (eHourHand) eHourHand.style.transform = `rotate(${((hour / 12) * 360) + ((mins / 60) * 30)}deg)`;
+  if (eMinHand) eMinHand.style.transform = `rotate(${((mins / 60) * 360) + ((seconds / 60) * 6)}deg)`;
+  if (eSecondHand) eSecondHand.style.transform = `rotate(${((seconds / 60) * 360)}deg)`;
+
+  let h = String(hour % 12 || 12).padStart(2, '0');
+  let ampm = hour >= 12 ? 'PM' : 'AM';
+  let m = mins.toString().padStart(2, '0');
+  if (eDigital) eDigital.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-top: 0.3rem; margin-left: 6px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
+  if (eDate) eDate.textContent = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
+
+  // Setup off-screen rendering
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.top = '-9999px';
+  container.style.left = '-9999px';
+  container.style.width = '850px';
+  container.style.background = '#ffffff';
+  container.style.padding = '40px';
+  container.style.boxSizing = 'border-box';
+
+  const currentTheme = document.body.getAttribute('data-theme');
+  if (currentTheme) {
+    container.setAttribute('data-theme', currentTheme);
+  }
+
+  // Adjust table styling for export
+  const tables = clone.querySelectorAll('table');
+  tables.forEach(t => {
+    t.style.width = '100%';
+    t.style.borderCollapse = 'collapse';
+    t.style.marginBottom = '1.5rem';
+  });
+
+  const headers = clone.querySelectorAll('th');
+  headers.forEach(th => {
+    th.style.background = '#e2e8f0';
+    th.style.border = '1px solid #94a3b8';
+    th.style.padding = '8px';
+    th.style.color = '#000';
+    th.style.fontWeight = '800';
+  });
+
+  const cells = clone.querySelectorAll('td');
+  cells.forEach(td => {
+    td.style.border = '1px solid #94a3b8';
+    td.style.padding = '6px';
+    td.style.color = '#000';
+
+    // Convert inputs to text for print
+    const input = td.querySelector('input');
+    if (input) {
+      td.textContent = input.value;
+    }
+  });
+
+  const titles = clone.querySelectorAll('h3');
+  titles.forEach(h => {
+    h.style.color = '#000';
+    h.style.borderBottom = '1px solid #cbd5e1';
+    h.style.paddingBottom = '4px';
+    h.style.marginBottom = '10px';
+  });
+
+  // Strip input wrappers from clone
+  clone.querySelectorAll('.table-container').forEach(tc => {
+    tc.style.boxShadow = 'none';
+    tc.style.background = 'transparent';
+    tc.style.border = 'none';
+  });
+  clone.querySelectorAll('.glass-card').forEach(gc => {
+    gc.style.boxShadow = 'none';
+    gc.style.background = 'transparent';
+    gc.style.border = 'none';
+    gc.style.padding = '0';
+    gc.style.marginBottom = '20px';
+  });
+
+  container.appendChild(clone);
+  document.body.appendChild(container);
+
+  if (typeof html2canvas === 'undefined') {
+    alert("Missing html2canvas script! Please ensure html2canvas is loaded on the entry sheet.");
+    document.body.removeChild(container);
+    return;
+  }
+
+  html2canvas(container, {
+    scale: 3,
+    backgroundColor: '#ffffff',
+    windowWidth: 850
+  }).then(canvas => {
+    document.body.removeChild(container);
+    const link = document.createElement('a');
+    link.download = `MEP_${title.replace(/[^a-zA-Z0-9]/g, '_')}_Report.jpg`;
+    link.href = canvas.toDataURL('image/jpeg', 0.95);
+    link.click();
+  });
 }
 
 function updateGroupTotals(table, rows) {
@@ -705,6 +861,28 @@ function exportReport() {
   // Clone the node to prevent screen jumping and layout breaking
   const clone = content.cloneNode(true);
   clone.classList.add('a4-report');
+
+  // Synchronously update the clock on the cloned node before html2canvas processes it
+  const now = new Date();
+  const seconds = now.getSeconds();
+  const mins = now.getMinutes();
+  const hour = now.getHours();
+
+  const eHourHand = clone.querySelector('#hour-hand');
+  const eMinHand = clone.querySelector('#min-hand');
+  const eSecondHand = clone.querySelector('#second-hand');
+  const eDigital = clone.querySelector('#digital-time');
+  const eDate = clone.querySelector('#clock-date');
+
+  if (eHourHand) eHourHand.style.transform = `rotate(${((hour / 12) * 360) + ((mins / 60) * 30)}deg)`;
+  if (eMinHand) eMinHand.style.transform = `rotate(${((mins / 60) * 360) + ((seconds / 60) * 6)}deg)`;
+  if (eSecondHand) eSecondHand.style.transform = `rotate(${((seconds / 60) * 360)}deg)`;
+
+  let h = String(hour % 12 || 12).padStart(2, '0');
+  let ampm = hour >= 12 ? 'PM' : 'AM';
+  let m = mins.toString().padStart(2, '0');
+  if (eDigital) eDigital.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-top: 0.3rem; margin-left: 6px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
+  if (eDate) eDate.textContent = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
 
   // Create an off-screen container
   const container = document.createElement('div');

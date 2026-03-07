@@ -812,54 +812,71 @@ input[type="number"]:focus {
 .a4-report .report-header-flex {
   align-items: center;
   background: transparent;
-  box-shadow: none;
+  box-shadow: none !important;
   border: none;
   padding: 0;
   margin-bottom: 1.5rem;
 }
 
 .a4-report .clock-widget {
-  padding: 1.2rem;
-  min-width: 160px;
-  background: #f1f5f9;
-  border-radius: 20px;
-  box-shadow:
-    10px 10px 20px rgba(148, 163, 184, 0.4),
-    -10px -10px 20px rgba(255, 255, 255, 0.9),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.4),
-    inset -1px -1px 2px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 0.8rem 1.5rem;
+  min-width: 150px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: none;
+  border: 2px solid #e2e8f0;
 }
 
 .a4-report .analog-clock {
-  width: 100px;
-  height: 100px;
+  width: 90px;
+  height: 90px;
   margin-bottom: 0.5rem;
-  box-shadow:
-    8px 8px 15px rgba(148, 163, 184, 0.7),
-    -8px -8px 15px rgba(255, 255, 255, 1),
-    inset 1px 1px 3px rgba(255, 255, 255, 0.6),
-    inset -1px -1px 3px rgba(0, 0, 0, 0.12);
+  box-shadow: none;
+  border: 3px solid #cbd5e1;
+  background: #ffffff;
 }
 
 .a4-report .hour-hand {
   height: 25px;
+  background: #334155;
+  box-shadow: none;
 }
 
 .a4-report .min-hand {
   height: 35px;
+  background: #334155;
+  box-shadow: none;
 }
 
 .a4-report .second-hand {
   height: 40px;
+  background: #dc2626;
+  width: 2px;
+  box-shadow: none;
+}
+
+.a4-report .clock-center {
+  background: #334155;
+  box-shadow: none;
+  width: 6px;
+  height: 6px;
 }
 
 .a4-report .number {
   font-size: 0.65rem;
+  color: #64748b;
+  font-weight: 700;
 }
 
 .a4-report .digital-time {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.a4-report .clock-date {
+  color: #475569;
+  font-weight: 600;
 }
 
 /* Fix html2canvas vertical stacking failure for PDF/JPG export by gracefully reverting to standard horizontal */

@@ -1302,6 +1302,220 @@ body[data-theme="peach"] {
   background: #fb923c;
 }
 
+/* ── Theme 11: Silver Mist (Lite) ── */
+[data-theme="silver-mist"] {
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 15px 45px 0 rgba(71, 85, 105, 0.18);
+  --theme-color: #64748b;
+  --total-bg: rgba(226, 232, 240, 0.7);
+  --total-text: #1e293b;
+}
+
+body[data-theme="silver-mist"] {
+  background:
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.7) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(148, 163, 184, 0.35) 0%, transparent 40%),
+    linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%);
+}
+
+[data-theme="silver-mist"] .sidebar .brand {
+  color: #1e293b;
+}
+
+[data-theme="silver-mist"] .btn {
+  color: #1e293b;
+}
+
+[data-theme="silver-mist"] .btn-primary {
+  background: #94a3b8;
+  border-color: #64748b;
+  color: #f8fafc;
+}
+
+[data-theme="silver-mist"] .btn-primary:hover {
+  background: #64748b;
+}
+
+/* ── Theme 12: Sky Azure (Lite) ── */
+[data-theme="sky-azure"] {
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 15px 45px 0 rgba(14, 165, 233, 0.2);
+  --theme-color: #0ea5e9;
+  --total-bg: rgba(186, 230, 253, 0.5);
+  --total-text: #0369a1;
+}
+
+body[data-theme="sky-azure"] {
+  background:
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.6) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.3) 0%, transparent 40%),
+    linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+}
+
+[data-theme="sky-azure"] .sidebar .brand {
+  color: #075985;
+}
+
+[data-theme="sky-azure"] .btn {
+  color: #075985;
+}
+
+[data-theme="sky-azure"] .btn-primary {
+  background: #38bdf8;
+  border-color: #0ea5e9;
+  color: #f0f9ff;
+}
+
+[data-theme="sky-azure"] .btn-primary:hover {
+  background: #0ea5e9;
+}
+
+/* ── Theme 13: Honey Glow (Lite) ── */
+[data-theme="honey-glow"] {
+  --glass-bg: rgba(255, 255, 255, 0.42);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-shadow: 0 15px 45px 0 rgba(202, 138, 4, 0.15);
+  --theme-color: #eab308;
+  --total-bg: rgba(254, 249, 195, 0.7);
+  --total-text: #854d0e;
+}
+
+body[data-theme="honey-glow"] {
+  background:
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.65) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(253, 224, 71, 0.3) 0%, transparent 40%),
+    linear-gradient(135deg, #fef9c3 0%, #fef08a 50%, #fde047 100%);
+}
+
+[data-theme="honey-glow"] .sidebar .brand {
+  color: #713f12;
+}
+
+[data-theme="honey-glow"] .btn {
+  color: #713f12;
+}
+
+[data-theme="honey-glow"] .btn-primary {
+  background: #facc15;
+  border-color: #eab308;
+  color: #422006;
+}
+
+[data-theme="honey-glow"] .btn-primary:hover {
+  background: #eab308;
+}
+
+/* ── Theme 14: Mint Sorbet (Lite) ── */
+[data-theme="mint-sorbet"] {
+  --glass-bg: rgba(255, 255, 255, 0.42);
+  --glass-border: rgba(255, 255, 255, 0.68);
+  --glass-shadow: 0 15px 45px 0 rgba(5, 150, 105, 0.16);
+  --theme-color: #10b981;
+  --total-bg: rgba(209, 250, 229, 0.6);
+  --total-text: #064e3b;
+}
+
+body[data-theme="mint-sorbet"] {
+  background:
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.6) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(52, 211, 153, 0.28) 0%, transparent 40%),
+    linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%);
+}
+
+[data-theme="mint-sorbet"] .sidebar .brand {
+  color: #064e3b;
+}
+
+[data-theme="mint-sorbet"] .btn {
+  color: #064e3b;
+}
+
+[data-theme="mint-sorbet"] .btn-primary {
+  background: #34d399;
+  border-color: #10b981;
+  color: #022c22;
+}
+
+[data-theme="mint-sorbet"] .btn-primary:hover {
+  background: #10b981;
+}
+
+/* ═══════════════════════════════════════════════════
+   THEME-AWARE JPG EXPORT OVERRIDES
+   ═══════════════════════════════════════════════════ */
+
+/* Pearl White export (now Silver Mist) */
+[data-theme="pearl"] .a4-report,
+[data-theme="silver-mist"] .a4-report {
+  background: #f8fafc;
+}
+
+[data-theme="pearl"] .a4-report table th,
+[data-theme="silver-mist"] .a4-report table th {
+  background: #e2e8f0 !important;
+  border-color: #cbd5e1;
+}
+
+[data-theme="pearl"] .a4-report h2,
+[data-theme="silver-mist"] .a4-report h2 {
+  color: #1e293b !important;
+}
+
+/* Soft Sky export (now Sky Azure) */
+[data-theme="softsky"] .a4-report,
+[data-theme="sky-azure"] .a4-report {
+  background: #f0f9ff;
+}
+
+[data-theme="softsky"] .a4-report table th,
+[data-theme="sky-azure"] .a4-report table th {
+  background: #bae6fd !important;
+  border-color: #7dd3fc;
+}
+
+[data-theme="softsky"] .a4-report h2,
+[data-theme="sky-azure"] .a4-report h2 {
+  color: #0369a1 !important;
+}
+
+/* Pale Yellow export (now Honey Glow) */
+[data-theme="paleyellow"] .a4-report,
+[data-theme="honey-glow"] .a4-report {
+  background: #fefce8;
+}
+
+[data-theme="paleyellow"] .a4-report table th,
+[data-theme="honey-glow"] .a4-report table th {
+  background: #fef08a !important;
+  border-color: #fde047;
+}
+
+[data-theme="paleyellow"] .a4-report h2,
+[data-theme="honey-glow"] .a4-report h2 {
+  color: #854d0e !important;
+}
+
+/* Matcha Tea export (now Mint Sorbet) */
+[data-theme="matcha"] .a4-report,
+[data-theme="mint-sorbet"] .a4-report {
+  background: #f0fdf4;
+}
+
+[data-theme="matcha"] .a4-report table th,
+[data-theme="mint-sorbet"] .a4-report table th {
+  background: #d1fae5 !important;
+  border-color: #a7f3d0;
+}
+
+[data-theme="matcha"] .a4-report h2,
+[data-theme="mint-sorbet"] .a4-report h2 {
+  color: #064e3b !important;
+}
+
+
+
 /* ═══════════════════════════════════════════════════
    THEME-AWARE JPG EXPORT OVERRIDES
    ═══════════════════════════════════════════════════ */

@@ -275,7 +275,7 @@ function _renderEntryContent(pageId) {
               <th>Authorized</th>
               <th>Existing</th>
               <th>Present</th>
-              <th>Absent (Auto)</th>
+              <th>Absent</th>
             </tr>
           </thead>
           <tbody>`;
@@ -935,7 +935,11 @@ const THEMES = [
   { id: 'sunset', name: 'Sunset Orange', swatch: 'linear-gradient(135deg, #fb923c, #f97316)' },
   { id: 'arctic', name: 'Arctic Ice', swatch: 'linear-gradient(135deg, #22d3ee, #06b6d4)' },
   { id: 'lavender', name: 'Lavender Dream', swatch: 'linear-gradient(135deg, #c084fc, #a855f7)' },
-  { id: 'peach', name: 'Peach Blossom', swatch: 'linear-gradient(135deg, #fdba74, #fb923c)' }
+  { id: 'peach', name: 'Peach Blossom', swatch: 'linear-gradient(135deg, #fdba74, #fb923c)' },
+  { id: 'silver-mist', name: 'Silver Mist', swatch: 'linear-gradient(135deg, #e2e8f0, #94a3b8)' },
+  { id: 'sky-azure', name: 'Sky Azure', swatch: 'linear-gradient(135deg, #bae6fd, #38bdf8)' },
+  { id: 'honey-glow', name: 'Honey Glow', swatch: 'linear-gradient(135deg, #fef08a, #facc15)' },
+  { id: 'mint-sorbet', name: 'Mint Sorbet', swatch: 'linear-gradient(135deg, #a7f3d0, #34d399)' }
 ];
 
 function setTheme(themeId, fromRemote = false) {

@@ -563,7 +563,7 @@ function _performDashboardRender() {
     <div class="report-header-flex">
       <div class="report-title-container">
         <h2 style="color:#854d0e; font-size:2.4rem; font-weight:800; margin-bottom: 8px; letter-spacing: -0.02em; font-family: 'Inter', sans-serif;">MEP FAN LTD.</h2>
-        <div style="height: 3px; background: linear-gradient(90deg, #ca8a04 0%, #fde047 80%, transparent 100%); width: 100%; margin-bottom: 10px; border-radius: 2px;"></div>
+        <div class="theme-accent-line"></div>
         <p style="font-weight:600; font-size: 1.05rem; color:#475569; letter-spacing: 0.15em; font-family: 'Inter', sans-serif; text-transform: uppercase;">MEP FAN ATTENDANCE REPORT</p>
       </div>
 

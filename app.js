@@ -545,7 +545,7 @@ function _performDashboardRender() {
 
     <!-- Bottom right export button -->
     <div style="position: fixed; bottom: 2.5rem; right: 2.5rem; z-index: 9999;" class="no-print">
-      <button onclick="exportReport()" style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-family: 'Inter', sans-serif; font-size: 1.05rem; padding: 1rem 1.8rem; box-shadow: 0 10px 30px rgba(202, 138, 4, 0.4); background: linear-gradient(135deg, #eab308, #ca8a04); color: white; border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); letter-spacing: 0.02em;" onmouseover="this.style.transform='translateY(-6px) scale(1.02)'; this.style.boxShadow='0 15px 35px rgba(202, 138, 4, 0.5)';" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(202, 138, 4, 0.4)';">
+      <button onclick="exportReport()" class="water-btn">
         <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
         Export A4 Report
       </button>
@@ -754,15 +754,42 @@ const THEMES = [
   { id: 'rose', name: 'Rose Garden', swatch: 'linear-gradient(135deg, #fb7185, #f43f5e)' },
   { id: 'emerald', name: 'Emerald Forest', swatch: 'linear-gradient(135deg, #34d399, #10b981)' },
   { id: 'purple', name: 'Purple Haze', swatch: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' },
-  { id: 'midnight', name: 'Midnight Dark', swatch: 'linear-gradient(135deg, #334155, #0f172a)' },
+  { id: 'mint', name: 'Mint Fresh', swatch: 'linear-gradient(135deg, #6ee7b7, #34d399)' },
   { id: 'sunset', name: 'Sunset Orange', swatch: 'linear-gradient(135deg, #fb923c, #f97316)' },
   { id: 'arctic', name: 'Arctic Ice', swatch: 'linear-gradient(135deg, #22d3ee, #06b6d4)' },
   { id: 'lavender', name: 'Lavender Dream', swatch: 'linear-gradient(135deg, #c084fc, #a855f7)' },
-  { id: 'slate', name: 'Charcoal Slate', swatch: 'linear-gradient(135deg, #94a3b8, #64748b)' }
+  { id: 'peach', name: 'Peach Blossom', swatch: 'linear-gradient(135deg, #fdba74, #fb923c)' }
 ];
 
 function setTheme(themeId, fromRemote = false) {
-  if (themeId === 'amber') {
+  const currentTheme = document.body.getAttribute('data-theme') || 'rose';
+
+  // Smooth crossfade animation for gradients
+  if (currentTheme !== themeId && document.body.classList.contains('theme-init-done')) {
+    const fader = document.createElement('div');
+    fader.style.position = 'fixed';
+    fader.style.top = '0';
+    fader.style.left = '0';
+    fader.style.width = '100vw';
+    fader.style.height = '100vh';
+    fader.style.zIndex = '-999';
+    fader.style.pointerEvents = 'none';
+    fader.style.background = window.getComputedStyle(document.body).background;
+    fader.style.transition = 'opacity 1.5s ease-in-out';
+    fader.style.opacity = '1';
+
+    document.body.appendChild(fader);
+
+    // Force browser reflow to ensure the transition engine registers opacity: 1 first
+    void fader.offsetWidth;
+
+    setTimeout(() => {
+      fader.style.opacity = '0';
+      setTimeout(() => fader.remove(), 1600);
+    }, 50);
+  }
+
+  if (themeId === 'rose') {
     document.body.removeAttribute('data-theme');
   } else {
     document.body.setAttribute('data-theme', themeId);
@@ -777,13 +804,17 @@ function setTheme(themeId, fromRemote = false) {
   if (!fromRemote && window.firebaseDb) {
     window.firebaseDb.ref('mep_theme_state').set(themeId);
   }
+
+  if (!document.body.classList.contains('theme-init-done')) {
+    setTimeout(() => document.body.classList.add('theme-init-done'), 100);
+  }
 }
 
 function initThemePicker() {
   // Don't add duplicate
   if (document.querySelector('.theme-fab')) return;
 
-  const savedTheme = localStorage.getItem('mep_theme') || 'amber';
+  const savedTheme = localStorage.getItem('mep_theme') || 'rose';
 
   const fab = document.createElement('div');
   fab.className = 'theme-fab no-print';
@@ -813,6 +844,25 @@ function initThemePicker() {
 
   // Apply saved theme
   setTheme(savedTheme);
+
+  // Auto-rotate themes every 8 seconds for a dynamic feel
+  startThemeRotation();
+}
+
+function startThemeRotation() {
+  if (window.themeRotationInterval) clearInterval(window.themeRotationInterval);
+
+  let currentIdx = THEMES.findIndex(t => t.id === (localStorage.getItem('mep_theme') || 'rose'));
+  if (currentIdx === -1) currentIdx = 2; // rose is index 2
+
+  window.themeRotationInterval = setInterval(() => {
+    // Stop rotating if user opened the manual theme picker
+    const dropdown = document.getElementById('theme-dropdown');
+    if (dropdown && dropdown.classList.contains('open')) return;
+
+    currentIdx = (currentIdx + 1) % THEMES.length;
+    setTheme(THEMES[currentIdx].id, false);
+  }, 8000);
 }
 
 // ═══════════════════════════════════════════════════

@@ -447,13 +447,15 @@ function exportEntryReport(pageId, title) {
   tables.forEach(t => {
     t.style.width = '100%';
     t.style.borderCollapse = 'collapse';
+    t.style.border = '2px solid #0f172a';
     t.style.marginBottom = '1.5rem';
+    t.style.backgroundColor = '#ffffff';
   });
 
   const headers = clone.querySelectorAll('th');
   headers.forEach(th => {
     th.style.background = '#e2e8f0';
-    th.style.border = '1px solid #94a3b8';
+    th.style.border = '1px solid #0f172a';
     th.style.padding = '8px';
     th.style.color = '#000';
     th.style.fontWeight = '800';
@@ -461,7 +463,7 @@ function exportEntryReport(pageId, title) {
 
   const cells = clone.querySelectorAll('td');
   cells.forEach(td => {
-    td.style.border = '1px solid #94a3b8';
+    td.style.border = '1px solid #0f172a';
     td.style.padding = '6px';
     td.style.color = '#000';
 
@@ -504,14 +506,14 @@ function exportEntryReport(pageId, title) {
   }
 
   html2canvas(container, {
-    scale: 3.5,
+    scale: 4,
     backgroundColor: '#ffffff',
     windowWidth: 850
   }).then(canvas => {
     document.body.removeChild(container);
     const link = document.createElement('a');
-    link.download = `MEP_${title.replace(/[^a-zA-Z0-9]/g, '_')}_Report.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.download = `MEP_${title.replace(/[^a-zA-Z0-9]/g, '_')}_Report.jpg`;
+    link.href = canvas.toDataURL('image/jpeg', 1.0);
     link.click();
   });
 }
@@ -911,9 +913,16 @@ function exportReport() {
   // Hide no-print elements inside the clone
   clone.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
 
+  // Enforce explicit borders on tables to prevent html2canvas clipping
+  clone.querySelectorAll('table').forEach(t => {
+    t.style.borderCollapse = 'collapse';
+    t.style.border = '2px solid #0f172a';
+    t.style.backgroundColor = '#ffffff';
+  });
+
   // Use configuration to ensure entire table renders
   html2canvas(clone, {
-    scale: 3.5,
+    scale: 4,
     useCORS: true,
     scrollY: 0,
     windowWidth: clone.scrollWidth,
@@ -923,8 +932,8 @@ function exportReport() {
     document.body.removeChild(container);
 
     const link = document.createElement('a');
-    link.download = 'MEP_Fan_Manpower_Report_Full.png';
-    link.href = canvas.toDataURL('image/png'); // PNG generates much larger files (often 5MB+)
+    link.download = 'MEP_Fan_Manpower_Report_Full.jpg';
+    link.href = canvas.toDataURL('image/jpeg', 1.0);
     link.click();
   });
 }
@@ -947,7 +956,11 @@ const THEMES = [
   { id: 'silver-mist', name: 'Silver Mist', swatch: 'linear-gradient(135deg, #e2e8f0, #94a3b8)' },
   { id: 'sky-azure', name: 'Sky Azure', swatch: 'linear-gradient(135deg, #bae6fd, #38bdf8)' },
   { id: 'honey-glow', name: 'Honey Glow', swatch: 'linear-gradient(135deg, #fef08a, #facc15)' },
-  { id: 'mint-sorbet', name: 'Mint Sorbet', swatch: 'linear-gradient(135deg, #a7f3d0, #34d399)' }
+  { id: 'mint-sorbet', name: 'Mint Sorbet', swatch: 'linear-gradient(135deg, #a7f3d0, #34d399)' },
+  { id: 'light-maroon', name: 'Light Maroon', swatch: 'linear-gradient(135deg, #fda4af, #fb7185)' },
+  { id: 'chocolate', name: 'Chocolate', swatch: 'linear-gradient(135deg, #fcd34d, #d97706)' },
+  { id: 'watermelon', name: 'Watermelon', swatch: 'linear-gradient(135deg, #fb7185, #f43f5e)' },
+  { id: 'parrot', name: 'Parrot', swatch: 'linear-gradient(135deg, #d9f99d, #a3e635)' }
 ];
 
 function setTheme(themeId, fromRemote = false) {
@@ -1008,6 +1021,7 @@ function initThemePicker() {
   const fab = document.createElement('div');
   fab.className = 'theme-fab no-print';
   fab.innerHTML = `
+    <div class="theme-backdrop" id="theme-backdrop"></div>
     <button class="theme-fab-btn" title="Change Theme">🎨</button>
     <div class="theme-dropdown" id="theme-dropdown">
       ${THEMES.map(t => `
@@ -1024,11 +1038,13 @@ function initThemePicker() {
   fab.querySelector('.theme-fab-btn').addEventListener('click', (e) => {
     e.stopPropagation();
     document.getElementById('theme-dropdown').classList.toggle('open');
+    document.getElementById('theme-backdrop').classList.toggle('show');
   });
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click or backdrop click
   document.addEventListener('click', () => {
     document.getElementById('theme-dropdown')?.classList.remove('open');
+    document.getElementById('theme-backdrop')?.classList.remove('show');
   });
 
   // Apply saved theme

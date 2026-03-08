@@ -605,20 +605,20 @@ input[type="number"]:focus {
   color: #000 !important;
   font-weight: 600;
   /* Boost text weight for JPG rendering */
-  border-bottom: 1px solid #94a3b8;
-  /* Darker border for contrast */
+  border-bottom: 1px solid #0f172a;
+  /* Dark table borders */
 }
 
 .a4-report table th {
   background: #e2e8f0;
   /* Darker header background for contrast */
-  border: 1px solid #94a3b8;
+  border: 1px solid #0f172a;
   color: #000 !important;
   font-weight: 800;
 }
 
 .a4-report table td {
-  border: 1px solid #94a3b8;
+  border: 1px solid #0f172a;
 }
 
 .a4-report .table-container {
@@ -819,64 +819,81 @@ input[type="number"]:focus {
 }
 
 .a4-report .clock-widget {
-  padding: 0.8rem 1.5rem;
-  min-width: 150px;
+  padding: 1.2rem 1.8rem;
+  min-width: 160px;
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow: none;
-  border: 2px solid #e2e8f0;
+  border: 1.5px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .a4-report .analog-clock {
   width: 90px;
   height: 90px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   box-shadow: none;
-  border: 3px solid #cbd5e1;
+  border: 2px solid #cbd5e1;
   background: #ffffff;
+  border-radius: 50%;
+  position: relative;
 }
 
 .a4-report .hour-hand {
-  height: 25px;
-  background: #334155;
+  height: 22px;
+  width: 2.5px;
+  background: #1e293b;
   box-shadow: none;
+  border-radius: 2px;
 }
 
 .a4-report .min-hand {
-  height: 35px;
-  background: #334155;
+  height: 38px;
+  width: 2px;
+  background: #1e293b;
   box-shadow: none;
+  border-radius: 2px;
 }
 
 .a4-report .second-hand {
-  height: 40px;
+  height: 42px;
+  width: 1.5px;
   background: #dc2626;
-  width: 2px;
   box-shadow: none;
 }
 
 .a4-report .clock-center {
-  background: #334155;
+  background: #1e293b;
   box-shadow: none;
   width: 6px;
   height: 6px;
+  border-radius: 50%;
 }
 
 .a4-report .number {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: #64748b;
   font-weight: 700;
 }
 
 .a4-report .digital-time {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   color: #0f172a;
   letter-spacing: -0.02em;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  line-height: 1;
 }
 
 .a4-report .clock-date {
   color: #475569;
   font-weight: 600;
+  font-size: 0.85rem;
 }
 
 /* Fix html2canvas vertical stacking failure for PDF/JPG export by gracefully reverting to standard horizontal */

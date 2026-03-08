@@ -424,7 +424,7 @@ function exportEntryReport(pageId, title) {
   let h = String(hour % 12 || 12).padStart(2, '0');
   let ampm = hour >= 12 ? 'PM' : 'AM';
   let m = mins.toString().padStart(2, '0');
-  if (eDigital) eDigital.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-top: 0.3rem; margin-left: 6px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
+  if (eDigital) eDigital.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
   if (eDate) eDate.textContent = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
 
   // Setup off-screen rendering
@@ -504,14 +504,14 @@ function exportEntryReport(pageId, title) {
   }
 
   html2canvas(container, {
-    scale: 3,
+    scale: 3.5,
     backgroundColor: '#ffffff',
     windowWidth: 850
   }).then(canvas => {
     document.body.removeChild(container);
     const link = document.createElement('a');
-    link.download = `MEP_${title.replace(/[^a-zA-Z0-9]/g, '_')}_Report.jpg`;
-    link.href = canvas.toDataURL('image/jpeg', 0.95);
+    link.download = `MEP_${title.replace(/[^a-zA-Z0-9]/g, '_')}_Report.png`;
+    link.href = canvas.toDataURL('image/png');
     link.click();
   });
 }
@@ -881,7 +881,7 @@ function exportReport() {
   let h = String(hour % 12 || 12).padStart(2, '0');
   let ampm = hour >= 12 ? 'PM' : 'AM';
   let m = mins.toString().padStart(2, '0');
-  if (eDigital) eDigital.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-top: 0.3rem; margin-left: 6px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
+  if (eDigital) eDigital.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
   if (eDate) eDate.textContent = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
 
   // Create an off-screen container
@@ -900,12 +900,20 @@ function exportReport() {
   container.appendChild(clone);
   document.body.appendChild(container);
 
+  // Apply computed shadow inline to bypass html2canvas CSS var limitations
+  container.querySelectorAll('.glass-card, .table-container, .report-header-flex, .clock-widget, .analog-clock, .btn').forEach(el => {
+    const comp = window.getComputedStyle(el);
+    if (comp.boxShadow && comp.boxShadow !== 'none') {
+      el.style.boxShadow = comp.boxShadow;
+    }
+  });
+
   // Hide no-print elements inside the clone
   clone.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
 
   // Use configuration to ensure entire table renders
   html2canvas(clone, {
-    scale: 4,
+    scale: 3.5,
     useCORS: true,
     scrollY: 0,
     windowWidth: clone.scrollWidth,
@@ -915,8 +923,8 @@ function exportReport() {
     document.body.removeChild(container);
 
     const link = document.createElement('a');
-    link.download = 'MEP_Fan_Manpower_Report_Full.jpg';
-    link.href = canvas.toDataURL('image/jpeg', 1.0); // Highest quality
+    link.download = 'MEP_Fan_Manpower_Report_Full.png';
+    link.href = canvas.toDataURL('image/png'); // PNG generates much larger files (often 5MB+)
     link.click();
   });
 }

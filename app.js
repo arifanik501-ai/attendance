@@ -563,7 +563,7 @@ const EXACT_DASHBOARD_ROWS = [
 
   { id: 'R25', section: '', designation: 'QC Total', type: 'formula', formulaStr: 'SUM(R22:R24)', isTotal: true },
 
-  { id: 'R26', section: '', designation: 'S Grade', type: 'formula', formulaStr: 'R21+R9+R7+R10+R24', isTotal: true },
+  { id: 'R26', section: '', designation: 'S Grade', type: 'formula', formulaStr: 'R7+R9+R10+R11+R12+R13+R14+R15+R16+R17+R18+R19+R20+R24', isTotal: true },
   { id: 'R27', section: '', designation: 'M Grade', type: 'formula', formulaStr: 'R4+R5+R6+R8+R23+R22', isTotal: true }
 ];
 

@@ -1275,6 +1275,28 @@ window.clearHistory = function() {
   if (list) {
     list.innerHTML = '<div style="padding:1.5rem; text-align:center; color:var(--text-light); font-size:0.95rem; font-weight:500;">No recent updates</div>';
   }
+
+  // Trigger Push Notification
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const title = 'MEP FAN LTD.';
+    const options = {
+      body: '🧹 History has been cleaned successfully',
+      icon: './icon-192.png',
+      badge: './icon-192.png',
+      tag: 'mep-history-clean',
+      vibrate: [100, 50, 100],
+      renotify: true
+    };
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification(title, options);
+      }).catch(() => {
+        new Notification(title, options);
+      });
+    } else {
+      new Notification(title, options);
+    }
+  }
 };
 
 // Reminder Logic
@@ -1719,7 +1741,7 @@ function showInstallBanner() {
     <img src="icon-192.png" alt="MEP Fan" style="width:52px; height:52px; border-radius:14px; flex-shrink:0;
       box-shadow:0 4px 12px rgba(0,0,0,0.15); object-fit:cover;">
     <div style="flex:1; min-width:0;">
-      <div style="font-weight:800; font-size:0.95rem; color:#1e293b; margin-bottom:2px;">Install MEP Fan App</div>
+      <div style="font-weight:800; font-size:0.95rem; color:#1e293b; margin-bottom:2px;">Install Fan Attendance</div>
       <div style="font-size:0.78rem; color:#64748b; font-weight:500;">Add to Home Screen for quick access</div>
     </div>
     <div style="display:flex; gap:0.5rem; flex-shrink:0;">

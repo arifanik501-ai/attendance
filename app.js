@@ -158,15 +158,17 @@ function getAppState() {
   return stateToReturn;
 }
 
-function saveAppState(state) {
+function saveAppState(state, customActionStr = null) {
   if (window.firebaseDb) {
     window.firebaseDb.ref('mep_dashboard_state').set(state);
     
     const sheetName = currentActivePageId ? (SECTIONS_CONFIG[currentActivePageId]?.title || 'An entry sheet') : 'The dashboard';
+    const actionMessage = customActionStr || `🔄 ${sheetName} has been updated`;
+    
     window.firebaseDb.ref('mep_last_update_info').set({
       deviceId: SESSION_DEVICE_ID,
       timestamp: Date.now(),
-      pageTitle: sheetName
+      actionStr: actionMessage
     });
   } else {
     localStorage.setItem('manpowerData', JSON.stringify(state));
@@ -1202,7 +1204,7 @@ function setupFirebaseListener() {
         if ('Notification' in window && Notification.permission === 'granted') {
           const title = 'MEP FAN LTD.';
           const options = {
-            body: `🔄 ${data.pageTitle} has been updated`,
+            body: data.actionStr || `🔄 ${data.pageTitle} has been updated`,
             icon: './icon-192.png',
             badge: './icon-192.png',
             tag: 'mep-update-notification',
@@ -1212,8 +1214,12 @@ function setupFirebaseListener() {
 
           if ('serviceWorker' in navigator) {
             window.playAlertSoundAndVibrate();
-            navigator.serviceWorker.ready.then(reg => {
-              reg.showNotification(title, options);
+            navigator.serviceWorker.getRegistration().then(reg => {
+              if (reg) {
+                reg.showNotification(title, options);
+              } else {
+                new Notification(title, options);
+              }
             }).catch(() => {
               new Notification(title, options);
             });
@@ -1289,7 +1295,7 @@ window.clearHistory = function() {
   const state = getAppState();
   state.history = [];
   localStorage.removeItem('has_new_notifications');
-  saveAppState(state);
+  saveAppState(state, "🧹 History has been cleaned");
 
   // Update the dropdown list immediately
   const list = document.getElementById('noti-list');
@@ -1310,8 +1316,12 @@ window.clearHistory = function() {
     };
     if ('serviceWorker' in navigator) {
       window.playAlertSoundAndVibrate();
-      navigator.serviceWorker.ready.then(reg => {
-        reg.showNotification(title, options);
+      navigator.serviceWorker.getRegistration().then(reg => {
+        if (reg) {
+           reg.showNotification(title, options);
+        } else {
+           new Notification(title, options);
+        }
       }).catch(() => {
         new Notification(title, options);
       });
@@ -1468,24 +1478,34 @@ const MEP_NOTIFICATION = {
     this.showToast('🔕 Notifications have been disabled', 'info');
   },
 
-  // Main-thread fallback checker (runs when page is open)
+  // Main-thread high precision checker
   startMainThreadChecker() {
     if (this.checkInterval) clearInterval(this.checkInterval);
-    this.checkInterval = setInterval(() => {
+    // Align tightly to the system clock's exact seconds tick
+    const msUntilNextSecond = 1000 - new Date().getMilliseconds();
+    setTimeout(() => {
       this.checkTimeAndNotify();
-    }, 60000);
-    // Immediate check
-    this.checkTimeAndNotify();
+      this.checkInterval = setInterval(() => {
+        this.checkTimeAndNotify();
+      }, 1000);
+    }, msUntilNextSecond);
   },
 
-  // Check if it's 8 AM and notify via SW
+  // Check if it's 8 AM / 1 PM and notify strictly on time
   async checkTimeAndNotify() {
     const now = new Date();
     const hour = now.getHours();
     const minute = now.getMinutes();
-    const todayKey = `mep_notified_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+    
+    // Determine if we are in one of the notification windows (0 to 5 minutes)
+    const isAMWindow = (hour === 8 && minute >= 0 && minute <= 5);
+    const isPMWindow = (hour === 13 && minute >= 0 && minute <= 5);
 
-    if (hour === 8 && minute >= 0 && minute <= 5) {
+    if (isAMWindow || isPMWindow) {
+      const timeBlock = isAMWindow ? 'AM' : 'PM';
+      // Use timeBlock in tracking key to allow both morning and afternoon reminders!
+      const todayKey = `mep_notified_${timeBlock}_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+
       if (!localStorage.getItem(todayKey)) {
         // Trigger via SW
         if (this.swRegistration && this.swRegistration.active) {
@@ -1505,7 +1525,12 @@ const MEP_NOTIFICATION = {
         // Clean up old keys
         Object.keys(localStorage).forEach(key => {
           if (key.startsWith('mep_notified_') && key !== todayKey) {
-            localStorage.removeItem(key);
+            // Keep the AM key if we are in PM, etc.
+            const otherBlock = isAMWindow ? 'PM' : 'AM';
+            const otherKey = `mep_notified_${otherBlock}_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+            if (key !== otherKey) {
+               localStorage.removeItem(key);
+            }
           }
         });
       }

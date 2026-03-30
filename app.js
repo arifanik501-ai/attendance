@@ -696,7 +696,13 @@ function _performDashboardRender() {
         </button>
         
         <div id="noti-dropdown" class="glass-card no-print" style="position:absolute; top:65px; left:auto; right:-10px; width:340px; z-index:100; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: top right; animation: scaleIn 0.2s ease-out;">
-          <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4);">History Update</div>
+          <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4); display:flex; justify-content:space-between; align-items:center;">
+            <span>History Update</span>
+            <button onclick="clearHistory()" title="Clear All History" style="background:none; border:1px solid rgba(239,68,68,0.3); border-radius:8px; cursor:pointer; padding:4px 10px; display:flex; align-items:center; gap:4px; color:#ef4444; font-size:0.72rem; font-weight:700; transition:all 0.2s; font-family:'Inter',sans-serif;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.borderColor='#ef4444';" onmouseout="this.style.background='none'; this.style.borderColor='rgba(239,68,68,0.3)';">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              Clear
+            </button>
+          </div>
           <div id="noti-list" style="max-height:350px; overflow-y:auto; padding:0;">
             ${historyList}
           </div>
@@ -966,7 +972,7 @@ const THEMES = [
   { id: 'parrot', name: 'Parrot', swatch: 'linear-gradient(135deg, #d9f99d, #a3e635)' }
 ];
 
-function setTheme(themeId, fromRemote = false) {
+function setTheme(themeId) {
   const currentTheme = document.body.getAttribute('data-theme') || 'rose';
 
   // Smooth crossfade animation for gradients
@@ -1006,10 +1012,6 @@ function setTheme(themeId, fromRemote = false) {
     btn.classList.toggle('active', btn.dataset.theme === themeId);
   });
 
-  if (!fromRemote && window.firebaseDb) {
-    window.firebaseDb.ref('mep_theme_state').set(themeId);
-  }
-
   if (!document.body.classList.contains('theme-init-done')) {
     setTimeout(() => document.body.classList.add('theme-init-done'), 100);
   }
@@ -1020,8 +1022,6 @@ function initThemePicker() {
   if (document.querySelector('.theme-fab')) return;
 
   const savedTheme = localStorage.getItem('mep_theme') || 'rose';
-  const autoThemeEnabled = localStorage.getItem('mep_theme_auto') !== 'false';
-  window.themeAuto = autoThemeEnabled;
 
   const fab = document.createElement('div');
   fab.className = 'theme-fab no-print';
@@ -1029,10 +1029,6 @@ function initThemePicker() {
     <div class="theme-backdrop" id="theme-backdrop"></div>
     <button class="theme-fab-btn" title="Change Theme">🎨</button>
     <div class="theme-dropdown" id="theme-dropdown">
-      <button class="theme-auto-toggle" onclick="toggleThemeRotation(event)">
-        <span class="toggle-icon">${autoThemeEnabled ? '⏸️' : '▶️'}</span>
-        <span class="toggle-text">${autoThemeEnabled ? 'Stop Auto-Theme' : 'Start Auto-Theme'}</span>
-      </button>
       ${THEMES.map(t => `
         <button class="theme-option ${t.id === savedTheme ? 'active' : ''}" data-theme="${t.id}" onclick="setTheme('${t.id}')">
           <span class="theme-swatch" style="background: ${t.swatch}"></span>
@@ -1058,51 +1054,8 @@ function initThemePicker() {
 
   // Apply saved theme
   setTheme(savedTheme);
-
-  // Auto-rotate themes every 8 seconds for a dynamic feel (if enabled)
-  if (window.themeAuto) {
-    startThemeRotation();
-  }
 }
 
-window.toggleThemeRotation = function(event) {
-  if (event) event.stopPropagation();
-  const toggleBtn = document.querySelector('.theme-auto-toggle');
-  const icon = toggleBtn.querySelector('.toggle-icon');
-  const text = toggleBtn.querySelector('.toggle-text');
-
-  if (window.themeAuto) {
-    // Stop it
-    if (window.themeRotationInterval) clearInterval(window.themeRotationInterval);
-    window.themeAuto = false;
-    localStorage.setItem('mep_theme_auto', 'false');
-    if (icon) icon.textContent = '▶️';
-    if (text) text.textContent = 'Start Auto-Theme';
-  } else {
-    // Start it
-    window.themeAuto = true;
-    localStorage.setItem('mep_theme_auto', 'true');
-    if (icon) icon.textContent = '⏸️';
-    if (text) text.textContent = 'Stop Auto-Theme';
-    startThemeRotation();
-  }
-};
-
-function startThemeRotation() {
-  if (window.themeRotationInterval) clearInterval(window.themeRotationInterval);
-
-  let currentIdx = THEMES.findIndex(t => t.id === (localStorage.getItem('mep_theme') || 'rose'));
-  if (currentIdx === -1) currentIdx = 2; // rose is index 2
-
-  window.themeRotationInterval = setInterval(() => {
-    // Stop rotating if user opened the manual theme picker
-    const dropdown = document.getElementById('theme-dropdown');
-    if (dropdown && dropdown.classList.contains('open')) return;
-
-    currentIdx = (currentIdx + 1) % THEMES.length;
-    setTheme(THEMES[currentIdx].id, false);
-  }, 8000);
-}
 
 // ═══════════════════════════════════════════════════
 // 60fps SCROLL REVEAL ANIMATIONS
@@ -1169,14 +1122,6 @@ function setupFirebaseListener() {
         }
       }
     });
-
-    // Sync active theme
-    window.firebaseDb.ref('mep_theme_state').on('value', (snapshot) => {
-      const themeId = snapshot.val();
-      if (themeId) {
-        setTheme(themeId, true);
-      }
-    });
   } else {
     // Fallback if SDK failed to load
     globalAppState = getAppState();
@@ -1235,6 +1180,20 @@ document.addEventListener('click', (e) => {
     remDropdown.style.display = 'none';
   }
 });
+
+// Clear History
+window.clearHistory = function() {
+  const state = getAppState();
+  state.history = [];
+  localStorage.removeItem('has_new_notifications');
+  saveAppState(state);
+
+  // Update the dropdown list immediately
+  const list = document.getElementById('noti-list');
+  if (list) {
+    list.innerHTML = '<div style="padding:1.5rem; text-align:center; color:var(--text-light); font-size:0.95rem; font-weight:500;">No recent updates</div>';
+  }
+};
 
 // Reminder Logic
 window.updateReminderList = function (silent = false) {
@@ -1319,7 +1278,7 @@ const MEP_NOTIFICATION = {
   // Request notification permission with nice UI
   async requestPermission() {
     if (!('Notification' in window)) {
-      this.showToast('❌ এই ব্রাউজার Notification সাপোর্ট করে না', 'error');
+      this.showToast('❌ This browser does not support Notifications', 'error');
       return false;
     }
 
@@ -1328,7 +1287,7 @@ const MEP_NOTIFICATION = {
     }
 
     if (Notification.permission === 'denied') {
-      this.showToast('⚠️ Notification ব্লক করা আছে। ব্রাউজার সেটিংস থেকে Allow করুন।', 'warning');
+      this.showToast('⚠️ Notifications are blocked. Please allow from browser settings.', 'warning');
       return false;
     }
 
@@ -1341,7 +1300,7 @@ const MEP_NOTIFICATION = {
     // Step 1: Register SW
     const reg = await this.registerServiceWorker();
     if (!reg) {
-      this.showToast('❌ Service Worker রেজিস্টার করা যায়নি', 'error');
+      this.showToast('❌ Failed to register Service Worker', 'error');
       return false;
     }
 
@@ -1368,7 +1327,7 @@ const MEP_NOTIFICATION = {
     // Step 7: Start keep-alive pings
     this.startKeepAlive();
 
-    this.showToast('✅ নটিফিকেশন সফলভাবে চালু হয়েছে! প্রতিদিন সকাল ৮:০০ টায় রিমাইন্ডার পাবেন।', 'success');
+    this.showToast('✅ Notifications enabled successfully! You will receive a daily reminder at 8:00 AM.', 'success');
     this.updateButtonState(true);
     return true;
   },
@@ -1379,7 +1338,7 @@ const MEP_NOTIFICATION = {
     if (this.checkInterval) clearInterval(this.checkInterval);
     if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
     this.updateButtonState(false);
-    this.showToast('🔕 নটিফিকেশন বন্ধ করা হয়েছে', 'info');
+    this.showToast('🔕 Notifications have been disabled', 'info');
   },
 
   // Main-thread fallback checker (runs when page is open)
@@ -1408,7 +1367,7 @@ const MEP_NOTIFICATION = {
           // Direct fallback notification
           if (Notification.permission === 'granted') {
             new Notification('🏭 MEP FAN LTD.', {
-              body: 'আপনার এখন এটেন্ডেন্স শিট আপডেট করতে হবে, দ্রুত করুন! ⏰',
+              body: 'Time to update your Attendance Sheet now. Please do it quickly! ⏰',
               tag: 'mep-attendance-daily',
               renotify: true,
               requireInteraction: true
@@ -1584,12 +1543,12 @@ function showNotificationModal() {
       </div>
 
       <h3 style="margin:0 0 0.5rem; font-size:1.3rem; font-weight:800; color:#1e293b; font-family:'Inter',sans-serif;">
-        Daily Reminder চালু করুন
+        Enable Daily Reminder
       </h3>
 
       <p style="color:#64748b; font-size:0.92rem; line-height:1.6; margin:0 0 1.5rem; font-family:'Inter',sans-serif;">
-        প্রতিদিন <strong style="color:#ef4444;">সকাল ৮:০০ টায়</strong> আপনার ফোন/কম্পিউটারে নটিফিকেশন আসবে যে
-        <strong style="color:#1e293b;">এটেন্ডেন্স শিট আপডেট</strong> করতে হবে।
+        Every day at <strong style="color:#ef4444;">8:00 AM</strong> you will receive a notification on your phone/computer to
+        <strong style="color:#1e293b;">update the Attendance Sheet</strong>.
       </p>
 
       <div style="display:flex; flex-direction:column; gap:0.7rem;">
@@ -1598,13 +1557,13 @@ function showNotificationModal() {
           box-shadow:0 6px 20px rgba(16,185,129,0.4); transition:all 0.2s;
           font-family:'Inter',sans-serif;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 28px rgba(16,185,129,0.5)';"
           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(16,185,129,0.4)';">
-          ✅ হ্যাঁ, চালু করুন
+          ✅ Yes, Enable Now
         </button>
         <button onclick="document.getElementById('mep-push-modal').remove()" style="width:100%; padding:0.7rem;
           background:transparent; color:#64748b; border:1px solid #e2e8f0; border-radius:14px;
           font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s;
           font-family:'Inter',sans-serif;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='transparent';">
-          পরে করবো
+          Maybe Later
         </button>
       </div>
     </div>

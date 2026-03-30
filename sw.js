@@ -61,7 +61,7 @@ async function checkAndNotify() {
     if (!response) {
       // Not yet notified today — show notification
       await self.registration.showNotification('🏭 MEP FAN LTD.', {
-        body: 'আপনার এখন এটেন্ডেন্স শিট আপডেট করতে হবে, দ্রুত করুন! ⏰',
+        body: 'Time to update your Attendance Sheet now. Please do it quickly! ⏰',
         icon: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23eab308"/><text x="50" y="62" font-size="48" text-anchor="middle" fill="white" font-weight="bold">MEP</text></svg>'),
         badge: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23eab308"/><text x="50" y="62" font-size="48" text-anchor="middle" fill="white" font-weight="bold">M</text></svg>'),
         tag: 'mep-attendance-daily',

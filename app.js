@@ -168,6 +168,7 @@ function saveAppState(state, customActionStr = null) {
     window.firebaseDb.ref('mep_last_update_info').set({
       deviceId: SESSION_DEVICE_ID,
       timestamp: Date.now(),
+      pageTitle: sheetName,
       actionStr: actionMessage
     });
   } else {

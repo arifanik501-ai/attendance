@@ -668,6 +668,9 @@ function _performDashboardRender() {
     <!-- Top right notification and reminder bells -->
     <div style="position: fixed; top: 1.5rem; right: 2.5rem; z-index: 9999; display: flex; gap: 1rem;" class="no-print">
       
+      <!-- Push Notification Toggle -->
+      ${buildPushNotificationButton()}
+
       <!-- Reminder Button -->
       <div class="reminder-container" style="position:relative;">
         <button id="reminder-btn" class="no-print" style="background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:50%; width:50px; height:50px; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position:relative; backdrop-filter:blur(8px);" onmouseover="this.style.transform='scale(1.05)'; this.style.background='rgba(255,255,255,0.7)';" onmouseout="this.style.transform='scale(1)'; this.style.background='var(--glass-bg)';" onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
@@ -1017,6 +1020,8 @@ function initThemePicker() {
   if (document.querySelector('.theme-fab')) return;
 
   const savedTheme = localStorage.getItem('mep_theme') || 'rose';
+  const autoThemeEnabled = localStorage.getItem('mep_theme_auto') !== 'false';
+  window.themeAuto = autoThemeEnabled;
 
   const fab = document.createElement('div');
   fab.className = 'theme-fab no-print';
@@ -1024,6 +1029,10 @@ function initThemePicker() {
     <div class="theme-backdrop" id="theme-backdrop"></div>
     <button class="theme-fab-btn" title="Change Theme">🎨</button>
     <div class="theme-dropdown" id="theme-dropdown">
+      <button class="theme-auto-toggle" onclick="toggleThemeRotation(event)">
+        <span class="toggle-icon">${autoThemeEnabled ? '⏸️' : '▶️'}</span>
+        <span class="toggle-text">${autoThemeEnabled ? 'Stop Auto-Theme' : 'Start Auto-Theme'}</span>
+      </button>
       ${THEMES.map(t => `
         <button class="theme-option ${t.id === savedTheme ? 'active' : ''}" data-theme="${t.id}" onclick="setTheme('${t.id}')">
           <span class="theme-swatch" style="background: ${t.swatch}"></span>
@@ -1050,9 +1059,34 @@ function initThemePicker() {
   // Apply saved theme
   setTheme(savedTheme);
 
-  // Auto-rotate themes every 8 seconds for a dynamic feel
-  startThemeRotation();
+  // Auto-rotate themes every 8 seconds for a dynamic feel (if enabled)
+  if (window.themeAuto) {
+    startThemeRotation();
+  }
 }
+
+window.toggleThemeRotation = function(event) {
+  if (event) event.stopPropagation();
+  const toggleBtn = document.querySelector('.theme-auto-toggle');
+  const icon = toggleBtn.querySelector('.toggle-icon');
+  const text = toggleBtn.querySelector('.toggle-text');
+
+  if (window.themeAuto) {
+    // Stop it
+    if (window.themeRotationInterval) clearInterval(window.themeRotationInterval);
+    window.themeAuto = false;
+    localStorage.setItem('mep_theme_auto', 'false');
+    if (icon) icon.textContent = '▶️';
+    if (text) text.textContent = 'Start Auto-Theme';
+  } else {
+    // Start it
+    window.themeAuto = true;
+    localStorage.setItem('mep_theme_auto', 'true');
+    if (icon) icon.textContent = '⏸️';
+    if (text) text.textContent = 'Stop Auto-Theme';
+    startThemeRotation();
+  }
+};
 
 function startThemeRotation() {
   if (window.themeRotationInterval) clearInterval(window.themeRotationInterval);
@@ -1256,3 +1290,341 @@ window.updateReminderList = function (silent = false) {
     }
   }
 };
+
+// ═══════════════════════════════════════════════════
+// PUSH NOTIFICATION SYSTEM — Daily 8:00 AM Reminder
+// ═══════════════════════════════════════════════════
+
+const MEP_NOTIFICATION = {
+  swRegistration: null,
+  checkInterval: null,
+
+  // Register the service worker
+  async registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) {
+      console.warn('Service Worker not supported');
+      return null;
+    }
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js');
+      this.swRegistration = reg;
+      console.log('✅ Service Worker registered');
+      return reg;
+    } catch (err) {
+      console.error('SW registration failed:', err);
+      return null;
+    }
+  },
+
+  // Request notification permission with nice UI
+  async requestPermission() {
+    if (!('Notification' in window)) {
+      this.showToast('❌ এই ব্রাউজার Notification সাপোর্ট করে না', 'error');
+      return false;
+    }
+
+    if (Notification.permission === 'granted') {
+      return true;
+    }
+
+    if (Notification.permission === 'denied') {
+      this.showToast('⚠️ Notification ব্লক করা আছে। ব্রাউজার সেটিংস থেকে Allow করুন।', 'warning');
+      return false;
+    }
+
+    const permission = await Notification.requestPermission();
+    return permission === 'granted';
+  },
+
+  // Full activation flow
+  async activate() {
+    // Step 1: Register SW
+    const reg = await this.registerServiceWorker();
+    if (!reg) {
+      this.showToast('❌ Service Worker রেজিস্টার করা যায়নি', 'error');
+      return false;
+    }
+
+    // Step 2: Request notification permission
+    const allowed = await this.requestPermission();
+    if (!allowed) {
+      return false;
+    }
+
+    // Step 3: Mark as enabled
+    localStorage.setItem('mep_push_enabled', 'true');
+
+    // Step 4: Tell SW to start checking
+    if (reg.active) {
+      reg.active.postMessage({ type: 'ENABLE_NOTIFICATIONS' });
+    }
+
+    // Step 5: Start main-thread backup checker
+    this.startMainThreadChecker();
+
+    // Step 6: Register periodic background sync (if supported)
+    this.registerPeriodicSync(reg);
+
+    // Step 7: Start keep-alive pings
+    this.startKeepAlive();
+
+    this.showToast('✅ নটিফিকেশন সফলভাবে চালু হয়েছে! প্রতিদিন সকাল ৮:০০ টায় রিমাইন্ডার পাবেন।', 'success');
+    this.updateButtonState(true);
+    return true;
+  },
+
+  // Deactivate notifications
+  deactivate() {
+    localStorage.setItem('mep_push_enabled', 'false');
+    if (this.checkInterval) clearInterval(this.checkInterval);
+    if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
+    this.updateButtonState(false);
+    this.showToast('🔕 নটিফিকেশন বন্ধ করা হয়েছে', 'info');
+  },
+
+  // Main-thread fallback checker (runs when page is open)
+  startMainThreadChecker() {
+    if (this.checkInterval) clearInterval(this.checkInterval);
+    this.checkInterval = setInterval(() => {
+      this.checkTimeAndNotify();
+    }, 60000); // Check every 1 minute
+    // Immediate check
+    this.checkTimeAndNotify();
+  },
+
+  // Check if it's 8 AM and notify via SW
+  async checkTimeAndNotify() {
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    const todayKey = `mep_notified_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+
+    if (hour === 8 && minute >= 0 && minute <= 5) {
+      if (!localStorage.getItem(todayKey)) {
+        // Trigger via SW
+        if (this.swRegistration && this.swRegistration.active) {
+          this.swRegistration.active.postMessage({ type: 'CHECK_NOTIFICATION_NOW' });
+        } else {
+          // Direct fallback notification
+          if (Notification.permission === 'granted') {
+            new Notification('🏭 MEP FAN LTD.', {
+              body: 'আপনার এখন এটেন্ডেন্স শিট আপডেট করতে হবে, দ্রুত করুন! ⏰',
+              tag: 'mep-attendance-daily',
+              renotify: true,
+              requireInteraction: true
+            });
+          }
+        }
+        localStorage.setItem(todayKey, 'true');
+        // Clean up old keys
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('mep_notified_') && key !== todayKey) {
+            localStorage.removeItem(key);
+          }
+        });
+      }
+    }
+  },
+
+  // Keep service worker alive via periodic pings
+  startKeepAlive() {
+    if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
+    this.keepAliveInterval = setInterval(() => {
+      if (this.swRegistration && this.swRegistration.active) {
+        this.swRegistration.active.postMessage({ type: 'KEEPALIVE' });
+      }
+    }, 20000); // Every 20 seconds
+  },
+
+  // Register periodic background sync
+  async registerPeriodicSync(reg) {
+    if ('periodicSync' in reg) {
+      try {
+        await reg.periodicSync.register('mep-daily-check', {
+          minInterval: 60 * 60 * 1000 // 1 hour minimum
+        });
+        console.log('✅ Periodic background sync registered');
+      } catch (err) {
+        console.log('Periodic sync not available:', err);
+      }
+    }
+  },
+
+  // Show toast notification in-app
+  showToast(message, type = 'info') {
+    const existing = document.getElementById('mep-toast');
+    if (existing) existing.remove();
+
+    const colors = {
+      success: { bg: 'linear-gradient(135deg, #10b981, #059669)', border: '#10b981' },
+      error: { bg: 'linear-gradient(135deg, #ef4444, #dc2626)', border: '#ef4444' },
+      warning: { bg: 'linear-gradient(135deg, #f59e0b, #d97706)', border: '#f59e0b' },
+      info: { bg: 'linear-gradient(135deg, #3b82f6, #2563eb)', border: '#3b82f6' }
+    };
+    const c = colors[type] || colors.info;
+
+    const toast = document.createElement('div');
+    toast.id = 'mep-toast';
+    toast.style.cssText = `
+      position:fixed; top:1.5rem; left:50%; transform:translateX(-50%) translateY(-120%);
+      background:${c.bg}; color:white; padding:1rem 1.5rem; border-radius:14px;
+      font-size:0.95rem; font-weight:600; z-index:99999; box-shadow:0 12px 40px rgba(0,0,0,0.25);
+      transition:transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); max-width:90vw; text-align:center;
+      backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.2); font-family:'Inter',sans-serif;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+    });
+
+    setTimeout(() => {
+      toast.style.transform = 'translateX(-50%) translateY(-120%)';
+      setTimeout(() => toast.remove(), 600);
+    }, 4000);
+  },
+
+  // Update the bell button UI state
+  updateButtonState(enabled) {
+    const btn = document.getElementById('mep-push-btn');
+    if (!btn) return;
+    const icon = btn.querySelector('.push-icon');
+    const label = btn.querySelector('.push-label');
+    if (enabled) {
+      if (icon) icon.textContent = '🔔';
+      if (label) label.textContent = 'ON';
+      btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+      btn.style.boxShadow = '0 4px 20px rgba(16,185,129,0.4)';
+      btn.title = 'Daily Notification ON — Click to disable';
+    } else {
+      if (icon) icon.textContent = '🔕';
+      if (label) label.textContent = 'OFF';
+      btn.style.background = 'var(--glass-bg)';
+      btn.style.boxShadow = 'var(--glass-shadow)';
+      btn.title = 'Enable Daily 8AM Notification';
+    }
+  },
+
+  // Initialize: auto-setup if previously enabled
+  async init() {
+    const enabled = localStorage.getItem('mep_push_enabled') === 'true';
+    if (enabled && 'serviceWorker' in navigator && Notification.permission === 'granted') {
+      const reg = await this.registerServiceWorker();
+      if (reg) {
+        // Wait for SW to be active
+        if (reg.active) {
+          reg.active.postMessage({ type: 'ENABLE_NOTIFICATIONS' });
+        } else {
+          reg.addEventListener('activate', () => {
+            reg.active.postMessage({ type: 'ENABLE_NOTIFICATIONS' });
+          });
+        }
+        this.startMainThreadChecker();
+        this.startKeepAlive();
+      }
+    }
+  }
+};
+
+// Build the notification toggle button for the dashboard
+function buildPushNotificationButton() {
+  const enabled = localStorage.getItem('mep_push_enabled') === 'true' && Notification.permission === 'granted';
+
+  return `
+    <div class="push-notification-container" style="position:relative;">
+      <button id="mep-push-btn" class="no-print" title="${enabled ? 'Daily Notification ON — Click to toggle' : 'Enable Daily 8AM Notification'}"
+        style="background:${enabled ? 'linear-gradient(135deg, #10b981, #059669)' : 'var(--glass-bg)'};
+        border:1px solid ${enabled ? 'rgba(255,255,255,0.3)' : 'var(--glass-border)'};
+        border-radius:50%; width:50px; height:50px;
+        display:flex; flex-direction:column; justify-content:center; align-items:center; gap:1px;
+        cursor:pointer; box-shadow:${enabled ? '0 4px 20px rgba(16,185,129,0.4)' : 'var(--glass-shadow)'};
+        transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; backdrop-filter:blur(8px);"
+        onmouseover="this.style.transform='scale(1.08)';"
+        onmouseout="this.style.transform='scale(1)';"
+        onclick="handlePushToggle()">
+        <span class="push-icon" style="font-size:1.3rem; line-height:1;">${enabled ? '🔔' : '🔕'}</span>
+        <span class="push-label" style="font-size:0.55rem; font-weight:800; color:${enabled ? 'white' : 'var(--text-dark)'}; line-height:1;">${enabled ? 'ON' : 'OFF'}</span>
+      </button>
+    </div>
+  `;
+}
+
+// Toggle handler
+window.handlePushToggle = async function() {
+  const enabled = localStorage.getItem('mep_push_enabled') === 'true';
+  if (enabled) {
+    MEP_NOTIFICATION.deactivate();
+  } else {
+    // Show activation modal for first time
+    showNotificationModal();
+  }
+};
+
+// Beautiful activation modal
+function showNotificationModal() {
+  const existing = document.getElementById('mep-push-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'mep-push-modal';
+  modal.style.cssText = `
+    position:fixed; inset:0; z-index:99999; display:flex; justify-content:center; align-items:center;
+    background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); animation:fadeIn 0.3s ease;
+  `;
+
+  modal.innerHTML = `
+    <div style="background:white; border-radius:24px; padding:2.5rem; max-width:380px; width:90%;
+      box-shadow:0 25px 60px rgba(0,0,0,0.25); text-align:center; animation:scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+
+      <div style="width:80px; height:80px; margin:0 auto 1.2rem; background:linear-gradient(135deg, #fef3c7, #fde68a);
+        border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:2.5rem;
+        box-shadow:0 8px 24px rgba(234,179,8,0.3);">
+        🔔
+      </div>
+
+      <h3 style="margin:0 0 0.5rem; font-size:1.3rem; font-weight:800; color:#1e293b; font-family:'Inter',sans-serif;">
+        Daily Reminder চালু করুন
+      </h3>
+
+      <p style="color:#64748b; font-size:0.92rem; line-height:1.6; margin:0 0 1.5rem; font-family:'Inter',sans-serif;">
+        প্রতিদিন <strong style="color:#ef4444;">সকাল ৮:০০ টায়</strong> আপনার ফোন/কম্পিউটারে নটিফিকেশন আসবে যে
+        <strong style="color:#1e293b;">এটেন্ডেন্স শিট আপডেট</strong> করতে হবে।
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:0.7rem;">
+        <button onclick="activatePushFromModal()" style="width:100%; padding:0.85rem; background:linear-gradient(135deg, #10b981, #059669);
+          color:white; border:none; border-radius:14px; font-size:1rem; font-weight:700; cursor:pointer;
+          box-shadow:0 6px 20px rgba(16,185,129,0.4); transition:all 0.2s;
+          font-family:'Inter',sans-serif;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 28px rgba(16,185,129,0.5)';"
+          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(16,185,129,0.4)';">
+          ✅ হ্যাঁ, চালু করুন
+        </button>
+        <button onclick="document.getElementById('mep-push-modal').remove()" style="width:100%; padding:0.7rem;
+          background:transparent; color:#64748b; border:1px solid #e2e8f0; border-radius:14px;
+          font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s;
+          font-family:'Inter',sans-serif;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='transparent';">
+          পরে করবো
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+}
+
+window.activatePushFromModal = async function() {
+  const modal = document.getElementById('mep-push-modal');
+  if (modal) modal.remove();
+  await MEP_NOTIFICATION.activate();
+};
+
+// Auto-initialize notifications on page load
+document.addEventListener('DOMContentLoaded', () => {
+  MEP_NOTIFICATION.init();
+});

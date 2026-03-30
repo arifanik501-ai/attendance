@@ -990,6 +990,7 @@ input[type="number"]:focus {
   position: absolute;
   bottom: 75px;
   left: 0;
+  z-index: 10;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
@@ -1066,6 +1067,34 @@ input[type="number"]:focus {
   border-radius: 50%;
   border: 2px solid rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
+}
+
+.theme-auto-toggle {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 2px dashed rgba(99, 102, 241, 0.4);
+  background: rgba(241, 245, 249, 0.6);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+}
+
+.theme-auto-toggle:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: #6366f1;
+  color: #4f46e5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
 }
 
 /* ── Theme 1: Golden Amber ── */
@@ -2023,4 +2052,24 @@ body[data-theme="parrot"] {
   transform: translateY(-4px) scale(1.02);
   box-shadow: 0 15px 35px rgba(202, 138, 4, 0.5);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════════════
+   PUSH NOTIFICATION MODAL ANIMATIONS
+   ═══════════════════════════════════════════════════ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

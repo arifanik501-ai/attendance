@@ -69,6 +69,25 @@ let globalAppState = null;
 let currentActivePageId = null;
 const SESSION_DEVICE_ID = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 
+window.playAlertSoundAndVibrate = function() {
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.5, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.1);
+  } catch (e) {}
+};
+
 function createDefaultState() {
   const state = {};
   for (const [pageKey, pageData] of Object.entries(SECTIONS_CONFIG)) {
@@ -1192,12 +1211,14 @@ function setupFirebaseListener() {
           };
 
           if ('serviceWorker' in navigator) {
+            window.playAlertSoundAndVibrate();
             navigator.serviceWorker.ready.then(reg => {
               reg.showNotification(title, options);
             }).catch(() => {
               new Notification(title, options);
             });
           } else {
+            window.playAlertSoundAndVibrate();
             new Notification(title, options);
           }
         }
@@ -1288,12 +1309,14 @@ window.clearHistory = function() {
       renotify: true
     };
     if ('serviceWorker' in navigator) {
+      window.playAlertSoundAndVibrate();
       navigator.serviceWorker.ready.then(reg => {
         reg.showNotification(title, options);
       }).catch(() => {
         new Notification(title, options);
       });
     } else {
+      window.playAlertSoundAndVibrate();
       new Notification(title, options);
     }
   }
@@ -1450,7 +1473,7 @@ const MEP_NOTIFICATION = {
     if (this.checkInterval) clearInterval(this.checkInterval);
     this.checkInterval = setInterval(() => {
       this.checkTimeAndNotify();
-    }, 60000); // Check every 1 minute
+    }, 60000);
     // Immediate check
     this.checkTimeAndNotify();
   },

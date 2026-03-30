@@ -1,7 +1,7 @@
 {
-  "name": "MEP FAN LTD. - Manpower Dashboard",
-  "short_name": "MEP Fan",
-  "description": "MEP Fan Attendance & Manpower Management Dashboard",
+  "name": "Fan Attendance",
+  "short_name": "Fan Attendance",
+  "description": "Fan Attendance & Manpower Management Dashboard",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

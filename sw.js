@@ -3,7 +3,7 @@
 // Daily 8:00 AM Attendance Notification
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-fan-v2';
+const CACHE_NAME = 'mep-fan-v3';
 const NOTIFICATION_HOUR = 8; // 8:00 AM
 const NOTIFICATION_MINUTE = 0;
 
@@ -15,7 +15,8 @@ const ASSETS_TO_CACHE = [
   './style.css',
   './firebase-init.js',
   './manifest.json',
-  './icon.svg'
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Check interval inside service worker (every 30 seconds when active)
@@ -101,8 +102,8 @@ async function checkAndNotify() {
       // Not yet notified today — show notification
       await self.registration.showNotification('🏭 MEP FAN LTD.', {
         body: 'Time to update your Attendance Sheet now. Please do it quickly! ⏰',
-        icon: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23eab308"/><text x="50" y="62" font-size="48" text-anchor="middle" fill="white" font-weight="bold">MEP</text></svg>'),
-        badge: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23eab308"/><text x="50" y="62" font-size="48" text-anchor="middle" fill="white" font-weight="bold">M</text></svg>'),
+        icon: './icon-192.png',
+        badge: './icon-192.png',
         tag: 'mep-attendance-daily',
         renotify: true,
         requireInteraction: true,

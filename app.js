@@ -1215,12 +1215,8 @@ function setupFirebaseListener() {
 
           if ('serviceWorker' in navigator) {
             window.playAlertSoundAndVibrate();
-            navigator.serviceWorker.getRegistration().then(reg => {
-              if (reg) {
-                reg.showNotification(title, options);
-              } else {
-                new Notification(title, options);
-              }
+            navigator.serviceWorker.ready.then(reg => {
+              reg.showNotification(title, options);
             }).catch(() => {
               new Notification(title, options);
             });
@@ -1317,12 +1313,8 @@ window.clearHistory = function() {
     };
     if ('serviceWorker' in navigator) {
       window.playAlertSoundAndVibrate();
-      navigator.serviceWorker.getRegistration().then(reg => {
-        if (reg) {
-           reg.showNotification(title, options);
-        } else {
-           new Notification(title, options);
-        }
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification(title, options);
       }).catch(() => {
         new Notification(title, options);
       });

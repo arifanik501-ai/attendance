@@ -3,21 +3,60 @@
 // Daily 8:00 AM Attendance Notification
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-fan-v1';
+const CACHE_NAME = 'mep-fan-v2';
 const NOTIFICATION_HOUR = 8; // 8:00 AM
 const NOTIFICATION_MINUTE = 0;
+
+const ASSETS_TO_CACHE = [
+  './',
+  './index.html',
+  './entry.html',
+  './app.js',
+  './style.css',
+  './firebase-init.js',
+  './manifest.json',
+  './icon.svg'
+];
 
 // Check interval inside service worker (every 30 seconds when active)
 let notificationCheckInterval = null;
 
 self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
+  );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(clients.claim());
-  // Start periodic check
+  // Clean old caches
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME && k !== 'mep-notification-tracker').map(k => caches.delete(k)))
+    ).then(() => clients.claim())
+  );
   startNotificationCheck();
+});
+
+// Fetch handler — network first, fallback to cache (required for PWA installability)
+self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests and Firebase/external URLs
+  if (event.request.method !== 'GET') return;
+  if (event.request.url.includes('firebaseio.com') || event.request.url.includes('googleapis.com')) return;
+
+  event.respondWith(
+    fetch(event.request).then(response => {
+      // Cache successful responses
+      if (response && response.status === 200) {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+      }
+      return response;
+    }).catch(() => {
+      // Offline fallback
+      return caches.match(event.request);
+    })
+  );
 });
 
 // Listen for messages from the main page

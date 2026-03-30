@@ -465,12 +465,21 @@ function exportEntryReport(pageId, title) {
   cells.forEach(td => {
     td.style.border = '1px solid #0f172a';
     td.style.padding = '6px';
-    td.style.color = '#000';
 
     // Convert inputs to text for print
     const input = td.querySelector('input');
     if (input) {
       td.textContent = input.value;
+    }
+
+    // Keep absent cells red, others black
+    const isAbsent = td.classList.contains('absent-val') || td.classList.contains('sum-abs');
+    const val = parseInt(td.textContent) || 0;
+    if (isAbsent && val > 0) {
+      td.style.color = '#dc2626';
+      td.style.fontWeight = '800';
+    } else {
+      td.style.color = '#000';
     }
   });
 
@@ -927,6 +936,18 @@ function exportReport() {
     t.style.borderCollapse = 'collapse';
     t.style.border = '2px solid #0f172a';
     t.style.backgroundColor = '#ffffff';
+  });
+
+  // Force absent values to red in exported JPG
+  clone.querySelectorAll('tbody tr').forEach(tr => {
+    const cells = tr.querySelectorAll('td');
+    if (cells.length === 0) return;
+    const lastCell = cells[cells.length - 1]; // Absent column is always last
+    const val = parseInt(lastCell.textContent) || 0;
+    if (val > 0) {
+      lastCell.style.color = '#dc2626';
+      lastCell.style.fontWeight = '800';
+    }
   });
 
   // Use configuration to ensure entire table renders
@@ -1587,3 +1608,118 @@ window.activatePushFromModal = async function() {
 document.addEventListener('DOMContentLoaded', () => {
   MEP_NOTIFICATION.init();
 });
+
+// ═══════════════════════════════════════════════════
+// PWA INSTALL PROMPT SYSTEM
+// ═══════════════════════════════════════════════════
+
+let deferredInstallPrompt = null;
+
+// Capture the beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallBanner();
+});
+
+// Detect if already installed
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  hideInstallBanner();
+  localStorage.setItem('mep_pwa_installed', 'true');
+});
+
+function showInstallBanner() {
+  // Don't show if user dismissed it recently (within 24 hours)
+  const dismissed = localStorage.getItem('mep_install_dismissed');
+  if (dismissed && (Date.now() - parseInt(dismissed)) < 86400000) return;
+
+  // Don't show if already installed
+  if (localStorage.getItem('mep_pwa_installed') === 'true') return;
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+
+  // Remove old banner if exists
+  const existing = document.getElementById('mep-install-banner');
+  if (existing) existing.remove();
+
+  const banner = document.createElement('div');
+  banner.id = 'mep-install-banner';
+  banner.className = 'no-print';
+  banner.style.cssText = `
+    position:fixed; bottom:6rem; left:50%; transform:translateX(-50%) translateY(150%);
+    background:white; border-radius:20px; padding:1.2rem 1.5rem; max-width:420px; width:92%;
+    box-shadow:0 20px 60px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.05);
+    z-index:99998; display:flex; align-items:center; gap:1rem;
+    transition:transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-family:'Inter',sans-serif;
+  `;
+
+  banner.innerHTML = `
+    <div style="width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg, #facc15, #ca8a04);
+      display:flex; justify-content:center; align-items:center; flex-shrink:0;
+      box-shadow:0 4px 12px rgba(202,138,4,0.3);">
+      <span style="color:white; font-weight:900; font-size:1rem;">MEP</span>
+    </div>
+    <div style="flex:1; min-width:0;">
+      <div style="font-weight:800; font-size:0.95rem; color:#1e293b; margin-bottom:2px;">Install MEP Fan App</div>
+      <div style="font-size:0.78rem; color:#64748b; font-weight:500;">Add to Home Screen for quick access</div>
+    </div>
+    <div style="display:flex; gap:0.5rem; flex-shrink:0;">
+      <button onclick="installPWA()" style="background:linear-gradient(135deg, #10b981, #059669); color:white;
+        border:none; border-radius:12px; padding:0.55rem 1rem; font-size:0.82rem; font-weight:700;
+        cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(16,185,129,0.3);
+        font-family:'Inter',sans-serif;"
+        onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(16,185,129,0.4)';"
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16,185,129,0.3)';">
+        Install
+      </button>
+      <button onclick="dismissInstallBanner()" style="background:none; border:1px solid #e2e8f0;
+        border-radius:12px; padding:0.55rem 0.7rem; cursor:pointer; color:#94a3b8; font-size:0.85rem;
+        transition:all 0.2s; font-family:'Inter',sans-serif;"
+        onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1';"
+        onmouseout="this.style.background='none'; this.style.borderColor='#e2e8f0';">
+        ✕
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(banner);
+
+  // Slide in animation
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      banner.style.transform = 'translateX(-50%) translateY(0)';
+    }, 100);
+  });
+}
+
+function hideInstallBanner() {
+  const banner = document.getElementById('mep-install-banner');
+  if (banner) {
+    banner.style.transform = 'translateX(-50%) translateY(150%)';
+    setTimeout(() => banner.remove(), 600);
+  }
+}
+
+window.installPWA = async function() {
+  if (!deferredInstallPrompt) {
+    // Fallback: show manual instructions
+    alert('To install: tap the browser menu (⋮) → "Add to Home Screen" or "Install App"');
+    return;
+  }
+
+  deferredInstallPrompt.prompt();
+  const result = await deferredInstallPrompt.userChoice;
+
+  if (result.outcome === 'accepted') {
+    localStorage.setItem('mep_pwa_installed', 'true');
+    hideInstallBanner();
+  }
+
+  deferredInstallPrompt = null;
+};
+
+window.dismissInstallBanner = function() {
+  localStorage.setItem('mep_install_dismissed', Date.now().toString());
+  hideInstallBanner();
+};

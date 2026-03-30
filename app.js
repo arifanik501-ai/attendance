@@ -67,6 +67,7 @@ const SECTIONS_CONFIG = {
 
 let globalAppState = null;
 let currentActivePageId = null;
+const SESSION_DEVICE_ID = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 
 function createDefaultState() {
   const state = {};
@@ -141,6 +142,13 @@ function getAppState() {
 function saveAppState(state) {
   if (window.firebaseDb) {
     window.firebaseDb.ref('mep_dashboard_state').set(state);
+    
+    const sheetName = currentActivePageId ? (SECTIONS_CONFIG[currentActivePageId]?.title || 'An entry sheet') : 'The dashboard';
+    window.firebaseDb.ref('mep_last_update_info').set({
+      deviceId: SESSION_DEVICE_ID,
+      timestamp: Date.now(),
+      pageTitle: sheetName
+    });
   } else {
     localStorage.setItem('manpowerData', JSON.stringify(state));
   }
@@ -476,8 +484,8 @@ function exportEntryReport(pageId, title) {
     const isAbsent = td.classList.contains('absent-val') || td.classList.contains('sum-abs');
     const val = parseInt(td.textContent) || 0;
     if (isAbsent && val > 0) {
-      td.style.color = '#dc2626';
-      td.style.fontWeight = '800';
+      td.style.setProperty('color', '#dc2626', 'important');
+      td.style.setProperty('font-weight', '900', 'important');
     } else {
       td.style.color = '#000';
     }
@@ -723,7 +731,7 @@ function _performDashboardRender() {
     <div style="position: fixed; bottom: 2.5rem; right: 2.5rem; z-index: 9999;" class="no-print">
       <button onclick="exportReport()" class="water-btn">
         <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-        Export A4 Report
+        Download Report
       </button>
     </div>
   `;
@@ -871,8 +879,17 @@ function updateClock() {
   let m = mins.toString().padStart(2, '0');
   digitalTime.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-top: 0.3rem; margin-left: 6px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
 
-  const options = { day: '2-digit', month: 'long', year: '2-digit' };
-  clockDate.textContent = now.toLocaleDateString('en-GB', options);
+  const d = now.getDate();
+  const getSuffix = (n) => {
+    if (n >= 11 && n <= 13) return 'th';
+    switch (n % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  };
+  clockDate.textContent = `${d}${getSuffix(d)} ${now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`;
 }
 
 function exportReport() {
@@ -902,7 +919,17 @@ function exportReport() {
   let ampm = hour >= 12 ? 'PM' : 'AM';
   let m = mins.toString().padStart(2, '0');
   if (eDigital) eDigital.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
-  if (eDate) eDate.textContent = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
+  const d = now.getDate();
+  const getSuffix = (n) => {
+    if (n >= 11 && n <= 13) return 'th';
+    switch (n % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+    }
+  };
+  if (eDate) eDate.textContent = `${d}${getSuffix(d)} ${now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`;
 
   // Create an off-screen container
   const container = document.createElement('div');
@@ -945,8 +972,8 @@ function exportReport() {
     const lastCell = cells[cells.length - 1]; // Absent column is always last
     const val = parseInt(lastCell.textContent) || 0;
     if (val > 0) {
-      lastCell.style.color = '#dc2626';
-      lastCell.style.fontWeight = '800';
+      lastCell.style.setProperty('color', '#dc2626', 'important');
+      lastCell.style.setProperty('font-weight', '900', 'important');
     }
   });
 
@@ -1143,6 +1170,40 @@ function setupFirebaseListener() {
         }
       }
     });
+
+    // Listen for entry sheet updates from other devices/users
+    let initialUpdateLoad = true;
+    window.firebaseDb.ref('mep_last_update_info').on('value', (snapshot) => {
+      if (initialUpdateLoad) {
+        initialUpdateLoad = false;
+        return;
+      }
+      const data = snapshot.val();
+      if (data && data.deviceId !== SESSION_DEVICE_ID) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          const title = 'MEP FAN LTD.';
+          const options = {
+            body: `🔄 ${data.pageTitle} has been updated`,
+            icon: './icon-192.png',
+            badge: './icon-192.png',
+            tag: 'mep-update-notification',
+            vibrate: [100, 50, 100],
+            renotify: true
+          };
+
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(reg => {
+              reg.showNotification(title, options);
+            }).catch(() => {
+              new Notification(title, options);
+            });
+          } else {
+            new Notification(title, options);
+          }
+        }
+      }
+    });
+    
   } else {
     // Fallback if SDK failed to load
     globalAppState = getAppState();

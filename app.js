@@ -1655,11 +1655,8 @@ function showInstallBanner() {
   `;
 
   banner.innerHTML = `
-    <div style="width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg, #facc15, #ca8a04);
-      display:flex; justify-content:center; align-items:center; flex-shrink:0;
-      box-shadow:0 4px 12px rgba(202,138,4,0.3);">
-      <span style="color:white; font-weight:900; font-size:1rem;">MEP</span>
-    </div>
+    <img src="icon-192.png" alt="MEP Fan" style="width:52px; height:52px; border-radius:14px; flex-shrink:0;
+      box-shadow:0 4px 12px rgba(0,0,0,0.15); object-fit:cover;">
     <div style="flex:1; min-width:0;">
       <div style="font-weight:800; font-size:0.95rem; color:#1e293b; margin-bottom:2px;">Install MEP Fan App</div>
       <div style="font-size:0.78rem; color:#64748b; font-weight:500;">Add to Home Screen for quick access</div>

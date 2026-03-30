@@ -1,10 +1,11 @@
 // ═══════════════════════════════════════════════════
 // MEP FAN LTD. — Service Worker
-// Daily 8:00 AM Attendance Notification
+// Daily 8:00 AM & 1:00 PM Attendance Notifications
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-fan-v3';
-const NOTIFICATION_HOUR = 8; // 8:00 AM
+const CACHE_NAME = 'mep-fan-v5';
+const NOTIFICATION_HOUR_AM = 8; // 8:00 AM
+const NOTIFICATION_HOUR_PM = 13; // 1:00 PM
 const NOTIFICATION_MINUTE = 0;
 
 const ASSETS_TO_CACHE = [
@@ -87,24 +88,27 @@ async function checkAndNotify() {
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
-  const todayKey = `notified_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+  
+  // Determine if we are in one of the notification windows (0 to 5 minutes past the hour)
+  const isAMWindow = (hour === NOTIFICATION_HOUR_AM && minute >= NOTIFICATION_MINUTE && minute <= NOTIFICATION_MINUTE + 5);
+  const isPMWindow = (hour === NOTIFICATION_HOUR_PM && minute >= NOTIFICATION_MINUTE && minute <= NOTIFICATION_MINUTE + 5);
 
-  // Only trigger between 8:00 AM - 8:05 AM window
-  if (hour === NOTIFICATION_HOUR && minute >= NOTIFICATION_MINUTE && minute <= NOTIFICATION_MINUTE + 5) {
-    // Check if already notified today using clients
-    const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-    
-    // Use cache API to track daily notification (persists even when page is closed)
+  if (isAMWindow || isPMWindow) {
+    const timeBlock = isAMWindow ? 'AM' : 'PM';
+    const todayKey = `notified_${timeBlock}_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+
+    // Use cache API to track daily notification per time block
     const cache = await caches.open('mep-notification-tracker');
     const response = await cache.match(todayKey);
     
     if (!response) {
-      // Not yet notified today — show notification
+      // Not yet notified for this time block today — show notification
+      const timeStr = isAMWindow ? '8:00 AM' : '1:00 PM';
       await self.registration.showNotification('🏭 MEP FAN LTD.', {
-        body: 'Time to update your Attendance Sheet now. Please do it quickly! ⏰',
+        body: `It's ${timeStr}! Time to update your Attendance Sheet now. Please do it quickly! ⏰`,
         icon: './icon-192.png',
         badge: './icon-192.png',
-        tag: 'mep-attendance-daily',
+        tag: `mep-attendance-${timeBlock}`,
         renotify: true,
         requireInteraction: true,
         vibrate: [300, 100, 300, 100, 300],
@@ -114,14 +118,19 @@ async function checkAndNotify() {
         ]
       });
 
-      // Mark today as notified
+      // Mark this time block as notified
       await cache.put(todayKey, new Response('notified'));
 
-      // Clean up old keys (keep only last 3 days)
+      // Clean up old keys (keep only last few days)
       const keys = await cache.keys();
       for (const key of keys) {
         if (key.url && !key.url.includes(todayKey)) {
-          await cache.delete(key);
+          // Avoid deleting the other timeblock's key for the same day
+          const otherTimeBlock = isAMWindow ? 'PM' : 'AM';
+          const otherTodayKey = `notified_${otherTimeBlock}_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+          if (!key.url.includes(otherTodayKey)) {
+            await cache.delete(key);
+          }
         }
       }
     }

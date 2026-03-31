@@ -159,11 +159,19 @@ function getAppState() {
   // Hardcoded Admin Authorized Values
   if (stateToReturn.takbir && stateToReturn.takbir["Fan Armature"]) {
     const w = stateToReturn.takbir["Fan Armature"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 26;
+    if (w) w.authorized = 28;
   }
   if (stateToReturn.anik && stateToReturn.anik["Fan Dimmer & Blade"]) {
     const w = stateToReturn.anik["Fan Dimmer & Blade"].find(x => x.designation === "Worker");
     if (w) w.authorized = 17;
+  }
+  if (stateToReturn.anwar && stateToReturn.anwar["Fan Auto Powder Coating"]) {
+    const w = stateToReturn.anwar["Fan Auto Powder Coating"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 40;
+  }
+  if (stateToReturn.bikash && stateToReturn.bikash["Fan Rojonigondha"]) {
+    const w = stateToReturn.bikash["Fan Rojonigondha"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 9;
   }
 
   return stateToReturn;
@@ -556,7 +564,7 @@ function exportEntryReport(pageId, title) {
   }
 
   html2canvas(container, {
-    scale: 4,
+    scale: 7,
     backgroundColor: '#ffffff',
     windowWidth: 850
   }).then(canvas => {
@@ -1012,7 +1020,7 @@ function exportReport() {
 
   // Use configuration to ensure entire table renders
   html2canvas(clone, {
-    scale: 4,
+    scale: 7,
     useCORS: true,
     scrollY: 0,
     windowWidth: clone.scrollWidth,

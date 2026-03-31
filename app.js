@@ -177,6 +177,95 @@ function getAppState() {
   return stateToReturn;
 }
 
+// ═══════════════════════════════════════════════════
+// ADMIN BROADCAST SYSTEM
+// ═══════════════════════════════════════════════════
+window.sendAdminBroadcast = function() {
+  // Remove existing modal if any
+  const existing = document.getElementById('admin-broadcast-modal');
+  if (existing) existing.remove();
+
+  const modalHTML = `
+    <div id="admin-broadcast-modal" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15, 23, 42, 0.7); backdrop-filter:blur(10px); z-index:10000; display:flex; justify-content:center; align-items:center; opacity:0; transition:opacity 0.3s ease;">
+      <div class="glass-card" style="width:90%; max-width:420px; padding:2.5rem 2rem; transform:scale(0.9); transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); position:relative; overflow:visible;">
+        
+        <div style="position:absolute; top:-25px; left:50%; transform:translateX(-50%); width:50px; height:50px; background:linear-gradient(135deg, #ef4444, #dc2626); border-radius:50%; display:flex; justify-content:center; align-items:center; box-shadow:0 8px 20px rgba(239, 68, 68, 0.4); border:4px solid #ffffff;">
+          <svg width="24" height="24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-3.14 8.167-7.221.055-.419.145-.826.262-1.221A3.896 3.896 0 0119.897 4m0 0l-5.632 1.408A5.961 5.961 0 0011 8H7a3 3 0 00-3 3v2a3 3 0 003 3h4m0 0v6l-2-6"></path></svg>
+        </div>
+
+        <h3 style="margin:1rem 0 0.5rem 0; color:var(--text-dark); font-size:1.6rem; text-align:center; font-weight:800; letter-spacing:-0.02em;">Admin Broadcast</h3>
+        <p style="color:var(--text-light); font-size:0.9rem; text-align:center; margin-bottom:2rem; font-weight:500;">Send a real-time push notification to all online and offline staff devices.</p>
+        
+        <label style="display:block; font-size:0.85rem; font-weight:700; color:var(--text-dark); margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Admin Password</label>
+        <input type="password" id="admin-broadcast-pwd" style="width:100%; padding:0.9rem 1.2rem; border-radius:12px; border:2px solid #e2e8f0; margin-bottom:1.5rem; font-size:1.1rem; font-family:'Inter', sans-serif; outline:none; transition:all 0.2s;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.1)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';" placeholder="••••••••">
+        
+        <label style="display:block; font-size:0.85rem; font-weight:700; color:var(--text-dark); margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Message to Broadcast</label>
+        <textarea id="admin-broadcast-msg" rows="3" style="width:100%; padding:0.9rem 1.2rem; border-radius:12px; border:2px solid #e2e8f0; margin-bottom:2rem; font-size:1.05rem; font-family:'Inter', sans-serif; outline:none; resize:none; transition:all 0.2s;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.1)';" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';" placeholder="Enter announcement text..."></textarea>
+        
+        <div style="display:flex; gap:1rem;">
+          <button onclick="document.getElementById('admin-broadcast-modal').remove()" style="flex:1; padding:0.8rem; background:#f1f5f9; border:none; border-radius:10px; color:#475569; font-weight:700; font-size:1rem; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">Cancel</button>
+          
+          <button id="send-broadcast-btn" style="flex:1.5; padding:0.8rem; background:linear-gradient(135deg, #ef4444, #b91c1c); color:white; border:none; border-radius:10px; font-weight:700; font-size:1rem; cursor:pointer; box-shadow:0 4px 12px rgba(239, 68, 68, 0.4); transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(239, 68, 68, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.4)';">Send Now 🚀</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+  const modal = document.getElementById('admin-broadcast-modal');
+  const card = modal.querySelector('.glass-card');
+  const pwdInput = document.getElementById('admin-broadcast-pwd');
+  const btn = document.getElementById('send-broadcast-btn');
+  const msgInput = document.getElementById('admin-broadcast-msg');
+
+  // Trigger intro animation
+  setTimeout(() => {
+    modal.style.opacity = '1';
+    card.style.transform = 'scale(1)';
+    pwdInput.focus();
+  }, 10);
+
+  btn.addEventListener('click', () => {
+    if (pwdInput.value !== '8250') {
+      pwdInput.style.borderColor = '#dc2626';
+      pwdInput.style.animation = 'shake 0.4s ease';
+      setTimeout(() => pwdInput.style.animation = 'none', 400);
+      return;
+    }
+    const msg = msgInput.value.trim();
+    if (!msg) {
+      msgInput.style.borderColor = '#dc2626';
+      msgInput.style.animation = 'shake 0.4s ease';
+      setTimeout(() => msgInput.style.animation = 'none', 400);
+      return;
+    }
+
+    // Change btn state securely
+    btn.innerHTML = 'Sending...';
+    btn.style.opacity = '0.8';
+    btn.style.pointerEvents = 'none';
+
+    window.firebaseDb.ref('mep_admin_broadcast').set({
+      message: msg,
+      timestamp: Date.now(),
+      senderId: SESSION_DEVICE_ID
+    }).then(() => {
+      // Success out animation
+      modal.style.opacity = '0';
+      card.style.transform = 'scale(0.9)';
+      setTimeout(() => {
+        modal.remove();
+        app.showToast('✅ Broadcast sent beautifully to all devices!', 'success');
+      }, 300);
+    }).catch(e => {
+      btn.innerHTML = 'Failed!';
+      btn.style.background = '#000';
+      alert('Failed: ' + e.message);
+    });
+  });
+};
+
 function saveAppState(state, customActionStr = null) {
   if (window.firebaseDb) {
     window.firebaseDb.ref('mep_dashboard_state').set(state);
@@ -726,6 +815,11 @@ function _performDashboardRender() {
     <!-- Top right notification and reminder bells -->
     <div style="position: fixed; top: 1.5rem; right: 2.5rem; z-index: 9999; display: flex; gap: 1rem;" class="no-print">
       
+      <!-- Admin Broadcast Button -->
+      <button onclick="window.sendAdminBroadcast()" class="no-print" style="background:#ef4444; color:white; border:none; border-radius:50%; width:50px; height:50px; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 6px 15px rgba(239, 68, 68, 0.4); transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter:blur(8px);" onmouseover="this.style.transform='scale(1.1)'; this.style.background='#dc2626'" onmouseout="this.style.transform='scale(1)'; this.style.background='#ef4444'" title="Admin Blast Notification">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-3.14 8.167-7.221.055-.419.145-.826.262-1.221A3.896 3.896 0 0119.897 4m0 0l-5.632 1.408A5.961 5.961 0 0011 8H7a3 3 0 00-3 3v2a3 3 0 003 3h4m0 0v6l-2-6"></path></svg>
+      </button>
+
       <!-- Push Notification Toggle -->
       ${buildPushNotificationButton()}
 
@@ -1247,6 +1341,45 @@ function setupFirebaseListener() {
       }
     });
     
+    // Listen for Admin Broadcasts globally
+    window.firebaseDb.ref('mep_admin_broadcast').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      const lastSeenStr = localStorage.getItem('mep_last_seen_broadcast');
+      const lastSeen = lastSeenStr ? parseInt(lastSeenStr) : 0;
+
+      // Ensure Broadcast is newer than what user has seen, and limit it to past 24 hours
+      const isNew = data.timestamp > lastSeen;
+      const hoursAgo = (Date.now() - data.timestamp) / (1000 * 60 * 60);
+
+      if (isNew && hoursAgo < 24) {
+        localStorage.setItem('mep_last_seen_broadcast', data.timestamp.toString());
+        
+        if ('Notification' in window && Notification.permission === 'granted') {
+          const title = '📢 ADMIN ANNOUNCEMENT';
+          const options = {
+            body: data.message,
+            icon: './icon-192.png',
+            badge: './icon-192.png',
+            tag: 'mep-broadcast-' + data.timestamp,
+            vibrate: [200, 100, 300, 100, 400],
+            requireInteraction: true,
+            renotify: true
+          };
+
+          if ('serviceWorker' in navigator) {
+            window.playAlertSoundAndVibrate();
+            navigator.serviceWorker.ready.then(reg => {
+              reg.showNotification(title, options);
+            }).catch(() => new Notification(title, options));
+          } else {
+            window.playAlertSoundAndVibrate();
+            new Notification(title, options);
+          }
+        }
+      }
+    });
   } else {
     // Fallback if SDK failed to load
     globalAppState = getAppState();

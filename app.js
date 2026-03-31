@@ -155,6 +155,17 @@ function getAppState() {
       }
     }
   }
+
+  // Hardcoded Admin Authorized Values
+  if (stateToReturn.takbir && stateToReturn.takbir["Fan Armature"]) {
+    const w = stateToReturn.takbir["Fan Armature"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 26;
+  }
+  if (stateToReturn.anik && stateToReturn.anik["Fan Dimmer & Blade"]) {
+    const w = stateToReturn.anik["Fan Dimmer & Blade"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 17;
+  }
+
   return stateToReturn;
 }
 

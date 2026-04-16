@@ -55,13 +55,6 @@ const SECTIONS_CONFIG = {
       "Fan Rojonigondha": ["In-charge", "Engineer", "Technicalman", "Worker"],
       "Fan Sada Shapla": ["Worker"]
     }
-  },
-  qc: {
-    title: "Entry Sheet (QC)",
-    password: "6699",
-    groups: {
-      "Fan QC": ["In-charge", "Engineer", "QC Checker"]
-    }
   }
 };
 
@@ -118,6 +111,13 @@ function getAppState() {
   let stateToReturn = globalAppState || createDefaultState();
 
   // NORMALIZE DATA: Sync historical loaded state with current SECTIONS_CONFIG structure
+  for (const pageKey of Object.keys(stateToReturn)) {
+    if (pageKey === 'history') continue;
+    if (!SECTIONS_CONFIG[pageKey]) {
+      delete stateToReturn[pageKey];
+    }
+  }
+
   for (const [pageKey, pageData] of Object.entries(SECTIONS_CONFIG)) {
     if (!stateToReturn[pageKey]) {
       stateToReturn[pageKey] = {};
@@ -298,8 +298,7 @@ function generateSidebar(activePage) {
     { id: 'takbir', title: 'Entry Sheet (Takbir)', url: 'entry.html?page=takbir' },
     { id: 'monir', title: 'Entry Sheet (Monir)', url: 'entry.html?page=monir' },
     { id: 'anwar', title: 'Entry Sheet (Anwar)', url: 'entry.html?page=anwar' },
-    { id: 'bikash', title: 'Entry Sheet (Bikash)', url: 'entry.html?page=bikash' },
-    { id: 'qc', title: 'Entry Sheet (QC)', url: 'entry.html?page=qc' }
+    { id: 'bikash', title: 'Entry Sheet (Bikash)', url: 'entry.html?page=bikash' }
   ];
 
   let html = `<div class="brand">MEP FAN LTD.</div><nav style="display:flex; flex-direction:column; gap:0.5rem;">`;
@@ -683,13 +682,13 @@ function updateGroupTotals(table, rows) {
 // Exactly mapping the structure of Excel rows
 const EXACT_DASHBOARD_ROWS = [
   // id, section (if defined, otherwise spans from above if blank, or empty), designation, how to calc
-  { id: 'R4', section: 'Section', designation: 'Manager', rowspan: 7, type: 'filter', filters: { excludePage: 'qc', designation: 'Manager' } },
-  { id: 'R5', designation: 'Incharge Production', type: 'filter', filters: { excludePage: 'qc', designation: 'In-charge' } },
-  { id: 'R6', designation: 'Engineer Production', type: 'filter', filters: { excludePage: 'qc', designation: 'Engineer' } },
-  { id: 'R7', designation: 'Senior Supervisor', type: 'filter', filters: { excludePage: 'qc', designation: 'Sr. Supervisor' } },
-  { id: 'R8', designation: 'Jr. Officer', type: 'filter', filters: { excludePage: 'qc', designation: 'Jr. Officer' } },
-  { id: 'R9', designation: 'Computer Operator', type: 'filter', filters: { excludePage: 'qc', designation: 'Computer Operator' } },
-  { id: 'R10', designation: 'Technical Man', type: 'filter', filters: { excludePage: 'qc', designation: 'Technicalman' } },
+  { id: 'R4', section: 'Section', designation: 'Manager', rowspan: 7, type: 'filter', filters: { designation: 'Manager' } },
+  { id: 'R5', designation: 'Incharge Production', type: 'filter', filters: { designation: 'In-charge' } },
+  { id: 'R6', designation: 'Engineer Production', type: 'filter', filters: { designation: 'Engineer' } },
+  { id: 'R7', designation: 'Senior Supervisor', type: 'filter', filters: { designation: 'Sr. Supervisor' } },
+  { id: 'R8', designation: 'Jr. Officer', type: 'filter', filters: { designation: 'Jr. Officer' } },
+  { id: 'R9', designation: 'Computer Operator', type: 'filter', filters: { designation: 'Computer Operator' } },
+  { id: 'R10', designation: 'Technical Man', type: 'filter', filters: { designation: 'Technicalman' } },
 
   { id: 'R11', section: 'Fan Assemble', designation: 'Worker', type: 'filter', filters: { group: 'Fan Assemble', designation: 'Worker' }, link: 'entry.html?page=anik' },
   { id: 'R12', section: 'Fan Armature', designation: 'Worker', type: 'filter', filters: { group: 'Fan Armature', designation: 'Worker' }, link: 'entry.html?page=takbir' },
@@ -697,21 +696,15 @@ const EXACT_DASHBOARD_ROWS = [
   { id: 'R14', section: 'Fan Replace', designation: 'Worker', type: 'filter', filters: { group: 'Fan Replace', designation: 'Worker' }, link: 'entry.html?page=takbir' },
   { id: 'R15', section: 'Fan Lathe', designation: 'Worker', type: 'filter', filters: { group: 'Fan Lathe', designation: 'Worker' }, link: 'entry.html?page=anwar' },
   { id: 'R16', section: 'Fan Auto Powder Coating', designation: 'Worker', type: 'filter', filters: { group: 'Fan Auto Powder Coating', designation: 'Worker' }, link: 'entry.html?page=anwar' },
-  { id: 'R17', section: 'Fan Rojonigondha', designation: 'Worker', type: 'filter', filters: { group: 'Fan Rojonigondha', designation: 'Worker', excludePage: 'qc' }, link: 'entry.html?page=bikash' },
+  { id: 'R17', section: 'Fan Rojonigondha', designation: 'Worker', type: 'filter', filters: { group: 'Fan Rojonigondha', designation: 'Worker' }, link: 'entry.html?page=bikash' },
   { id: 'R18', section: 'Fan Sada Shapla', designation: 'Worker', type: 'filter', filters: { group: 'Fan Sada Shapla', designation: 'Worker' }, link: 'entry.html?page=bikash' },
   { id: 'R19', section: 'Fan Power Press', designation: 'Worker', type: 'filter', filters: { group: 'Power Press & Stamping', designation: 'Worker' }, link: 'entry.html?page=monir' },
   { id: 'R20', section: 'Fan Die Casting', designation: 'Worker', type: 'filter', filters: { group: 'Fan Dalai & Die Casting', designation: 'Worker' }, link: 'entry.html?page=monir' },
 
   { id: 'R21', section: '', designation: 'Production Total', type: 'formula', formulaStr: 'SUM(R4:R20)', isTotal: true },
 
-  { id: 'R22', section: 'Fan QC', designation: '(QC) Incharge', rowspan: 3, type: 'filter', filters: { page: 'qc', designation: 'In-charge' }, link: 'entry.html?page=qc' },
-  { id: 'R23', designation: '(QC) Engineer', type: 'filter', filters: { page: 'qc', designation: 'Engineer' }, link: 'entry.html?page=qc' },
-  { id: 'R24', designation: '(QC) Checker', type: 'filter', filters: { page: 'qc', designation: 'QC Checker' }, link: 'entry.html?page=qc' },
-
-  { id: 'R25', section: '', designation: 'QC Total', type: 'formula', formulaStr: 'SUM(R22:R24)', isTotal: true },
-
-  { id: 'R26', section: '', designation: 'S Grade', type: 'formula', formulaStr: 'R7+R9+R10+R11+R12+R13+R14+R15+R16+R17+R18+R19+R20+R24', isTotal: true },
-  { id: 'R27', section: '', designation: 'M Grade', type: 'formula', formulaStr: 'R4+R5+R6+R8+R23+R22', isTotal: true }
+  { id: 'R22', section: '', designation: 'S Grade', type: 'formula', formulaStr: 'R7+R9+R10+R11+R12+R13+R14+R15+R16+R17+R18+R19+R20', isTotal: true },
+  { id: 'R23', section: '', designation: 'M Grade', type: 'formula', formulaStr: 'R4+R5+R6+R8', isTotal: true }
 ];
 
 function calculateDashboardData(state) {
@@ -815,8 +808,8 @@ function _performDashboardRender() {
     <!-- Top right notification and reminder bells -->
     <div style="position: fixed; top: 1.5rem; right: 2.5rem; z-index: 9999; display: flex; gap: 1rem;" class="no-print">
       
-      <!-- Admin Broadcast Button -->
-      <button onclick="window.sendAdminBroadcast()" class="no-print" style="background:#ef4444; color:white; border:none; border-radius:50%; width:50px; height:50px; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 6px 15px rgba(239, 68, 68, 0.4); transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter:blur(8px);" onmouseover="this.style.transform='scale(1.1)'; this.style.background='#dc2626'" onmouseout="this.style.transform='scale(1)'; this.style.background='#ef4444'" title="Admin Blast Notification">
+      <!-- Admin Broadcast Button (Hidden by default, shows on hover) -->
+      <button onclick="window.sendAdminBroadcast()" class="no-print" style="opacity: 0; background:#ef4444; color:white; border:none; border-radius:50%; width:50px; height:50px; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 6px 15px rgba(239, 68, 68, 0.4); transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter:blur(8px);" onmouseover="this.style.opacity='1'; this.style.transform='scale(1.1)'; this.style.background='#dc2626'" onmouseout="this.style.opacity='0'; this.style.transform='scale(1)'; this.style.background='#ef4444'" title="Admin Blast Notification">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-3.14 8.167-7.221.055-.419.145-.826.262-1.221A3.896 3.896 0 0119.897 4m0 0l-5.632 1.408A5.961 5.961 0 0011 8H7a3 3 0 00-3 3v2a3 3 0 003 3h4m0 0v6l-2-6"></path></svg>
       </button>
 
@@ -931,11 +924,6 @@ function _performDashboardRender() {
 
         if (row.section !== undefined) {
           if (row.rowspan) {
-            if (row.section === 'Fan QC') {
-              html += `<td rowspan="${row.rowspan}" style="font-weight:700; font-size: 0.95rem; vertical-align:middle; text-align:center; background:rgba(255,255,255,0.35); border-right:1px solid rgba(255,255,255,0.6); color:#1e293b; padding: 0.5rem;">
-            ${row.section}
-          </td>`;
-            } else {
               html += `<td rowspan="${row.rowspan}" style="font-weight:700; vertical-align:middle; text-align:center; background:rgba(255,255,255,0.35); border-right:1px solid rgba(255,255,255,0.6); padding: 0.5rem;">
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
               <span style="color:#32cd32; font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em;">${row.section}</span>
@@ -945,7 +933,6 @@ function _performDashboardRender() {
               </svg>
             </div>
           </td>`;
-            }
           } else {
             html += `<td style="font-weight:700; color:#713f12;">${row.section}</td>`;
           }

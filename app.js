@@ -293,15 +293,24 @@ function calculateRow(row) {
 
 function generateSidebar(activePage) {
   const pages = [
-    { id: 'index', title: 'Main Dashboard', url: 'index.html' },
-    { id: 'anik', title: 'Entry Sheet (Anik)', url: 'entry.html?page=anik' },
-    { id: 'takbir', title: 'Entry Sheet (Takbir)', url: 'entry.html?page=takbir' },
-    { id: 'monir', title: 'Entry Sheet (Monir)', url: 'entry.html?page=monir' },
-    { id: 'anwar', title: 'Entry Sheet (Anwar)', url: 'entry.html?page=anwar' },
-    { id: 'bikash', title: 'Entry Sheet (Bikash)', url: 'entry.html?page=bikash' }
+    { id: 'index', title: 'Dashboard', url: 'index.html', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>' },
+    { id: 'anik', title: 'Entry (Anik)', url: 'entry.html?page=anik', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+    { id: 'takbir', title: 'Entry (Takbir)', url: 'entry.html?page=takbir', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+    { id: 'monir', title: 'Entry (Monir)', url: 'entry.html?page=monir', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+    { id: 'anwar', title: 'Entry (Anwar)', url: 'entry.html?page=anwar', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+    { id: 'bikash', title: 'Entry (Bikash)', url: 'entry.html?page=bikash', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' }
   ];
 
-  let html = `<div class="brand">MEP FAN LTD.</div><nav style="display:flex; flex-direction:column; gap:0.5rem;">`;
+  let html = `
+    <div class="brand-container">
+      <div class="brand-icon">
+        <img src="8dbe405d-f9a0-4513-8956-65945f9f1bb8_removalai_preview.png" alt="MEP Logo" />
+      </div>
+      <div class="brand">MEP FAN LTD.</div>
+      <div class="brand-subtitle">Manpower System</div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <nav style="display:flex; flex-direction:column; gap:0.6rem;">`;
   pages.forEach(p => {
     const isSpecialPrimary = p.id === 'anik' || p.id === 'takbir';
     const isSpecialSecondary = p.id !== 'index' && !isSpecialPrimary;
@@ -312,7 +321,9 @@ function generateSidebar(activePage) {
     if (isSpecialSecondary) specialClass = 'secondary-entry-link';
     if (isMainDashboard) specialClass = 'main-dashboard-link';
 
-    html += `<a href="${p.url}" class="nav-link ${specialClass} ${activePage === p.id ? 'active' : ''}">${p.title}</a>`;
+    html += `<a href="${p.url}" class="nav-link ${specialClass} ${activePage === p.id ? 'active' : ''}">
+      ${p.icon} <span>${p.title}</span>
+    </a>`;
   });
   html += `</nav>`;
   return html;

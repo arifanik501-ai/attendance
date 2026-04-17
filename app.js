@@ -1,3 +1,10 @@
+// ═══════════════════════════════════════════════════
+// APP VERSION — update this string when you deploy a
+// new release. The change count below auto-increments
+// on every data save.
+// ═══════════════════════════════════════════════════
+const APP_VERSION = '2.5.0';
+
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
   authDomain: "whatsapp-c10ef.firebaseapp.com",
@@ -279,6 +286,12 @@ function saveAppState(state, customActionStr = null) {
       pageTitle: sheetName,
       actionStr: actionMessage
     });
+
+    // Auto-increment the global change counter
+    window.firebaseDb.ref('mep_change_count')
+      .transaction(current => (current || 0) + 1)
+      .then(() => _loadAndDisplayChangeCount())
+      .catch(() => {});
   } else {
     localStorage.setItem('manpowerData', JSON.stringify(state));
   }
@@ -321,12 +334,29 @@ function generateSidebar(activePage) {
     if (isSpecialSecondary) specialClass = 'secondary-entry-link';
     if (isMainDashboard) specialClass = 'main-dashboard-link';
 
-    html += `<a href="${p.url}" class="nav-link ${specialClass} ${activePage === p.id ? 'active' : ''}">
-      ${p.icon} <span>${p.title}</span>
+    html += `<a href="${p.url}" class="nav-link ${specialClass} ${activePage === p.id ? 'active' : ''}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+      ${p.icon} <span style="white-space:nowrap;">${p.title}</span>
     </a>`;
   });
   html += `</nav>`;
+
+  html += `
+    <div class="sidebar-divider"></div>
+  `;
+
   return html;
+}
+
+function _loadAndDisplayChangeCount() {
+  if (!window.firebaseDb) return;
+  window.firebaseDb.ref('mep_change_count').once('value').then(snap => {
+    const count = snap.val() || 0;
+    const el = document.getElementById('change-count-label');
+    if (el) el.textContent = count.toLocaleString() + ' change' + (count !== 1 ? 's' : '') + ' saved';
+  }).catch(() => {
+    const el = document.getElementById('change-count-label');
+    if (el) el.textContent = '';
+  });
 }
 
 function renderEntryPage(pageId) {
@@ -1226,7 +1256,17 @@ function initThemePicker() {
   fab.className = 'theme-fab no-print';
   fab.innerHTML = `
     <div class="theme-backdrop" id="theme-backdrop"></div>
-    <button class="theme-fab-btn" title="Change Theme">🎨</button>
+    <div style="display:flex; align-items:center; gap: 0.8rem; background: rgba(15,23,42,0.85); padding:0.5rem 1.4rem 0.5rem 0.5rem; border-radius:30px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);" class="app-version-top">
+      <button class="theme-fab-btn" title="Change Theme" style="margin:0; width:48px; height:48px; flex-shrink:0; box-shadow: none;">🎨</button>
+      <div id="app-version-badge" style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2rem; flex-shrink: 0; justify-content:center; transform: translateY(2px);">
+        <div style="display:flex;align-items:center;gap:0.3rem;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="transform:translateY(-1px);"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span style="font-size:0.65rem; line-height:1; font-weight:800;color:#eab308;letter-spacing:0.06em;text-transform:uppercase;">App Version</span>
+        </div>
+        <span style="font-size:1.2rem; line-height:1; font-weight:900;color:#facc15;letter-spacing:0.03em;text-shadow: 0 0 12px rgba(250, 204, 21, 0.4), 0 0 2px rgba(255, 255, 255, 0.5);">v${APP_VERSION}</span>
+        <span id="change-count-label" style="font-size:0.6rem; line-height:1; color:#94a3b8;font-weight:600;transform:translateY(1px);">Loading…</span>
+      </div>
+    </div>
     <div class="theme-dropdown" id="theme-dropdown">
       ${THEMES.map(t => `
         <button class="theme-option ${t.id === savedTheme ? 'active' : ''}" data-theme="${t.id}" onclick="setTheme('${t.id}')">
@@ -1237,6 +1277,9 @@ function initThemePicker() {
     </div>
   `;
   document.body.appendChild(fab);
+  
+  // Call to populate change count immediately after injection
+  setTimeout(_loadAndDisplayChangeCount, 100);
 
   // Toggle dropdown
   fab.querySelector('.theme-fab-btn').addEventListener('click', (e) => {

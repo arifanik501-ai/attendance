@@ -16,7 +16,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
 
-<body>
+<body style="opacity:0; transition: opacity 0.3s ease-in;">
   <div id="sidebar" class="sidebar"></div>
 
   <main class="main-content">
@@ -33,6 +33,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       renderDashboard();
+      requestAnimationFrame(() => { document.body.style.opacity = '1'; });
     });
   </script>
 </body>

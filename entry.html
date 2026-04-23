@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body style="opacity:0; transition: opacity 0.3s ease-in;">
     <div id="sidebar" class="sidebar"></div>
 
     <main class="main-content">
@@ -59,6 +59,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const pageId = urlParams.get('page') || 'anik'; // fallback
             renderEntryPage(pageId);
+            requestAnimationFrame(() => { document.body.style.opacity = '1'; });
         });
     </script>
 </body>

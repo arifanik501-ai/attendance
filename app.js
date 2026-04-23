@@ -274,6 +274,8 @@ window.sendAdminBroadcast = function () {
 };
 
 function saveAppState(state, customActionStr = null) {
+  _saveAttendanceHistory(state);
+  
   if (window.firebaseDb) {
     window.firebaseDb.ref('mep_dashboard_state').set(state);
 
@@ -350,9 +352,8 @@ function generateSidebar(activePage) {
 function _loadAndDisplayChangeCount() {
   if (!window.firebaseDb) return;
   window.firebaseDb.ref('mep_change_count').once('value').then(snap => {
-    const count = snap.val() || 0;
     const el = document.getElementById('change-count-label');
-    if (el) el.textContent = count.toLocaleString() + ' change' + (count !== 1 ? 's' : '') + ' saved';
+    if (el) el.textContent = '';
   }).catch(() => {
     const el = document.getElementById('change-count-label');
     if (el) el.textContent = '';
@@ -858,6 +859,21 @@ function _performDashboardRender() {
       <!-- Push Notification Toggle -->
       ${buildPushNotificationButton()}
 
+      <!-- History Button -->
+      <div class="history-container" style="position:relative;">
+        <button id="history-btn" class="no-print" title="Attendance History"
+          style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+          display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
+          cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+          position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
+          onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(139,92,246,0.3), 0 0 0 4px rgba(139,92,246,0.1)';"
+          onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+          onclick="window.openHistoryModal()">
+          <svg width="22" height="22" fill="none" stroke="#8b5cf6" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(139,92,246,0.4));"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+          <span style="font-size:0.52rem; font-weight:800; color:#8b5cf6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">HIST</span>
+        </button>
+      </div>
+
       <!-- Reminder Button -->
       <div class="reminder-container" style="position:relative;">
         <button id="reminder-btn" class="no-print" title="Schedule & Reminders"
@@ -1264,7 +1280,6 @@ function initThemePicker() {
           <span style="font-size:0.65rem; line-height:1; font-weight:800;color:#eab308;letter-spacing:0.06em;text-transform:uppercase;">App Version</span>
         </div>
         <span style="font-size:1.2rem; line-height:1; font-weight:900;color:#facc15;letter-spacing:0.03em;text-shadow: 0 0 12px rgba(250, 204, 21, 0.4), 0 0 2px rgba(255, 255, 255, 0.5);">v${APP_VERSION}</span>
-        <span id="change-count-label" style="font-size:0.6rem; line-height:1; color:#94a3b8;font-weight:600;transform:translateY(1px);">Loading…</span>
       </div>
     </div>
     <div class="theme-dropdown" id="theme-dropdown">
@@ -2061,3 +2076,326 @@ window.dismissInstallBanner = function () {
   localStorage.setItem('mep_install_dismissed', Date.now().toString());
   hideInstallBanner();
 };
+
+/* =========================================================================
+   HISTORY FEATURE : AUTO-SAVE & MODAL UI
+   ========================================================================= */
+
+function _saveAttendanceHistory(state) {
+  if (!window.firebaseDb) return;
+  const stamp = new Date();
+  const today = `${stamp.getFullYear()}-${String(stamp.getMonth() + 1).padStart(2, '0')}-${String(stamp.getDate()).padStart(2, '0')}`;
+  window.firebaseDb.ref(`mep_attendance_history/${today}`).set(state).catch(e => console.error("Error saving history snapshot:", e));
+}
+
+window.openHistoryModal = function() {
+  if (document.getElementById('history-modal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'history-modal';
+  modal.className = 'no-print';
+  modal.style.cssText = `
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+    z-index: 10000; display: flex; justify-content: center; align-items: center;
+    opacity: 0; transition: opacity 0.3s ease;
+  `;
+
+  modal.innerHTML = `
+    <div style="background: var(--glass-bg, rgba(255,255,255,0.85)); width: 95%; max-width: 1100px; height: 90vh; 
+      border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); 
+      border: 1px solid var(--glass-border, rgba(255,255,255,0.5)); display: flex; flex-direction: column; overflow: hidden;
+      transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      backdrop-filter: blur(25px);">
+      
+      <!-- Modal Header -->
+      <div style="padding: 1.5rem 2rem; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.4);">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <div style="background: #8b5cf6; width: 44px; height: 44px; border-radius: 12px; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 16px rgba(139,92,246,0.3);">
+            <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+          </div>
+          <div>
+            <h2 style="margin: 0; font-size: 1.5rem; font-weight: 800; color: #1e293b; font-family: 'Inter', sans-serif;">Attendance History</h2>
+            <div style="font-size: 0.9rem; color: #64748b; font-weight: 500;">Browse past records by date</div>
+          </div>
+        </div>
+        <button onclick="window.closeHistoryModal()" style="background: rgba(0,0,0,0.05); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#ef4444';" onmouseout="this.style.background='rgba(0,0,0,0.05)'; this.style.color='inherit';">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="display: flex; flex: 1; overflow: hidden; font-family: 'Inter', sans-serif;">
+        <!-- Left Sidebar (Calendar) -->
+        <div style="width: 350px; border-right: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.2); padding: 1.5rem; display: flex; flex-direction: column;">
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <button onclick="window.changeHistoryMonth(-1)" style="border:none; background:transparent; cursor:pointer; padding:8px; border-radius:8px; color:#1e293b;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+            <h3 id="history-month-year" style="margin:0; font-weight:800; font-size:1.15rem; color:#1e293b;">...</h3>
+            <button onclick="window.changeHistoryMonth(1)" style="border:none; background:transparent; cursor:pointer; padding:8px; border-radius:8px; color:#1e293b;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+          </div>
+
+          <!-- Weekday Headers -->
+          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-weight: 700; font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase;">
+            <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+          </div>
+
+          <!-- Calendar Days Grid -->
+          <div id="history-calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; flex: 1; align-content: start;">
+            <!-- Rendered via JS -->
+          </div>
+          
+          <div style="margin-top: auto; padding: 1.2rem; background: rgba(139,92,246,0.06); border-radius: 12px; border: 1px dashed rgba(139,92,246,0.3); text-align: center; font-size: 0.85rem; color: #6d28d9; font-weight: 600;">
+            <div style="display:inline-block; width:8px; height:8px; background:#22c55e; border-radius:50%; margin-right:4px;"></div> 
+            Green dots indicate saved attendance snapshots
+          </div>
+        </div>
+
+        <!-- Right Side (Data Viewer) -->
+        <div style="flex: 1; overflow-y: auto; padding: 2rem; background: rgba(255,255,255,0.7); position: relative;" id="history-data-viewer">
+          <!-- Empty State -->
+          <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #94a3b8;">
+            <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem; opacity: 0.5;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <div style="font-size: 1.2rem; font-weight: 600;">Select a date to view history</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  
+  // Animate in
+  requestAnimationFrame(() => {
+    modal.style.opacity = '1';
+    modal.children[0].style.transform = 'scale(1)';
+  });
+
+  // Initialize Calendar
+  window.historyCurrentDate = new Date();
+  window._fetchSavedHistoryDates(() => {
+    window._renderHistoryCalendar();
+  });
+};
+
+window.closeHistoryModal = function() {
+  const modal = document.getElementById('history-modal');
+  if (modal) {
+    modal.style.opacity = '0';
+    modal.children[0].style.transform = 'scale(0.95)';
+    setTimeout(() => modal.remove(), 300);
+  }
+};
+
+window.savedHistoryDates = new Set(); // Stores dates in 'YYYY-MM-DD' format
+
+window._fetchSavedHistoryDates = function(callback) {
+  if (window.firebaseDb) {
+    window.firebaseDb.ref('mep_attendance_history').once('value').then(snapshot => {
+      window.savedHistoryDates.clear();
+      if (snapshot.exists()) {
+        Object.keys(snapshot.val()).forEach(dateStr => window.savedHistoryDates.add(dateStr));
+      }
+      if (callback) callback();
+    }).catch(err => {
+      console.error('Error fetching history dates', err);
+      if (callback) callback();
+    });
+  } else {
+    if (callback) callback(); // local fallback
+  }
+};
+
+window.changeHistoryMonth = function(delta) {
+  window.historyCurrentDate.setMonth(window.historyCurrentDate.getMonth() + delta);
+  window._renderHistoryCalendar();
+};
+
+window._renderHistoryCalendar = function() {
+  const grid = document.getElementById('history-calendar-grid');
+  const monthYearLabel = document.getElementById('history-month-year');
+  if (!grid || !monthYearLabel) return;
+  
+  const d = window.historyCurrentDate;
+  const year = d.getFullYear();
+  const month = d.getMonth();
+  
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  monthYearLabel.textContent = monthNames[month] + ' ' + year;
+  
+  grid.innerHTML = '';
+  
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  
+  // Empty slots
+  for (let i = 0; i < firstDay; i++) {
+    grid.innerHTML += `<div style="padding:10px;"></div>`;
+  }
+  
+  for (let i = 1; i <= daysInMonth; i++) {
+    const curDateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+    const hasData = window.savedHistoryDates.has(curDateStr);
+    const isToday = curDateStr === todayStr;
+    const isFuture = new Date(year, month, i) > today;
+    
+    let btnStyle = `
+      width: 100%; aspect-ratio: 1; border-radius: 12px; border: none; 
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      font-weight: 800; font-size: 0.95rem; font-family: 'Inter', sans-serif;
+      transition: all 0.2s; position: relative; outline: none;
+    `;
+    
+    let hasDataDot = '';
+    
+    if (hasData) {
+      btnStyle += `background: #fff; color: #1e293b; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);`;
+      hasDataDot = `<div style="width: 5px; height: 5px; background: #22c55e; border-radius: 50%; position: absolute; bottom: 6px; box-shadow: 0 0 6px rgba(34,197,94,0.8);"></div>`;
+    } else if (isFuture) {
+      btnStyle += `background: transparent; color: rgba(0,0,0,0.15); cursor: default;`;
+    } else {
+      btnStyle += `background: rgba(255,255,255,0.4); color: #94a3b8; cursor: pointer;`;
+    }
+    
+    if (isToday) {
+      btnStyle += `border: 2px solid #8b5cf6;`;
+    }
+    
+    const onClick = hasData ? `onclick="window._loadHistoryForDate('${curDateStr}')"` : `onclick="alert('No snapshot recorded for this date.')"`;
+    const hoverEffect = hasData ? `onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 8px 16px rgba(139,92,246,0.2)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.05)'; "` : '';
+    
+    grid.innerHTML += `
+      <button style="${btnStyle}" ${onClick} ${hoverEffect}>
+        ${i}
+        ${hasDataDot}
+      </button>
+    `;
+  }
+};
+
+window._loadHistoryForDate = function(dateStr) {
+  const viewer = document.getElementById('history-data-viewer');
+  if (!viewer) return;
+  
+  // Loading state
+  viewer.innerHTML = `
+    <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+      <div style="width:40px; height:40px; border:4px solid rgba(139,92,246,0.2); border-top-color:#8b5cf6; border-radius:50%; animation:spin 1s linear infinite;"></div>
+      <div style="margin-top:1rem; font-weight:700; font-size:1.1rem; color:#8b5cf6;">Loading snapshot for ${dateStr}...</div>
+    </div>
+  `;
+  if (!document.getElementById('spin-style')) {
+    const s = document.createElement('style');
+    s.id = 'spin-style';
+    s.innerHTML = `@keyframes spin { to { transform: rotate(360deg); } }`;
+    document.head.appendChild(s);
+  }
+  
+  if (window.firebaseDb) {
+    window.firebaseDb.ref(`mep_attendance_history/${dateStr}`).once('value').then(snapshot => {
+      if (snapshot.exists()) {
+        const state = snapshot.val();
+        _renderHistoryState(dateStr, state, viewer);
+      } else {
+        viewer.innerHTML = `<div style="height:100%; display:flex; justify-content:center; align-items:center; color:#94a3b8; font-size:1.2rem; font-weight:600;">No snapshot found for ${dateStr}.</div>`;
+      }
+    }).catch(err => {
+      viewer.innerHTML = `<div style="height:100%; display:flex; justify-content:center; align-items:center; color:#ef4444; font-size:1.2rem; font-weight:600;">Error loading data!</div>`;
+    });
+  }
+};
+
+function _renderHistoryState(dateStr, state, container) {
+  let totalAuth = 0, totalExist = 0, totalPresent = 0, totalAbsent = 0;
+  let rowsHtml = '';
+  
+  Object.keys(state).forEach(area => {
+    let areaHtml = '';
+    let isFirst = true;
+    const designations = Object.keys(state[area]);
+    const numDesig = designations.length;
+    
+    let areaAuth = 0, areaExist = 0, areaPresent = 0, areaAbsent = 0;
+    
+    designations.forEach(desig => {
+      const data = state[area][desig];
+      const auth = parseInt(data.auth) || 0;
+      const exist = parseInt(data.exist) || auth;
+      const present = parseInt(data.present) || 0;
+      let absent = parseInt(data.absent) || 0;
+      
+      // Recalculate absent if it's 0 but there is a gap (since some old records might not compute correctly)
+      if (absent === 0 && present < exist) {
+          absent = exist - present;
+      }
+      
+      areaAuth += auth;
+      areaExist += exist;
+      areaPresent += present;
+      areaAbsent += absent;
+      
+      areaHtml += `
+        <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+          ${isFirst ? `<td rowspan="${numDesig}" style="padding:1rem; font-weight:800; color:#1e293b; background:rgba(0,0,0,0.02); vertical-align:middle; border-right:1px solid rgba(0,0,0,0.05);">${area}</td>` : ''}
+          <td style="padding:0.8rem 1rem; font-weight:600; color:#475569;">${desig}</td>
+          <td style="padding:0.8rem 1rem; text-align:center; font-weight:600; color:#3b82f6;">${exist}</td>
+          <td style="padding:0.8rem 1rem; text-align:center; font-weight:800; color:#10b981;">${present}</td>
+          <td style="padding:0.8rem 1rem; text-align:center; font-weight:800; color:#ef4444;">${absent}</td>
+        </tr>
+      `;
+      isFirst = false;
+    });
+    
+    totalAuth += areaAuth;
+    totalExist += areaExist;
+    totalPresent += areaPresent;
+    totalAbsent += areaAbsent;
+    
+    rowsHtml += areaHtml;
+  });
+  
+  const formattedDate = new Date(dateStr).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+  
+  container.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:2rem; padding-bottom:1rem; border-bottom:2px solid rgba(0,0,0,0.05);">
+      <div>
+        <h3 style="margin:0; font-size:1.8rem; font-weight:800; color:#1e293b; letter-spacing:-0.02em;">Attendance Snapshot</h3>
+        <div style="color:#64748b; font-weight:600; font-size:1rem; margin-top:0.3rem;">Recorded on ${formattedDate}</div>
+      </div>
+      <div style="display:flex; gap:1.5rem;">
+        <div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:16px; padding:0.8rem 1.5rem; box-shadow:0 8px 16px rgba(0,0,0,0.03); text-align:center;">
+          <div style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Total Existing</div>
+          <div style="font-size:1.6rem; font-weight:900; color:#3b82f6;">${totalExist}</div>
+        </div>
+        <div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:16px; padding:0.8rem 1.5rem; box-shadow:0 8px 16px rgba(0,0,0,0.03); text-align:center;">
+          <div style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Total Present</div>
+          <div style="font-size:1.6rem; font-weight:900; color:#10b981;">${totalPresent}</div>
+        </div>
+        <div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:16px; padding:0.8rem 1.5rem; box-shadow:0 8px 16px rgba(0,0,0,0.03); text-align:center;">
+          <div style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Total Absent</div>
+          <div style="font-size:1.6rem; font-weight:900; color:#ef4444;">${totalAbsent}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="background:white; border-radius:16px; box-shadow:0 15px 35px rgba(0,0,0,0.04); overflow:hidden; border:1px solid rgba(0,0,0,0.06);">
+      <table style="width:100%; border-collapse:collapse; font-size:0.95rem;">
+        <thead>
+          <tr style="background:#f8fafc;">
+            <th style="padding:1.2rem 1rem; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; letter-spacing:0.05em; border-bottom:2px solid #e2e8f0;">Section / Area</th>
+            <th style="padding:1.2rem 1rem; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; letter-spacing:0.05em; border-bottom:2px solid #e2e8f0;">Designation</th>
+            <th style="padding:1.2rem 1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; letter-spacing:0.05em; border-bottom:2px solid #e2e8f0;">Existing</th>
+            <th style="padding:1.2rem 1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; letter-spacing:0.05em; border-bottom:2px solid #e2e8f0;">Present</th>
+            <th style="padding:1.2rem 1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; letter-spacing:0.05em; border-bottom:2px solid #e2e8f0;">Absent</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+    </div>
+  `;
+}

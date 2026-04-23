@@ -274,7 +274,6 @@ window.sendAdminBroadcast = function () {
 };
 
 function saveAppState(state, customActionStr = null) {
-  _saveAttendanceHistory(state);
   
   if (window.firebaseDb) {
     window.firebaseDb.ref('mep_dashboard_state').set(state);
@@ -929,8 +928,15 @@ function _performDashboardRender() {
       </div>
     </div>
 
-    <!-- Bottom right export button -->
-    <div style="position: fixed; bottom: 2.5rem; right: 2.5rem; z-index: 9999;" class="no-print">
+    <!-- Bottom right export and save buttons -->
+    <div style="position: fixed; bottom: 2.5rem; right: 2.5rem; z-index: 9999; display: flex; gap: 1rem; align-items: center;" class="no-print">
+      
+      <!-- Force Save Button -->
+      <button onclick="window.forceSaveHistory()" onmousedown="(function(e){var btn=e.currentTarget,r=document.createElement('div');r.className='ripple-wave';var rect=btn.getBoundingClientRect();r.style.top=(e.clientY-rect.top)+'px';r.style.left=(e.clientX-rect.left)+'px';btn.appendChild(r);setTimeout(function(){r.remove();},700);})(event)" class="water-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: 12px; gap: 6px; height: auto; min-width: auto;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        <span>Force Save</span>
+      </button>
+
       <button onclick="exportReport()" onmousedown="(function(e){var btn=e.currentTarget,r=document.createElement('div');r.className='ripple-wave';var rect=btn.getBoundingClientRect();r.style.top=(e.clientY-rect.top)+'px';r.style.left=(e.clientX-rect.left)+'px';btn.appendChild(r);setTimeout(function(){r.remove();},700);})(event)" class="water-btn">
         <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
         <span>Download Report</span>
@@ -1090,6 +1096,7 @@ function updateClock() {
 }
 
 function exportReport() {
+  if (window.forceSaveHistory) window.forceSaveHistory(true);
   const content = document.getElementById('export-content');
 
   // Clone the node to prevent screen jumping and layout breaking
@@ -2081,11 +2088,30 @@ window.dismissInstallBanner = function () {
    HISTORY FEATURE : AUTO-SAVE & MODAL UI
    ========================================================================= */
 
+window.forceSaveHistory = function(silent) {
+  if (!window.firebaseDb) { if (!silent) alert('Firebase not connected!'); return; }
+  window.firebaseDb.ref('mep_dashboard_state').once('value').then(function(snapshot) {
+    if (snapshot.exists()) {
+      var currentState = snapshot.val();
+      _saveAttendanceHistory(currentState);
+      if (!silent) alert('\u2705 History Snapshot Saved Successfully!');
+    } else {
+      if (!silent) alert('No dashboard data found to save.');
+    }
+  }).catch(function(e) {
+    console.error('Force save error:', e);
+    if (!silent) alert('Error saving history: ' + e.message);
+  });
+};
+
 function _saveAttendanceHistory(state) {
   if (!window.firebaseDb) return;
-  const stamp = new Date();
-  const today = `${stamp.getFullYear()}-${String(stamp.getMonth() + 1).padStart(2, '0')}-${String(stamp.getDate()).padStart(2, '0')}`;
-  window.firebaseDb.ref(`mep_attendance_history/${today}`).set(state).catch(e => console.error("Error saving history snapshot:", e));
+  try {
+    var stamp = new Date();
+    var today = stamp.getFullYear() + '-' + String(stamp.getMonth() + 1).padStart(2, '0') + '-' + String(stamp.getDate()).padStart(2, '0');
+    window.firebaseDb.ref('mep_attendance_history/' + today).set(state).catch(function(e) { console.error('Error saving history snapshot:', e); });
+    window.firebaseDb.ref('mep_attendance_history_index/' + today).set(true).catch(function(e) { console.error('Error saving history index:', e); });
+  } catch(e) { console.error('_saveAttendanceHistory error:', e); }
 }
 
 window.openHistoryModal = function() {
@@ -2191,18 +2217,21 @@ window.savedHistoryDates = new Set(); // Stores dates in 'YYYY-MM-DD' format
 
 window._fetchSavedHistoryDates = function(callback) {
   if (window.firebaseDb) {
-    window.firebaseDb.ref('mep_attendance_history').once('value').then(snapshot => {
+    window.firebaseDb.ref('mep_attendance_history_index').once('value').then(function(snapshot) {
       window.savedHistoryDates.clear();
       if (snapshot.exists()) {
-        Object.keys(snapshot.val()).forEach(dateStr => window.savedHistoryDates.add(dateStr));
+        var val = snapshot.val();
+        if (val && typeof val === 'object') {
+          Object.keys(val).forEach(function(dateStr) { window.savedHistoryDates.add(dateStr); });
+        }
       }
       if (callback) callback();
-    }).catch(err => {
+    }).catch(function(err) {
       console.error('Error fetching history dates', err);
       if (callback) callback();
     });
   } else {
-    if (callback) callback(); // local fallback
+    if (callback) callback();
   }
 };
 
@@ -2309,93 +2338,69 @@ window._loadHistoryForDate = function(dateStr) {
 };
 
 function _renderHistoryState(dateStr, state, container) {
-  let totalAuth = 0, totalExist = 0, totalPresent = 0, totalAbsent = 0;
-  let rowsHtml = '';
-  
-  Object.keys(state).forEach(area => {
-    let areaHtml = '';
-    let isFirst = true;
-    const designations = Object.keys(state[area]);
-    const numDesig = designations.length;
-    
-    let areaAuth = 0, areaExist = 0, areaPresent = 0, areaAbsent = 0;
-    
-    designations.forEach(desig => {
-      const data = state[area][desig];
-      const auth = parseInt(data.auth) || 0;
-      const exist = parseInt(data.exist) || auth;
-      const present = parseInt(data.present) || 0;
-      let absent = parseInt(data.absent) || 0;
-      
-      // Recalculate absent if it's 0 but there is a gap (since some old records might not compute correctly)
-      if (absent === 0 && present < exist) {
-          absent = exist - present;
-      }
-      
-      areaAuth += auth;
-      areaExist += exist;
-      areaPresent += present;
-      areaAbsent += absent;
-      
-      areaHtml += `
-        <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-          ${isFirst ? `<td rowspan="${numDesig}" style="padding:1rem; font-weight:800; color:#1e293b; background:rgba(0,0,0,0.02); vertical-align:middle; border-right:1px solid rgba(0,0,0,0.05);">${area}</td>` : ''}
-          <td style="padding:0.8rem 1rem; font-weight:600; color:#475569;">${desig}</td>
-          <td style="padding:0.8rem 1rem; text-align:center; font-weight:600; color:#3b82f6;">${exist}</td>
-          <td style="padding:0.8rem 1rem; text-align:center; font-weight:800; color:#10b981;">${present}</td>
-          <td style="padding:0.8rem 1rem; text-align:center; font-weight:800; color:#ef4444;">${absent}</td>
-        </tr>
-      `;
-      isFirst = false;
+  try {
+    var formattedDate = dateStr;
+    try { formattedDate = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}); } catch(e) {}
+
+    var totalExist = 0, totalPresent = 0, totalAbsent = 0;
+    var sectionsHtml = '';
+
+    // State structure: state[pageId][groupName] = [ {designation, authorized, existing, present, absent}, ... ]
+    var pageIds = Object.keys(state);
+    pageIds.forEach(function(pageId) {
+      if (pageId === 'history') return; // skip history array
+      if (!state[pageId] || typeof state[pageId] !== 'object' || Array.isArray(state[pageId])) return;
+
+      var pageData = state[pageId];
+      var groupNames = Object.keys(pageData);
+      if (groupNames.length === 0) return;
+
+      groupNames.forEach(function(groupName) {
+        var rows = pageData[groupName];
+        if (!rows) return;
+        // Handle both array format and object format
+        if (!Array.isArray(rows)) {
+          if (typeof rows === 'object') { rows = Object.values(rows); } else { return; }
+        }
+        if (rows.length === 0) return;
+
+        var groupRows = [];
+        rows.forEach(function(row) {
+          if (!row || typeof row !== 'object') return;
+          var desig = row.designation || 'N/A';
+          var existing = parseInt(row.existing) || 0;
+          var present = parseInt(row.present) || 0;
+          var absent = parseInt(row.absent) || 0;
+          if (absent === 0 && present < existing) absent = existing - present;
+          totalExist += existing;
+          totalPresent += present;
+          totalAbsent += absent;
+          groupRows.push({desig: desig, existing: existing, present: present, absent: absent});
+        });
+
+        if (groupRows.length === 0) return;
+        groupRows.forEach(function(r, idx) {
+          sectionsHtml += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">';
+          if (idx === 0) {
+            sectionsHtml += '<td rowspan="' + groupRows.length + '" style="padding:1rem; font-weight:800; color:#1e293b; background:rgba(0,0,0,0.02); vertical-align:middle; border-right:1px solid rgba(0,0,0,0.05);">' + groupName + '</td>';
+          }
+          sectionsHtml += '<td style="padding:0.8rem 1rem; font-weight:600; color:#475569;">' + r.desig + '</td>';
+          sectionsHtml += '<td style="padding:0.8rem 1rem; text-align:center; font-weight:600; color:#3b82f6;">' + r.existing + '</td>';
+          sectionsHtml += '<td style="padding:0.8rem 1rem; text-align:center; font-weight:800; color:#10b981;">' + r.present + '</td>';
+          sectionsHtml += '<td style="padding:0.8rem 1rem; text-align:center; font-weight:800; color:#ef4444;">' + r.absent + '</td>';
+          sectionsHtml += '</tr>';
+        });
+      });
     });
-    
-    totalAuth += areaAuth;
-    totalExist += areaExist;
-    totalPresent += areaPresent;
-    totalAbsent += areaAbsent;
-    
-    rowsHtml += areaHtml;
-  });
-  
-  const formattedDate = new Date(dateStr).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
-  
-  container.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:2rem; padding-bottom:1rem; border-bottom:2px solid rgba(0,0,0,0.05);">
-      <div>
-        <h3 style="margin:0; font-size:1.8rem; font-weight:800; color:#1e293b; letter-spacing:-0.02em;">Attendance Snapshot</h3>
-        <div style="color:#64748b; font-weight:600; font-size:1rem; margin-top:0.3rem;">Recorded on ${formattedDate}</div>
-      </div>
-      <div style="display:flex; gap:1.5rem;">
-        <div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:16px; padding:0.8rem 1.5rem; box-shadow:0 8px 16px rgba(0,0,0,0.03); text-align:center;">
-          <div style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Total Existing</div>
-          <div style="font-size:1.6rem; font-weight:900; color:#3b82f6;">${totalExist}</div>
-        </div>
-        <div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:16px; padding:0.8rem 1.5rem; box-shadow:0 8px 16px rgba(0,0,0,0.03); text-align:center;">
-          <div style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Total Present</div>
-          <div style="font-size:1.6rem; font-weight:900; color:#10b981;">${totalPresent}</div>
-        </div>
-        <div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:16px; padding:0.8rem 1.5rem; box-shadow:0 8px 16px rgba(0,0,0,0.03); text-align:center;">
-          <div style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Total Absent</div>
-          <div style="font-size:1.6rem; font-weight:900; color:#ef4444;">${totalAbsent}</div>
-        </div>
-      </div>
-    </div>
-    
-    <div style="background:white; border-radius:16px; box-shadow:0 15px 35px rgba(0,0,0,0.04); overflow:hidden; border:1px solid rgba(0,0,0,0.06);">
-      <table style="width:100%; border-collapse:collapse; font-size:0.95rem;">
-        <thead>
-          <tr style="background:#f8fafc;">
-            <th style="padding:1.2rem 1rem; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; letter-spacing:0.05em; border-bottom:2px solid #e2e8f0;">Section / Area</th>
-            <th style="padding:1.2rem 1rem; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; letter-spacing:0.05em; border-bottom:2px solid #e2e8f0;">Designation</th>
-            <th style="padding:1.2rem 1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; letter-spacing:0.05em; border-bottom:2px solid #e2e8f0;">Existing</th>
-            <th style="padding:1.2rem 1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; letter-spacing:0.05em; border-bottom:2px solid #e2e8f0;">Present</th>
-            <th style="padding:1.2rem 1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; letter-spacing:0.05em; border-bottom:2px solid #e2e8f0;">Absent</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rowsHtml}
-        </tbody>
-      </table>
-    </div>
-  `;
+
+    if (sectionsHtml === '') {
+      container.innerHTML = '<div style="padding:2rem;"><h3 style="margin:0 0 1rem 0; font-size:1.5rem; font-weight:800; color:#1e293b;">Snapshot: ' + formattedDate + '</h3><pre style="background:#f8fafc; padding:1.5rem; border-radius:12px; overflow:auto; max-height:70vh; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">' + JSON.stringify(state, null, 2) + '</pre></div>';
+      return;
+    }
+
+    container.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:2rem; padding-bottom:1rem; border-bottom:2px solid rgba(0,0,0,0.05); flex-wrap:wrap; gap:1rem;"><div><h3 style="margin:0; font-size:1.5rem; font-weight:800; color:#1e293b;">Attendance Snapshot</h3><div style="color:#64748b; font-weight:600; font-size:0.95rem; margin-top:0.3rem;">Recorded on ' + formattedDate + '</div></div><div style="display:flex; gap:1rem; flex-wrap:wrap;"><div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:12px; padding:0.6rem 1.2rem; text-align:center;"><div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">Existing</div><div style="font-size:1.4rem; font-weight:900; color:#3b82f6;">' + totalExist + '</div></div><div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:12px; padding:0.6rem 1.2rem; text-align:center;"><div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">Present</div><div style="font-size:1.4rem; font-weight:900; color:#10b981;">' + totalPresent + '</div></div><div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:12px; padding:0.6rem 1.2rem; text-align:center;"><div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">Absent</div><div style="font-size:1.4rem; font-weight:900; color:#ef4444;">' + totalAbsent + '</div></div></div></div><div style="background:white; border-radius:16px; box-shadow:0 15px 35px rgba(0,0,0,0.04); overflow:hidden; border:1px solid rgba(0,0,0,0.06);"><table style="width:100%; border-collapse:collapse; font-size:0.95rem;"><thead><tr style="background:#f8fafc;"><th style="padding:1rem; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; border-bottom:2px solid #e2e8f0;">Section</th><th style="padding:1rem; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; border-bottom:2px solid #e2e8f0;">Designation</th><th style="padding:1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; border-bottom:2px solid #e2e8f0;">Existing</th><th style="padding:1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; border-bottom:2px solid #e2e8f0;">Present</th><th style="padding:1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; border-bottom:2px solid #e2e8f0;">Absent</th></tr></thead><tbody>' + sectionsHtml + '</tbody></table></div>';
+  } catch(e) {
+    console.error('_renderHistoryState error:', e);
+    container.innerHTML = '<div style="padding:2rem;"><h3 style="color:#ef4444; margin-bottom:1rem;">Error rendering snapshot</h3><pre style="background:#f8fafc; padding:1.5rem; border-radius:12px; overflow:auto; max-height:70vh; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">' + JSON.stringify(state, null, 2) + '</pre></div>';
+  }
 }

@@ -847,101 +847,145 @@ function _performDashboardRender() {
 
       const container = document.getElementById('dashboard-container');
       container.innerHTML = `
-    <!-- Top right notification and reminder bells -->
-    <div style="position: fixed; top: 1.5rem; right: 2.5rem; z-index: 9999; display: flex; gap: 1rem;" class="no-print">
+    <!-- FAB Menu System -->
+    <div id="fab-menu-wrapper" style="position:fixed; top:1.5rem; right:2.5rem; z-index:9999; display:flex; flex-direction:column; align-items:flex-end; gap:0;" class="no-print">
       
-      <!-- Admin Broadcast Button (Hidden by default, shows on hover) -->
-      <button onclick="window.sendAdminBroadcast()" class="no-print" style="opacity: 0; background:#ef4444; color:white; border:none; border-radius:50%; width:50px; height:50px; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 6px 15px rgba(239, 68, 68, 0.4); transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter:blur(8px);" onmouseover="this.style.opacity='1'; this.style.transform='scale(1.1)'; this.style.background='#dc2626'" onmouseout="this.style.opacity='0'; this.style.transform='scale(1)'; this.style.background='#ef4444'" title="Admin Blast Notification">
-        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-3.14 8.167-7.221.055-.419.145-.826.262-1.221A3.896 3.896 0 0119.897 4m0 0l-5.632 1.408A5.961 5.961 0 0011 8H7a3 3 0 00-3 3v2a3 3 0 003 3h4m0 0v6l-2-6"></path></svg>
+      <!-- Main Toggle Button -->
+      <button id="fab-toggle-btn" onclick="window.toggleFabMenu()" title="Menu"
+        style="background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; border-radius:16px; width:56px; height:56px;
+        display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
+        cursor:pointer; box-shadow:0 8px 25px rgba(99,102,241,0.4); transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        position:relative; z-index:10002;"
+        onmouseover="this.style.transform='scale(1.08)'; this.style.boxShadow='0 12px 35px rgba(99,102,241,0.5)';"
+        onmouseout="if(!window._fabOpen){this.style.transform='scale(1)'; this.style.boxShadow='0 8px 25px rgba(99,102,241,0.4)';}">
+        <svg id="fab-icon" width="24" height="24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
 
-      <!-- Push Notification Toggle -->
-      ${buildPushNotificationButton()}
+      <!-- FAB Child Items Container (hidden by default) -->
+      <div id="fab-children" style="display:none; flex-direction:column; align-items:flex-end; gap:0.75rem; margin-top:0.75rem;">
 
-      <!-- History Button -->
-      <div class="history-container" style="position:relative;">
-        <button id="history-btn" class="no-print" title="Attendance History"
-          style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
-          display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
-          cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-          position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-          onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(139,92,246,0.3), 0 0 0 4px rgba(139,92,246,0.1)';"
-          onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
-          onclick="window.openHistoryModal()">
-          <svg width="22" height="22" fill="none" stroke="#8b5cf6" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(139,92,246,0.4));"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
-          <span style="font-size:0.52rem; font-weight:800; color:#8b5cf6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">HIST</span>
-        </button>
-      </div>
-
-      <!-- Reminder Button -->
-      <div class="reminder-container" style="position:relative;">
-        <button id="reminder-btn" class="no-print" title="Schedule & Reminders"
-          style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
-          display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
-          cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-          position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-          onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(234,179,8,0.35), 0 0 0 4px rgba(234,179,8,0.12)';"
-          onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
-          onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
-          <svg width="22" height="22" fill="none" stroke="#eab308" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(234,179,8,0.4));"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-          <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">PLAN</span>
-          <span id="reminder-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#eab308; border-radius:50%; border:2px solid white; display:none; box-shadow:0 0 10px rgba(234,179,8,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
-        </button>
+        <!-- Notification Bell -->
+        <div class="fab-child notification-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+          <button id="noti-btn" class="no-print" title="History & Notifications"
+            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+            display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
+            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(239,68,68,0.3), 0 0 0 4px rgba(239,68,68,0.1)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onclick="event.stopPropagation(); const d = document.getElementById('noti-dropdown'); const r = document.getElementById('reminder-dropdown'); if(r) r.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; document.getElementById('noti-badge').style.display='none'; localStorage.removeItem('has_new_notifications');">
+            <svg width="22" height="22" fill="none" stroke="#ef4444" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(239,68,68,0.4));"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span style="font-size:0.52rem; font-weight:800; color:#ef4444; letter-spacing:0.04em; font-family:'Inter',sans-serif;">FEED</span>
+            <span id="noti-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#ef4444; border-radius:50%; border:2px solid white; display:${hasNewNoti ? 'block' : 'none'}; box-shadow:0 0 10px rgba(239,68,68,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
+          </button>
         
-        <div id="reminder-dropdown" class="glass-card no-print" style="position:absolute; top:65px; left:auto; right:-10px; width:340px; z-index:100; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: top right; animation: scaleIn 0.2s ease-out;">
-          <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4); display:flex; justify-content:space-between; align-items:center;">
-             <span>Pending Today</span>
-             <span id="reminder-count" style="background:#eab308; color:white; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:700;">0</span>
-          </div>
-          <div id="reminder-list" style="max-height:350px; overflow-y:auto; padding:0;">
+          <div id="noti-dropdown" class="glass-card no-print" style="position:absolute; top:65px; left:auto; right:-10px; width:340px; z-index:100; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: top right; animation: scaleIn 0.2s ease-out;">
+            <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4); display:flex; justify-content:space-between; align-items:center;">
+              <span>History Update</span>
+              <button onclick="clearHistory()" title="Clear All History" style="background:none; border:1px solid rgba(239,68,68,0.3); border-radius:8px; cursor:pointer; padding:4px 10px; display:flex; align-items:center; gap:4px; color:#ef4444; font-size:0.72rem; font-weight:700; transition:all 0.2s; font-family:'Inter',sans-serif;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.borderColor='#ef4444';" onmouseout="this.style.background='none'; this.style.borderColor='rgba(239,68,68,0.3)';">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Clear
+              </button>
+            </div>
+            <div id="noti-list" style="max-height:350px; overflow-y:auto; padding:0;">
+              ${historyList}
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Notification Bell -->
-      <div class="notification-container" style="position:relative;">
-        <button id="noti-btn" class="no-print" title="History & Notifications"
-          style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
-          display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
-          cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-          position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-          onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(239,68,68,0.3), 0 0 0 4px rgba(239,68,68,0.1)';"
-          onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
-          onclick="event.stopPropagation(); const d = document.getElementById('noti-dropdown'); const r = document.getElementById('reminder-dropdown'); if(r) r.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; document.getElementById('noti-badge').style.display='none'; localStorage.removeItem('has_new_notifications');">
-          <svg width="22" height="22" fill="none" stroke="#ef4444" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(239,68,68,0.4));"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          <span style="font-size:0.52rem; font-weight:800; color:#ef4444; letter-spacing:0.04em; font-family:'Inter',sans-serif;">FEED</span>
-          <span id="noti-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#ef4444; border-radius:50%; border:2px solid white; display:${hasNewNoti ? 'block' : 'none'}; box-shadow:0 0 10px rgba(239,68,68,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
-        </button>
-        
-        <div id="noti-dropdown" class="glass-card no-print" style="position:absolute; top:65px; left:auto; right:-10px; width:340px; z-index:100; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: top right; animation: scaleIn 0.2s ease-out;">
-          <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4); display:flex; justify-content:space-between; align-items:center;">
-            <span>History Update</span>
-            <button onclick="clearHistory()" title="Clear All History" style="background:none; border:1px solid rgba(239,68,68,0.3); border-radius:8px; cursor:pointer; padding:4px 10px; display:flex; align-items:center; gap:4px; color:#ef4444; font-size:0.72rem; font-weight:700; transition:all 0.2s; font-family:'Inter',sans-serif;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.borderColor='#ef4444';" onmouseout="this.style.background='none'; this.style.borderColor='rgba(239,68,68,0.3)';">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-              Clear
-            </button>
-          </div>
-          <div id="noti-list" style="max-height:350px; overflow-y:auto; padding:0;">
-            ${historyList}
+        <!-- Reminder Button -->
+        <div class="fab-child reminder-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+          <button id="reminder-btn" class="no-print" title="Schedule & Reminders"
+            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+            display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
+            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(234,179,8,0.35), 0 0 0 4px rgba(234,179,8,0.12)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
+            <svg width="22" height="22" fill="none" stroke="#eab308" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(234,179,8,0.4));"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">PLAN</span>
+            <span id="reminder-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#eab308; border-radius:50%; border:2px solid white; display:none; box-shadow:0 0 10px rgba(234,179,8,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
+          </button>
+          
+          <div id="reminder-dropdown" class="glass-card no-print" style="position:absolute; top:65px; left:auto; right:-10px; width:340px; z-index:100; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: top right; animation: scaleIn 0.2s ease-out;">
+            <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4); display:flex; justify-content:space-between; align-items:center;">
+               <span>Pending Today</span>
+               <span id="reminder-count" style="background:#eab308; color:white; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:700;">0</span>
+            </div>
+            <div id="reminder-list" style="max-height:350px; overflow-y:auto; padding:0;">
+            </div>
           </div>
         </div>
+
+        <!-- Force Save Button -->
+        <div class="fab-child save-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+          <button id="force-save-btn" class="no-print" title="Force Save History Snapshot"
+            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+            display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
+            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(16,185,129,0.3), 0 0 0 4px rgba(16,185,129,0.1)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onclick="window.forceSaveHistory()">
+            <svg width="22" height="22" fill="none" stroke="#10b981" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(16,185,129,0.4));"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            <span style="font-size:0.52rem; font-weight:800; color:#10b981; letter-spacing:0.04em; font-family:'Inter',sans-serif;">SAVE</span>
+          </button>
+        </div>
+
+        <!-- History Button -->
+        <div class="fab-child history-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+          <button id="history-btn" class="no-print" title="Attendance History"
+            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+            display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
+            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(139,92,246,0.3), 0 0 0 4px rgba(139,92,246,0.1)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onclick="window.openHistoryModal()">
+            <svg width="22" height="22" fill="none" stroke="#8b5cf6" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(139,92,246,0.4));"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+            <span style="font-size:0.52rem; font-weight:800; color:#8b5cf6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">HIST</span>
+          </button>
+        </div>
+
+        <!-- Push Notification Toggle -->
+        <div class="fab-child" style="opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+          ${buildPushNotificationButton()}
+        </div>
+
+        <!-- Theme Button -->
+        <div class="fab-child" style="opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+          <button class="no-print" title="Change Theme"
+            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+            display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
+            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(250,204,21,0.3), 0 0 0 4px rgba(250,204,21,0.1)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onclick="event.stopPropagation(); var dd=document.getElementById('theme-dropdown'); var bd=document.getElementById('theme-backdrop'); if(dd) dd.classList.toggle('open'); if(bd) bd.classList.toggle('show');">
+            <span style="font-size:1.3rem; line-height:1; filter:drop-shadow(0 0 5px rgba(250,204,21,0.4));">🎨</span>
+            <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">THEME</span>
+          </button>
+        </div>
+
+        <!-- Download JPG Button (Gold Premium) -->
+        <div class="fab-child" style="opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+          <button class="no-print" title="Download Report as JPG"
+            style="background:linear-gradient(135deg,#fbbf24,#f59e0b); border:1.5px solid rgba(245,158,11,0.4); border-radius:16px; width:56px; height:56px;
+            display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
+            cursor:pointer; box-shadow:0 8px 20px rgba(245,158,11,0.35); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            position:relative;"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.boxShadow='0 12px 30px rgba(245,158,11,0.5), 0 0 0 4px rgba(245,158,11,0.15)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.boxShadow='0 8px 20px rgba(245,158,11,0.35)';"
+            onclick="exportReport()">
+            <svg width="22" height="22" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.2));"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span style="font-size:0.52rem; font-weight:800; color:white; letter-spacing:0.04em; font-family:'Inter',sans-serif; text-shadow:0 1px 2px rgba(0,0,0,0.2);">JPG</span>
+          </button>
+        </div>
+
       </div>
     </div>
 
-    <!-- Bottom right export and save buttons -->
-    <div style="position: fixed; bottom: 2.5rem; right: 2.5rem; z-index: 9999; display: flex; gap: 1rem; align-items: center;" class="no-print">
-      
-      <!-- Force Save Button -->
-      <button onclick="window.forceSaveHistory()" onmousedown="(function(e){var btn=e.currentTarget,r=document.createElement('div');r.className='ripple-wave';var rect=btn.getBoundingClientRect();r.style.top=(e.clientY-rect.top)+'px';r.style.left=(e.clientX-rect.left)+'px';btn.appendChild(r);setTimeout(function(){r.remove();},700);})(event)" class="water-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: 12px; gap: 6px; height: auto; min-width: auto;">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-        <span>Force Save</span>
-      </button>
-
-      <button onclick="exportReport()" onmousedown="(function(e){var btn=e.currentTarget,r=document.createElement('div');r.className='ripple-wave';var rect=btn.getBoundingClientRect();r.style.top=(e.clientY-rect.top)+'px';r.style.left=(e.clientX-rect.left)+'px';btn.appendChild(r);setTimeout(function(){r.remove();},700);})(event)" class="water-btn">
-        <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-        <span>Download Report</span>
-      </button>
-    </div>
   `;
 
       const mainCard = document.createElement('div');
@@ -1279,16 +1323,6 @@ function initThemePicker() {
   fab.className = 'theme-fab no-print';
   fab.innerHTML = `
     <div class="theme-backdrop" id="theme-backdrop"></div>
-    <div style="display:flex; align-items:center; gap: 0.8rem; background: rgba(15,23,42,0.85); padding:0.5rem 1.4rem 0.5rem 0.5rem; border-radius:30px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);" class="app-version-top">
-      <button class="theme-fab-btn" title="Change Theme" style="margin:0; width:48px; height:48px; flex-shrink:0; box-shadow: none;">🎨</button>
-      <div id="app-version-badge" style="display:flex;flex-direction:column;align-items:flex-start;gap:0.2rem; flex-shrink: 0; justify-content:center; transform: translateY(2px);">
-        <div style="display:flex;align-items:center;gap:0.3rem;">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="transform:translateY(-1px);"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          <span style="font-size:0.65rem; line-height:1; font-weight:800;color:#eab308;letter-spacing:0.06em;text-transform:uppercase;">App Version</span>
-        </div>
-        <span style="font-size:1.2rem; line-height:1; font-weight:900;color:#facc15;letter-spacing:0.03em;text-shadow: 0 0 12px rgba(250, 204, 21, 0.4), 0 0 2px rgba(255, 255, 255, 0.5);">v${APP_VERSION}</span>
-      </div>
-    </div>
     <div class="theme-dropdown" id="theme-dropdown">
       ${THEMES.map(t => `
         <button class="theme-option ${t.id === savedTheme ? 'active' : ''}" data-theme="${t.id}" onclick="setTheme('${t.id}')">
@@ -1303,13 +1337,7 @@ function initThemePicker() {
   // Call to populate change count immediately after injection
   setTimeout(_loadAndDisplayChangeCount, 100);
 
-  // Toggle dropdown
-  fab.querySelector('.theme-fab-btn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    document.getElementById('theme-dropdown').classList.toggle('open');
-    document.getElementById('theme-backdrop').classList.toggle('show');
-  });
-
+  // Toggle dropdown via FAB menu button - old fab-btn listener removed
   // Close dropdown on outside click or backdrop click
   document.addEventListener('click', () => {
     document.getElementById('theme-dropdown')?.classList.remove('open');
@@ -2082,6 +2110,48 @@ window.installPWA = async function () {
 window.dismissInstallBanner = function () {
   localStorage.setItem('mep_install_dismissed', Date.now().toString());
   hideInstallBanner();
+};
+
+/* =========================================================================
+   FAB MENU TOGGLE
+   ========================================================================= */
+
+window._fabOpen = false;
+window.toggleFabMenu = function() {
+  var children = document.getElementById('fab-children');
+  var icon = document.getElementById('fab-icon');
+  var btn = document.getElementById('fab-toggle-btn');
+  if (!children) return;
+
+  window._fabOpen = !window._fabOpen;
+
+  if (window._fabOpen) {
+    children.style.display = 'flex';
+    if (icon) icon.style.transform = 'rotate(90deg)';
+    if (btn) { btn.style.transform = 'scale(1.08) rotate(0deg)'; btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)'; btn.style.boxShadow = '0 8px 25px rgba(239,68,68,0.4)'; }
+    var items = children.querySelectorAll('.fab-child');
+    items.forEach(function(item, i) {
+      setTimeout(function() {
+        item.style.opacity = '1';
+        item.style.transform = 'scale(1) translateY(0)';
+      }, i * 60);
+    });
+  } else {
+    if (icon) icon.style.transform = 'rotate(0deg)';
+    if (btn) { btn.style.transform = 'scale(1)'; btn.style.background = 'linear-gradient(135deg,#6366f1,#8b5cf6)'; btn.style.boxShadow = '0 8px 25px rgba(99,102,241,0.4)'; }
+    var items = children.querySelectorAll('.fab-child');
+    var total = items.length;
+    items.forEach(function(item, i) {
+      setTimeout(function() {
+        item.style.opacity = '0';
+        item.style.transform = 'scale(0.3) translateY(-20px)';
+      }, (total - 1 - i) * 40);
+    });
+    setTimeout(function() { children.style.display = 'none'; }, total * 40 + 300);
+    // Also close any open dropdowns
+    var nd = document.getElementById('noti-dropdown'); if (nd) nd.style.display = 'none';
+    var rd = document.getElementById('reminder-dropdown'); if (rd) rd.style.display = 'none';
+  }
 };
 
 /* =========================================================================

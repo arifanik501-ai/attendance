@@ -513,6 +513,8 @@ function renderEntryPage(pageId) {
               </filter>
             </defs>
             <circle class="glass-lock-halo" cx="60" cy="78" r="58" fill="url(#lockHalo)"/>
+            <circle class="glass-lock-ring glass-lock-ring-a" cx="60" cy="82" r="46" fill="none" stroke="#10b981" stroke-width="2.5" opacity="0"/>
+            <circle class="glass-lock-ring glass-lock-ring-b" cx="60" cy="82" r="46" fill="none" stroke="#34d399" stroke-width="2" opacity="0"/>
             <g class="glass-lock-shackle" filter="url(#lockSoftShadow)">
               <path d="M36 62 L36 44 Q36 20 60 20 Q84 20 84 44 L84 62"
                     stroke="url(#lockShackle)" stroke-width="10" fill="none"
@@ -533,6 +535,7 @@ function renderEntryPage(pageId) {
                 <circle cx="60" cy="90" r="6.5" fill="#3d2110"/>
                 <path d="M57 91 L57 108 Q57 111 60 111 Q63 111 63 108 L63 91 Z" fill="#3d2110"/>
               </g>
+              <circle class="glass-lock-burst" cx="60" cy="96" r="10" fill="#fef3c7" opacity="0"/>
               <circle class="glass-lock-sparkle glass-lock-sparkle-a" cx="36" cy="72" r="1.5" fill="#fff"/>
               <circle class="glass-lock-sparkle glass-lock-sparkle-b" cx="84" cy="120" r="1.2" fill="#fff"/>
             </g>
@@ -621,7 +624,7 @@ function renderEntryPage(pageId) {
       sessionStorage.setItem('auth_' + pageId, 'true');
       if (lockWrap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         lockWrap.classList.add('is-unlocked');
-        setTimeout(() => _renderEntryContent(pageId), 520);
+        setTimeout(() => _renderEntryContent(pageId), 1350);
       } else {
         _renderEntryContent(pageId);
       }

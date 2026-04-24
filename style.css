@@ -638,6 +638,184 @@ h4 {
 
 /*
  * ──────────────────────────────────────────────────────────────
+ * Premium editorial page title.
+ * Splits "Entry Sheet (Name)" into a small all-caps eyebrow label
+ * and a large elegant display name (Fraunces variable serif) with
+ * a metallic gradient fill, slow shimmer, and an accent underline.
+ * ──────────────────────────────────────────────────────────────
+ */
+#page-title.page-title-premium {
+  --pt-accent: #b45309;
+  --pt-accent-soft: #a16207;
+  --pt-ink-1: #1f1408;
+  --pt-ink-2: #402815;
+  --pt-ink-3: #7c4a1e;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  line-height: 1;
+  margin: 0;
+  padding: 0.15rem 0 0.45rem;
+  font-size: inherit; /* reset the default h1 size — we size the children */
+}
+
+.page-title-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--pt-accent) 65%, #6b5235);
+  opacity: 0;
+  animation: pageTitleEyebrowIn 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s forwards;
+}
+.page-title-eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 26px;
+  height: 1.5px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--pt-accent) 45%,
+    var(--pt-accent) 55%,
+    transparent 100%);
+  opacity: 0.8;
+}
+@keyframes pageTitleEyebrowIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-title-name {
+  position: relative;
+  display: inline-block;
+  font-family: 'Fraunces', 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: clamp(2rem, 4.8vw, 2.6rem);
+  font-weight: 600;
+  font-style: normal;
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 50, "opsz" 60, "WONK" 0;
+  letter-spacing: -0.015em;
+  line-height: 1.02;
+
+  /* Metallic bronze gradient fill */
+  background: linear-gradient(
+    125deg,
+    var(--pt-ink-1) 0%,
+    var(--pt-ink-2) 28%,
+    var(--pt-ink-3) 48%,
+    var(--pt-ink-2) 68%,
+    var(--pt-ink-1) 100%);
+  background-size: 220% 220%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+
+  /* Slow shimmer that glides across the letterforms */
+  animation:
+    pageTitleNameIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s backwards,
+    pageTitleShimmer 9s cubic-bezier(0.4, 0, 0.6, 1) 0.8s infinite;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+@keyframes pageTitleNameIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    letter-spacing: 0.02em;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    letter-spacing: -0.015em;
+  }
+}
+@keyframes pageTitleShimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Animated accent underline */
+.page-title-name::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.45rem;
+  height: 2px;
+  width: 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--pt-accent) 95%, transparent) 0%,
+    color-mix(in srgb, var(--pt-accent) 55%, transparent) 55%,
+    transparent 100%);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--pt-accent) 30%, transparent);
+  animation: pageTitleUnderline 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.45s forwards;
+}
+@keyframes pageTitleUnderline {
+  to { width: 58%; }
+}
+
+/* Subtle highlight glint sliding across the name once on load */
+.page-title-name::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255, 255, 255, 0.75) 50%,
+    transparent 60%,
+    transparent 100%);
+  background-size: 250% 100%;
+  background-position: 200% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  pointer-events: none;
+  animation: pageTitleGlint 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) 0.7s 1 forwards;
+  opacity: 0;
+}
+@keyframes pageTitleGlint {
+  0%   { background-position: 200% 0; opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { background-position: -100% 0; opacity: 0; }
+}
+
+/* Graceful fallback for browsers without color-mix() */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  #page-title.page-title-premium {
+    color: #402815;
+  }
+  .page-title-eyebrow { color: #9a6f3e; }
+  .page-title-eyebrow::before { background: linear-gradient(90deg, transparent, #b45309, transparent); }
+  .page-title-name::after { background: linear-gradient(90deg, #b45309, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-title-eyebrow,
+  .page-title-name,
+  .page-title-name::before,
+  .page-title-name::after {
+    animation: none !important;
+  }
+  .page-title-name {
+    background-position: 50% 50%;
+  }
+  .page-title-name::after { width: 58%; }
+  .page-title-eyebrow { opacity: 1; }
+}
+
+/*
+ * ──────────────────────────────────────────────────────────────
  * Premium liquid-glass buttons (page header actions).
  * Same design language as .nav-link: frosted glass surface,
  * ambient liquid blob, specular glint on hover, spring press,

@@ -851,14 +851,14 @@ function _performDashboardRender() {
     <div id="fab-menu-wrapper" style="position:fixed; top:1.5rem; right:2.5rem; z-index:9999; display:flex; flex-direction:column; align-items:flex-end; gap:0;" class="no-print">
       
       <!-- Main Toggle Button -->
-      <button id="fab-toggle-btn" onclick="window.toggleFabMenu()" title="Menu"
+      <button id="fab-toggle-btn" onclick="window.toggleFabMenu()" data-tip-title="Menu" data-tip-desc="Open quick actions" data-tip-placement="left"
         style="background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; border-radius:16px; width:56px; height:56px;
         display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
         cursor:pointer; box-shadow:0 8px 25px rgba(99,102,241,0.4); transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
         position:relative; z-index:10002;"
         onmouseover="this.style.transform='scale(1.08)'; this.style.boxShadow='0 12px 35px rgba(99,102,241,0.5)';"
         onmouseout="if(!window._fabOpen){this.style.transform='scale(1)'; this.style.boxShadow='0 8px 25px rgba(99,102,241,0.4)';}">
-        <svg id="fab-icon" width="24" height="24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        <svg id="fab-icon" width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="none" style="transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1); filter:drop-shadow(0 1px 2px rgba(0,0,0,0.2));"><rect x="3" y="3" width="7.5" height="7.5" rx="2.4" opacity="0.98"></rect><rect x="13.5" y="3" width="7.5" height="7.5" rx="2.4" opacity="0.82"></rect><rect x="3" y="13.5" width="7.5" height="7.5" rx="2.4" opacity="0.82"></rect><circle cx="17.25" cy="17.25" r="3.75" opacity="0.98"></circle><circle cx="17.25" cy="17.25" r="1.55" fill="#6366f1"></circle></svg>
       </button>
 
       <!-- FAB Child Items Container (hidden by default) -->
@@ -866,7 +866,7 @@ function _performDashboardRender() {
 
         <!-- Notification Bell -->
         <div class="fab-child notification-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="noti-btn" class="no-print" title="History & Notifications"
+          <button id="noti-btn" class="no-print" data-tip-title="Notifications" data-tip-desc="History & alerts feed" data-tip-theme="info" data-tip-placement="left"
             style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
@@ -874,12 +874,12 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(239,68,68,0.3), 0 0 0 4px rgba(239,68,68,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); const d = document.getElementById('noti-dropdown'); const r = document.getElementById('reminder-dropdown'); if(r) r.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; document.getElementById('noti-badge').style.display='none'; localStorage.removeItem('has_new_notifications');">
-            <svg width="22" height="22" fill="none" stroke="#ef4444" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(239,68,68,0.4));"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 0 5px rgba(239,68,68,0.45));"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="#ef4444"></path><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#ef4444" stroke-width="2" stroke-linecap="round" fill="none"></path><circle cx="18" cy="5.8" r="3.2" fill="#ffffff"></circle><circle cx="18" cy="5.8" r="2" fill="#ef4444"></circle></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#ef4444; letter-spacing:0.04em; font-family:'Inter',sans-serif;">FEED</span>
             <span id="noti-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#ef4444; border-radius:50%; border:2px solid white; display:${hasNewNoti ? 'block' : 'none'}; box-shadow:0 0 10px rgba(239,68,68,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
           </button>
         
-          <div id="noti-dropdown" class="glass-card no-print" style="position:absolute; top:65px; left:auto; right:-10px; width:340px; z-index:100; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: top right; animation: scaleIn 0.2s ease-out;">
+          <div id="noti-dropdown" class="glass-card no-print" style="position:absolute; top:-10px; left:auto; right:calc(100% + 12px); width:340px; z-index:10001; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: top right; animation: scaleIn 0.2s ease-out;">
             <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4); display:flex; justify-content:space-between; align-items:center;">
               <span>History Update</span>
               <button onclick="clearHistory()" title="Clear All History" style="background:none; border:1px solid rgba(239,68,68,0.3); border-radius:8px; cursor:pointer; padding:4px 10px; display:flex; align-items:center; gap:4px; color:#ef4444; font-size:0.72rem; font-weight:700; transition:all 0.2s; font-family:'Inter',sans-serif;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.borderColor='#ef4444';" onmouseout="this.style.background='none'; this.style.borderColor='rgba(239,68,68,0.3)';">
@@ -895,7 +895,7 @@ function _performDashboardRender() {
 
         <!-- Reminder Button -->
         <div class="fab-child reminder-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="reminder-btn" class="no-print" title="Schedule & Reminders"
+          <button id="reminder-btn" class="no-print" data-tip-title="Reminders" data-tip-desc="Schedule recurring tasks" data-tip-theme="warning" data-tip-placement="left"
             style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
@@ -903,12 +903,12 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(234,179,8,0.35), 0 0 0 4px rgba(234,179,8,0.12)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
-            <svg width="22" height="22" fill="none" stroke="#eab308" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(234,179,8,0.4));"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 0 5px rgba(234,179,8,0.45));"><rect x="3.2" y="5.5" width="17.6" height="15" rx="2.6" fill="#eab308" opacity="0.16"></rect><rect x="3.2" y="5.5" width="17.6" height="15" rx="2.6" stroke="#eab308" stroke-width="1.8" fill="none"></rect><rect x="3.2" y="5.5" width="17.6" height="4.6" fill="#eab308"></rect><rect x="6.8" y="2.8" width="2.4" height="5" rx="1.2" fill="#eab308"></rect><rect x="14.8" y="2.8" width="2.4" height="5" rx="1.2" fill="#eab308"></rect><circle cx="8.2" cy="13.8" r="1.35" fill="#eab308"></circle><circle cx="12" cy="13.8" r="1.35" fill="#eab308" opacity="0.42"></circle><circle cx="15.8" cy="13.8" r="1.35" fill="#eab308" opacity="0.42"></circle><circle cx="8.2" cy="17.4" r="1.35" fill="#eab308" opacity="0.42"></circle><circle cx="12" cy="17.4" r="1.35" fill="#eab308"></circle></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">PLAN</span>
             <span id="reminder-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#eab308; border-radius:50%; border:2px solid white; display:none; box-shadow:0 0 10px rgba(234,179,8,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
           </button>
           
-          <div id="reminder-dropdown" class="glass-card no-print" style="position:absolute; top:65px; left:auto; right:-10px; width:340px; z-index:100; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: top right; animation: scaleIn 0.2s ease-out;">
+          <div id="reminder-dropdown" class="glass-card no-print" style="position:absolute; top:-10px; left:auto; right:calc(100% + 12px); width:340px; z-index:10001; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: top right; animation: scaleIn 0.2s ease-out;">
             <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4); display:flex; justify-content:space-between; align-items:center;">
                <span>Pending Today</span>
                <span id="reminder-count" style="background:#eab308; color:white; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:700;">0</span>
@@ -920,7 +920,7 @@ function _performDashboardRender() {
 
         <!-- Force Save Button -->
         <div class="fab-child save-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="force-save-btn" class="no-print" title="Force Save History Snapshot"
+          <button id="force-save-btn" class="no-print" data-tip-title="Force Save" data-tip-desc="Write a history snapshot now" data-tip-shortcut="Ctrl+S" data-tip-theme="success" data-tip-placement="left"
             style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
@@ -928,14 +928,14 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(16,185,129,0.3), 0 0 0 4px rgba(16,185,129,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="window.forceSaveHistory()">
-            <svg width="22" height="22" fill="none" stroke="#10b981" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(16,185,129,0.4));"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 0 5px rgba(16,185,129,0.45));"><path d="M4.8 3.5h11.4l4.3 4.3V19a2.2 2.2 0 0 1-2.2 2.2H4.8A2.2 2.2 0 0 1 2.6 19V5.7A2.2 2.2 0 0 1 4.8 3.5z" fill="#10b981" opacity="0.16"></path><path d="M4.8 3.5h11.4l4.3 4.3V19a2.2 2.2 0 0 1-2.2 2.2H4.8A2.2 2.2 0 0 1 2.6 19V5.7A2.2 2.2 0 0 1 4.8 3.5z" stroke="#10b981" stroke-width="1.8" stroke-linejoin="round" fill="none"></path><rect x="7" y="3.5" width="8" height="4.5" rx="0.8" fill="#10b981"></rect><rect x="5.8" y="13" width="12.4" height="8.2" rx="1.3" fill="#ffffff" stroke="#10b981" stroke-width="1.6"></rect><path d="M8.8 17.2l2 2 4.2-4.2" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#10b981; letter-spacing:0.04em; font-family:'Inter',sans-serif;">SAVE</span>
           </button>
         </div>
 
         <!-- History Button -->
         <div class="fab-child history-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="history-btn" class="no-print" title="Attendance History"
+          <button id="history-btn" class="no-print" data-tip-title="Attendance History" data-tip-desc="View past snapshots" data-tip-shortcut="Ctrl+H" data-tip-placement="left"
             style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
@@ -943,7 +943,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(139,92,246,0.3), 0 0 0 4px rgba(139,92,246,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="window.openHistoryModal()">
-            <svg width="22" height="22" fill="none" stroke="#8b5cf6" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 0 5px rgba(139,92,246,0.4));"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 0 5px rgba(139,92,246,0.45));"><circle cx="12" cy="12.6" r="8.6" fill="#8b5cf6" opacity="0.14"></circle><circle cx="12" cy="12.6" r="8.6" stroke="#8b5cf6" stroke-width="1.9" fill="none"></circle><path d="M3.6 9.6A9 9 0 0 1 12 3.6a9.5 9.5 0 0 0-6.6 2.7L3 8.7" stroke="#8b5cf6" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" fill="none"></path><path d="M3 3.6v5h5" stroke="#8b5cf6" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" fill="none"></path><path d="M12 8v4.6l3.3 2" stroke="#8b5cf6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path><circle cx="12" cy="12.6" r="1.55" fill="#8b5cf6"></circle></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#8b5cf6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">HIST</span>
           </button>
         </div>
@@ -955,7 +955,7 @@ function _performDashboardRender() {
 
         <!-- Theme Button -->
         <div class="fab-child" style="opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button class="no-print" title="Change Theme"
+          <button class="no-print" data-tip-title="Change Theme" data-tip-desc="Cycle color palette" data-tip-placement="left"
             style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
@@ -963,14 +963,14 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(250,204,21,0.3), 0 0 0 4px rgba(250,204,21,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); var dd=document.getElementById('theme-dropdown'); var bd=document.getElementById('theme-backdrop'); if(dd) dd.classList.toggle('open'); if(bd) bd.classList.toggle('show');">
-            <span style="font-size:1.3rem; line-height:1; filter:drop-shadow(0 0 5px rgba(250,204,21,0.4));">🎨</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px rgba(234,179,8,0.45));"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">THEME</span>
           </button>
         </div>
 
         <!-- Download JPG Button (Gold Premium) -->
         <div class="fab-child" style="opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button class="no-print" title="Download Report as JPG"
+          <button class="no-print" data-tip-title="Export JPG" data-tip-desc="Download report as an image" data-tip-shortcut="Ctrl+E" data-tip-theme="warning" data-tip-placement="left"
             style="background:linear-gradient(135deg,#fbbf24,#f59e0b); border:1.5px solid rgba(245,158,11,0.4); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:0 8px 20px rgba(245,158,11,0.35); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
@@ -978,7 +978,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.boxShadow='0 12px 30px rgba(245,158,11,0.5), 0 0 0 4px rgba(245,158,11,0.15)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.boxShadow='0 8px 20px rgba(245,158,11,0.35)';"
             onclick="exportReport()">
-            <svg width="22" height="22" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.2));"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.25));"><rect x="2.8" y="3" width="13" height="10" rx="1.8" fill="rgba(255,255,255,0.28)" stroke="white" stroke-width="1.7"></rect><circle cx="6.8" cy="6.8" r="1.3" fill="white"></circle><path d="M3.2 12.4l3.4-3.4 2.6 2.6 2.8-2.8 3.8 3.8" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"></path><path d="M12 12v8.2m-3-3.2l3 3 3-3" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"></path><path d="M6 21.6h12" stroke="white" stroke-width="2.3" stroke-linecap="round"></path></svg>
             <span style="font-size:0.52rem; font-weight:800; color:white; letter-spacing:0.04em; font-family:'Inter',sans-serif; text-shadow:0 1px 2px rgba(0,0,0,0.2);">JPG</span>
           </button>
         </div>
@@ -1914,7 +1914,10 @@ function buildPushNotificationButton() {
         onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.boxShadow='${enabled ? '0 10px 35px rgba(16,185,129,0.6), 0 0 0 6px rgba(16,185,129,0.2)' : '0 8px 32px rgba(100,116,139,0.3), 0 0 0 4px rgba(100,116,139,0.1)'}'; this.style.background='${enabled ? 'linear-gradient(135deg,#34d399,#10b981)' : 'rgba(255,255,255,0.85)'}';"
         onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.boxShadow='${enabled ? '0 6px 24px rgba(16,185,129,0.5),0 0 0 4px rgba(16,185,129,0.15)' : 'var(--glass-shadow)'}'; this.style.background='${enabled ? 'linear-gradient(135deg,#10b981,#059669)' : 'var(--glass-bg)'}';"
         onclick="handlePushToggle()">
-        <span class="push-icon" style="font-size:1.25rem; line-height:1; filter:${enabled ? 'drop-shadow(0 0 6px rgba(255,255,255,0.6))' : 'none'}">${enabled ? '🔔' : '🔕'}</span>
+        <span class="push-icon" style="line-height:1; filter:${enabled ? 'drop-shadow(0 0 6px rgba(255,255,255,0.55))' : 'none'}; display:flex; align-items:center; justify-content:center;">${enabled
+          ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="#ffffff"></path><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none"></path><path d="M19.3 4.4l1.8 1.8M14.8 2.6L16.4 1" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" opacity="0.9"></path></svg>'
+          : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="#64748b" opacity="0.18"></path><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" stroke="#64748b" stroke-width="1.8" stroke-linejoin="round" fill="none"></path><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" fill="none"></path><line x1="4.2" y1="4.2" x2="19.8" y2="19.8" stroke="#64748b" stroke-width="2.4" stroke-linecap="round"></line></svg>'
+        }</span>
         <span class="push-label" style="font-size:0.52rem; font-weight:800; letter-spacing:0.04em; font-family:'Inter',sans-serif; color:${enabled ? 'white' : '#64748b'}; line-height:1;">${enabled ? 'ON' : 'OFF'}</span>
       </button>
     </div>
@@ -2189,85 +2192,70 @@ window.openHistoryModal = function() {
 
   const modal = document.createElement('div');
   modal.id = 'history-modal';
-  modal.className = 'no-print';
-  modal.style.cssText = `
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
-    z-index: 10000; display: flex; justify-content: center; align-items: center;
-    opacity: 0; transition: opacity 0.3s ease;
-  `;
+  modal.className = 'ios-hm-overlay no-print';
 
   modal.innerHTML = `
-    <div style="background: var(--glass-bg, rgba(255,255,255,0.85)); width: 95%; max-width: 1100px; height: 90vh; 
-      border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); 
-      border: 1px solid var(--glass-border, rgba(255,255,255,0.5)); display: flex; flex-direction: column; overflow: hidden;
-      transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      backdrop-filter: blur(25px);">
-      
-      <!-- Modal Header -->
-      <div style="padding: 1.5rem 2rem; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.4);">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <div style="background: #8b5cf6; width: 44px; height: 44px; border-radius: 12px; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 16px rgba(139,92,246,0.3);">
-            <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+    <div class="ios-hm-card" role="dialog" aria-labelledby="ios-hm-title">
+      <div class="ios-hm-header">
+        <div class="ios-hm-title-wrap">
+          <div class="ios-hm-icon">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
           </div>
           <div>
-            <h2 style="margin: 0; font-size: 1.5rem; font-weight: 800; color: #1e293b; font-family: 'Inter', sans-serif;">Attendance History</h2>
-            <div style="font-size: 0.9rem; color: #64748b; font-weight: 500;">Browse past records by date</div>
+            <h2 id="ios-hm-title" class="ios-hm-title">Attendance History</h2>
+            <div class="ios-hm-sub">Browse past records by date</div>
           </div>
         </div>
-        <button onclick="window.closeHistoryModal()" style="background: rgba(0,0,0,0.05); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#ef4444';" onmouseout="this.style.background='rgba(0,0,0,0.05)'; this.style.color='inherit';">
-          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <button class="ios-hm-close" onclick="window.closeHistoryModal()" aria-label="Close">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
 
-      <!-- Modal Body -->
-      <div style="display: flex; flex: 1; overflow: hidden; font-family: 'Inter', sans-serif;">
-        <!-- Left Sidebar (Calendar) -->
-        <div style="width: 350px; border-right: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.2); padding: 1.5rem; display: flex; flex-direction: column;">
-          
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <button onclick="window.changeHistoryMonth(-1)" style="border:none; background:transparent; cursor:pointer; padding:8px; border-radius:8px; color:#1e293b;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-            <h3 id="history-month-year" style="margin:0; font-weight:800; font-size:1.15rem; color:#1e293b;">...</h3>
-            <button onclick="window.changeHistoryMonth(1)" style="border:none; background:transparent; cursor:pointer; padding:8px; border-radius:8px; color:#1e293b;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+      <div class="ios-hm-body">
+        <aside class="ios-hm-sidebar">
+          <div class="ios-hm-month-nav">
+            <button class="ios-hm-nav-btn" onclick="window.changeHistoryMonth(-1)" aria-label="Previous month">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <h3 id="history-month-year" class="ios-hm-month-label">…</h3>
+            <button class="ios-hm-nav-btn" onclick="window.changeHistoryMonth(1)" aria-label="Next month">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
           </div>
 
-          <!-- Weekday Headers -->
-          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-weight: 700; font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase;">
+          <div class="ios-hm-weekdays">
             <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
           </div>
 
-          <!-- Calendar Days Grid -->
-          <div id="history-calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; flex: 1; align-content: start;">
-            <!-- Rendered via JS -->
-          </div>
-          
-          <div style="margin-top: auto; padding: 1.2rem; background: rgba(139,92,246,0.06); border-radius: 12px; border: 1px dashed rgba(139,92,246,0.3); text-align: center; font-size: 0.85rem; color: #6d28d9; font-weight: 600;">
-            <div style="display:inline-block; width:8px; height:8px; background:#22c55e; border-radius:50%; margin-right:4px;"></div> 
-            Green dots indicate saved attendance snapshots
-          </div>
-        </div>
+          <div id="history-calendar-grid" class="ios-hm-grid"></div>
 
-        <!-- Right Side (Data Viewer) -->
-        <div style="flex: 1; overflow-y: auto; padding: 2rem; background: rgba(255,255,255,0.7); position: relative;" id="history-data-viewer">
-          <!-- Empty State -->
-          <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #94a3b8;">
-            <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem; opacity: 0.5;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <div style="font-size: 1.2rem; font-weight: 600;">Select a date to view history</div>
+          <div class="ios-hm-legend">
+            <span class="ios-hm-legend-dot"></span>Green dots indicate saved snapshots
           </div>
-        </div>
+        </aside>
+
+        <section class="ios-hm-viewer" id="history-data-viewer">
+          <div class="ios-hm-empty">
+            <div class="ios-hm-empty-ico">
+              <svg width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </div>
+            <div class="ios-hm-empty-text">Select a date to view history</div>
+          </div>
+        </section>
       </div>
     </div>
   `;
 
   document.body.appendChild(modal);
-  
-  // Animate in
-  requestAnimationFrame(() => {
-    modal.style.opacity = '1';
-    modal.children[0].style.transform = 'scale(1)';
-  });
 
-  // Initialize Calendar
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) window.closeHistoryModal();
+  });
+  window._iosHmKey = function(e) { if (e.key === 'Escape') window.closeHistoryModal(); };
+  document.addEventListener('keydown', window._iosHmKey);
+
+  requestAnimationFrame(() => modal.classList.add('is-open'));
+
   window.historyCurrentDate = new Date();
   window._fetchSavedHistoryDates(() => {
     window._renderHistoryCalendar();
@@ -2276,11 +2264,13 @@ window.openHistoryModal = function() {
 
 window.closeHistoryModal = function() {
   const modal = document.getElementById('history-modal');
-  if (modal) {
-    modal.style.opacity = '0';
-    modal.children[0].style.transform = 'scale(0.95)';
-    setTimeout(() => modal.remove(), 300);
+  if (!modal) return;
+  if (window._iosHmKey) {
+    document.removeEventListener('keydown', window._iosHmKey);
+    window._iosHmKey = null;
   }
+  modal.classList.remove('is-open');
+  setTimeout(() => modal.remove(), 350);
 };
 
 window.savedHistoryDates = new Set(); // Stores dates in 'YYYY-MM-DD' format
@@ -2323,86 +2313,62 @@ window._renderHistoryCalendar = function() {
   monthYearLabel.textContent = monthNames[month] + ' ' + year;
   
   grid.innerHTML = '';
-  
+
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  
+
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-  
-  // Empty slots
+
+  let html = '';
   for (let i = 0; i < firstDay; i++) {
-    grid.innerHTML += `<div style="padding:10px;"></div>`;
+    html += '<div></div>';
   }
-  
+
   for (let i = 1; i <= daysInMonth; i++) {
     const curDateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
     const hasData = window.savedHistoryDates.has(curDateStr);
     const isToday = curDateStr === todayStr;
     const isFuture = new Date(year, month, i) > today;
-    
-    let btnStyle = `
-      width: 100%; aspect-ratio: 1; border-radius: 12px; border: none; 
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      font-weight: 800; font-size: 0.95rem; font-family: 'Inter', sans-serif;
-      transition: all 0.2s; position: relative; outline: none;
-    `;
-    
-    let hasDataDot = '';
-    
-    if (hasData) {
-      btnStyle += `background: #fff; color: #1e293b; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);`;
-      hasDataDot = `<div style="width: 5px; height: 5px; background: #22c55e; border-radius: 50%; position: absolute; bottom: 6px; box-shadow: 0 0 6px rgba(34,197,94,0.8);"></div>`;
-    } else if (isFuture) {
-      btnStyle += `background: transparent; color: rgba(0,0,0,0.15); cursor: default;`;
-    } else {
-      btnStyle += `background: rgba(255,255,255,0.4); color: #94a3b8; cursor: pointer;`;
-    }
-    
-    if (isToday) {
-      btnStyle += `border: 2px solid #8b5cf6;`;
-    }
-    
-    const onClick = hasData ? `onclick="window._loadHistoryForDate('${curDateStr}')"` : `onclick="alert('No snapshot recorded for this date.')"`;
-    const hoverEffect = hasData ? `onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 8px 16px rgba(139,92,246,0.2)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.05)'; "` : '';
-    
-    grid.innerHTML += `
-      <button style="${btnStyle}" ${onClick} ${hoverEffect}>
-        ${i}
-        ${hasDataDot}
-      </button>
-    `;
+
+    const classes = ['ios-hm-day'];
+    if (hasData) classes.push('ios-hm-day--filled');
+    if (isFuture) classes.push('ios-hm-day--future');
+    if (isToday) classes.push('ios-hm-day--today');
+
+    const onClick = hasData
+      ? `onclick="window._loadHistoryForDate('${curDateStr}')"`
+      : (isFuture ? 'disabled' : `onclick="alert('No snapshot recorded for this date.')"`);
+
+    const dot = hasData ? '<span class="ios-hm-dot"></span>' : '';
+
+    html += `<button class="${classes.join(' ')}" ${onClick}>${i}${dot}</button>`;
   }
+
+  grid.innerHTML = html;
 };
 
 window._loadHistoryForDate = function(dateStr) {
   const viewer = document.getElementById('history-data-viewer');
   if (!viewer) return;
   
-  // Loading state
   viewer.innerHTML = `
-    <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-      <div style="width:40px; height:40px; border:4px solid rgba(139,92,246,0.2); border-top-color:#8b5cf6; border-radius:50%; animation:spin 1s linear infinite;"></div>
-      <div style="margin-top:1rem; font-weight:700; font-size:1.1rem; color:#8b5cf6;">Loading snapshot for ${dateStr}...</div>
+    <div class="ios-hm-loader">
+      <div class="ios-hm-spinner"></div>
+      <div class="ios-hm-loader-text">Loading snapshot for ${dateStr}…</div>
     </div>
   `;
-  if (!document.getElementById('spin-style')) {
-    const s = document.createElement('style');
-    s.id = 'spin-style';
-    s.innerHTML = `@keyframes spin { to { transform: rotate(360deg); } }`;
-    document.head.appendChild(s);
-  }
-  
+
   if (window.firebaseDb) {
     window.firebaseDb.ref(`mep_attendance_history/${dateStr}`).once('value').then(snapshot => {
       if (snapshot.exists()) {
         const state = snapshot.val();
         _renderHistoryState(dateStr, state, viewer);
       } else {
-        viewer.innerHTML = `<div style="height:100%; display:flex; justify-content:center; align-items:center; color:#94a3b8; font-size:1.2rem; font-weight:600;">No snapshot found for ${dateStr}.</div>`;
+        viewer.innerHTML = `<div class="ios-hm-empty"><div class="ios-hm-empty-text">No snapshot found for ${dateStr}.</div></div>`;
       }
     }).catch(err => {
-      viewer.innerHTML = `<div style="height:100%; display:flex; justify-content:center; align-items:center; color:#ef4444; font-size:1.2rem; font-weight:600;">Error loading data!</div>`;
+      viewer.innerHTML = `<div class="ios-hm-empty"><div class="ios-hm-empty-text" style="color:#ef4444;">Error loading data</div></div>`;
     });
   }
 };
@@ -2412,13 +2378,18 @@ function _renderHistoryState(dateStr, state, container) {
     var formattedDate = dateStr;
     try { formattedDate = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}); } catch(e) {}
 
-    var totalExist = 0, totalPresent = 0, totalAbsent = 0;
+    var totalAuth = 0, totalExist = 0, totalPresent = 0, totalAbsent = 0;
     var sectionsHtml = '';
 
-    // State structure: state[pageId][groupName] = [ {designation, authorized, existing, present, absent}, ... ]
+    function barClass(pct) {
+      if (pct >= 90) return 'high';
+      if (pct >= 70) return 'mid';
+      return 'low';
+    }
+
     var pageIds = Object.keys(state);
     pageIds.forEach(function(pageId) {
-      if (pageId === 'history') return; // skip history array
+      if (pageId === 'history') return;
       if (!state[pageId] || typeof state[pageId] !== 'object' || Array.isArray(state[pageId])) return;
 
       var pageData = state[pageId];
@@ -2428,47 +2399,79 @@ function _renderHistoryState(dateStr, state, container) {
       groupNames.forEach(function(groupName) {
         var rows = pageData[groupName];
         if (!rows) return;
-        // Handle both array format and object format
         if (!Array.isArray(rows)) {
           if (typeof rows === 'object') { rows = Object.values(rows); } else { return; }
         }
         if (rows.length === 0) return;
 
         var groupRows = [];
+        var secExist = 0, secPresent = 0, secAbsent = 0;
         rows.forEach(function(row) {
           if (!row || typeof row !== 'object') return;
           var desig = row.designation || 'N/A';
+          var authorized = parseInt(row.authorized) || 0;
           var existing = parseInt(row.existing) || 0;
           var present = parseInt(row.present) || 0;
           var absent = parseInt(row.absent) || 0;
           if (absent === 0 && present < existing) absent = existing - present;
-          totalExist += existing;
-          totalPresent += present;
-          totalAbsent += absent;
+          totalAuth += authorized;
+          totalExist += existing; totalPresent += present; totalAbsent += absent;
+          secExist += existing; secPresent += present; secAbsent += absent;
           groupRows.push({desig: desig, existing: existing, present: present, absent: absent});
         });
 
         if (groupRows.length === 0) return;
-        groupRows.forEach(function(r, idx) {
-          sectionsHtml += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">';
-          if (idx === 0) {
-            sectionsHtml += '<td rowspan="' + groupRows.length + '" style="padding:1rem; font-weight:800; color:#1e293b; background:rgba(0,0,0,0.02); vertical-align:middle; border-right:1px solid rgba(0,0,0,0.05);">' + groupName + '</td>';
-          }
-          sectionsHtml += '<td style="padding:0.8rem 1rem; font-weight:600; color:#475569;">' + r.desig + '</td>';
-          sectionsHtml += '<td style="padding:0.8rem 1rem; text-align:center; font-weight:600; color:#3b82f6;">' + r.existing + '</td>';
-          sectionsHtml += '<td style="padding:0.8rem 1rem; text-align:center; font-weight:800; color:#10b981;">' + r.present + '</td>';
-          sectionsHtml += '<td style="padding:0.8rem 1rem; text-align:center; font-weight:800; color:#ef4444;">' + r.absent + '</td>';
-          sectionsHtml += '</tr>';
+
+        var rowsHtml = '';
+        groupRows.forEach(function(r) {
+          var pct = r.existing > 0 ? Math.round((r.present / r.existing) * 100) : 0;
+          rowsHtml +=
+            '<div class="ios-ss-row">' +
+              '<div class="ios-ss-desig">' +
+                '<div class="ios-ss-desig-name">' + r.desig + '</div>' +
+                '<div class="ios-ss-bar"><div class="ios-ss-bar-fill ' + barClass(pct) + '" style="width:' + pct + '%"></div></div>' +
+              '</div>' +
+              '<div class="ios-ss-chips">' +
+                '<span class="ios-ss-chip c-exist"><span class="lbl">E</span>' + r.existing + '</span>' +
+                '<span class="ios-ss-chip c-present"><span class="lbl">P</span>' + r.present + '</span>' +
+                '<span class="ios-ss-chip c-absent' + (r.absent === 0 ? ' zero' : '') + '"><span class="lbl">A</span>' + r.absent + '</span>' +
+              '</div>' +
+            '</div>';
         });
+
+        sectionsHtml +=
+          '<div class="ios-ss-section">' +
+            '<div class="ios-ss-sec-head">' +
+              '<h4 class="ios-ss-sec-title">' + groupName + '</h4>' +
+              '<div class="ios-ss-sec-summary"><b>' + secPresent + '</b>/' + secExist + ' present · <i>' + secAbsent + '</i> absent</div>' +
+            '</div>' +
+            '<div class="ios-ss-rows">' + rowsHtml + '</div>' +
+          '</div>';
       });
     });
 
     if (sectionsHtml === '') {
-      container.innerHTML = '<div style="padding:2rem;"><h3 style="margin:0 0 1rem 0; font-size:1.5rem; font-weight:800; color:#1e293b;">Snapshot: ' + formattedDate + '</h3><pre style="background:#f8fafc; padding:1.5rem; border-radius:12px; overflow:auto; max-height:70vh; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">' + JSON.stringify(state, null, 2) + '</pre></div>';
+      container.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No attendance data recorded on ' + formattedDate + '.</div></div>';
       return;
     }
 
-    container.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:2rem; padding-bottom:1rem; border-bottom:2px solid rgba(0,0,0,0.05); flex-wrap:wrap; gap:1rem;"><div><h3 style="margin:0; font-size:1.5rem; font-weight:800; color:#1e293b;">Attendance Snapshot</h3><div style="color:#64748b; font-weight:600; font-size:0.95rem; margin-top:0.3rem;">Recorded on ' + formattedDate + '</div></div><div style="display:flex; gap:1rem; flex-wrap:wrap;"><div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:12px; padding:0.6rem 1.2rem; text-align:center;"><div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">Existing</div><div style="font-size:1.4rem; font-weight:900; color:#3b82f6;">' + totalExist + '</div></div><div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:12px; padding:0.6rem 1.2rem; text-align:center;"><div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">Present</div><div style="font-size:1.4rem; font-weight:900; color:#10b981;">' + totalPresent + '</div></div><div style="background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:12px; padding:0.6rem 1.2rem; text-align:center;"><div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">Absent</div><div style="font-size:1.4rem; font-weight:900; color:#ef4444;">' + totalAbsent + '</div></div></div></div><div style="background:white; border-radius:16px; box-shadow:0 15px 35px rgba(0,0,0,0.04); overflow:hidden; border:1px solid rgba(0,0,0,0.06);"><table style="width:100%; border-collapse:collapse; font-size:0.95rem;"><thead><tr style="background:#f8fafc;"><th style="padding:1rem; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; border-bottom:2px solid #e2e8f0;">Section</th><th style="padding:1rem; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; border-bottom:2px solid #e2e8f0;">Designation</th><th style="padding:1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; border-bottom:2px solid #e2e8f0;">Existing</th><th style="padding:1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; border-bottom:2px solid #e2e8f0;">Present</th><th style="padding:1rem; text-align:center; font-weight:800; color:#475569; text-transform:uppercase; font-size:0.8rem; border-bottom:2px solid #e2e8f0;">Absent</th></tr></thead><tbody>' + sectionsHtml + '</tbody></table></div>';
+    var pct = totalExist > 0 ? Math.round((totalPresent / totalExist) * 100) : 0;
+
+    container.innerHTML =
+      '<div class="ios-ss-head">' +
+        '<div>' +
+          '<h3 class="ios-ss-head-title">Attendance Snapshot</h3>' +
+          '<div class="ios-ss-head-date">' + formattedDate + '</div>' +
+        '</div>' +
+        '<div class="ios-ss-ring" style="--pct:' + pct + '"><span class="ios-ss-ring-val">' + pct + '%</span></div>' +
+      '</div>' +
+      '<div class="ios-ss-kpi">' +
+        '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Authorized</div><div class="ios-ss-kpi-value k-total">' + (totalAuth || totalExist) + '</div></div>' +
+        '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Existing</div><div class="ios-ss-kpi-value k-existing">' + totalExist + '</div></div>' +
+        '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Present</div><div class="ios-ss-kpi-value k-present">' + totalPresent + '</div></div>' +
+        '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Absent</div><div class="ios-ss-kpi-value k-absent">' + totalAbsent + '</div></div>' +
+      '</div>' +
+      '<div class="ios-ss-sections">' + sectionsHtml + '</div>';
   } catch(e) {
     console.error('_renderHistoryState error:', e);
     container.innerHTML = '<div style="padding:2rem;"><h3 style="color:#ef4444; margin-bottom:1rem;">Error rendering snapshot</h3><pre style="background:#f8fafc; padding:1.5rem; border-radius:12px; overflow:auto; max-height:70vh; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">' + JSON.stringify(state, null, 2) + '</pre></div>';

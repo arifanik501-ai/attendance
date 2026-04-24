@@ -647,44 +647,89 @@ h4 {
 #page-title.page-title-premium {
   --pt-accent: #b45309;
   --pt-accent-soft: #a16207;
+  --pt-gold-deep: #2d1708;
+  --pt-gold-dark: #5c3315;
+  --pt-gold-mid: #8e5a1d;
+  --pt-gold-bright: #c9954b;
+  --pt-gold-specular: #e9c16d;
   --pt-ink-1: #1f1408;
   --pt-ink-2: #402815;
   --pt-ink-3: #7c4a1e;
 
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.25rem;
+  gap: 0.3rem;
   line-height: 1;
   margin: 0;
-  padding: 0.15rem 0 0.45rem;
+  padding: 0.25rem 0 0.85rem;
   font-size: inherit; /* reset the default h1 size — we size the children */
+  isolation: isolate;
+}
+
+/* Ambient warm halo behind the whole title */
+.page-title-halo {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: -8%;
+  width: 72%;
+  height: 160%;
+  transform: translateY(-50%);
+  background:
+    radial-gradient(ellipse at 30% 50%,
+      rgba(242, 191, 96, 0.38) 0%,
+      rgba(242, 191, 96, 0.18) 28%,
+      rgba(180, 83, 9, 0.08) 52%,
+      transparent 72%);
+  filter: blur(4px);
+  pointer-events: none;
+  opacity: 0;
+  animation:
+    pageTitleHaloIn 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s forwards,
+    pageTitleHaloBreathe 6.5s ease-in-out 1.3s infinite;
+}
+@keyframes pageTitleHaloIn {
+  from { opacity: 0; transform: translateY(-50%) scale(0.88); }
+  to   { opacity: 1; transform: translateY(-50%) scale(1); }
+}
+@keyframes pageTitleHaloBreathe {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.78; }
 }
 
 .page-title-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.6rem;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
+  font-weight: 700;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--pt-accent) 65%, #6b5235);
+  color: color-mix(in srgb, var(--pt-accent) 75%, #5e4322);
   opacity: 0;
   animation: pageTitleEyebrowIn 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s forwards;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
 }
-.page-title-eyebrow::before {
-  content: "";
+.page-title-eyebrow-diamond {
   display: inline-block;
-  width: 26px;
-  height: 1.5px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    var(--pt-accent) 45%,
-    var(--pt-accent) 55%,
-    transparent 100%);
-  opacity: 0.8;
+  font-size: 0.75em;
+  line-height: 1;
+  color: color-mix(in srgb, var(--pt-gold-mid) 90%, var(--pt-gold-bright));
+  text-shadow:
+    0 0 4px color-mix(in srgb, var(--pt-gold-bright) 60%, transparent),
+    0 0 10px color-mix(in srgb, var(--pt-accent) 30%, transparent);
+  animation: pageTitleDiamondTwinkle 4.5s ease-in-out infinite;
+  transform-origin: center;
+}
+.page-title-eyebrow-diamond:nth-child(2) { animation-delay: 2s; }
+
+@keyframes pageTitleDiamondTwinkle {
+  0%, 100% { opacity: 0.7; transform: scale(1) rotate(0deg); }
+  40%      { opacity: 1;   transform: scale(1.2) rotate(45deg); }
+  60%      { opacity: 1;   transform: scale(1.15) rotate(90deg); }
 }
 @keyframes pageTitleEyebrowIn {
   from { opacity: 0; transform: translateY(6px); }
@@ -695,34 +740,43 @@ h4 {
   position: relative;
   display: inline-block;
   font-family: 'Fraunces', 'Playfair Display', Georgia, 'Times New Roman', serif;
-  font-size: clamp(2rem, 4.8vw, 2.6rem);
+  font-size: clamp(2.2rem, 5.2vw, 2.85rem);
   font-weight: 600;
   font-style: normal;
   font-optical-sizing: auto;
-  font-variation-settings: "SOFT" 50, "opsz" 60, "WONK" 0;
-  letter-spacing: -0.015em;
+  font-variation-settings: "SOFT" 50, "opsz" 72, "WONK" 0;
+  letter-spacing: -0.018em;
   line-height: 1.02;
 
-  /* Metallic bronze gradient fill */
+  /* Gold-foil gradient: deep bronze → rich gold → deep bronze */
   background: linear-gradient(
-    125deg,
-    var(--pt-ink-1) 0%,
-    var(--pt-ink-2) 28%,
-    var(--pt-ink-3) 48%,
-    var(--pt-ink-2) 68%,
-    var(--pt-ink-1) 100%);
-  background-size: 220% 220%;
+    135deg,
+    var(--pt-gold-deep) 0%,
+    var(--pt-gold-dark) 15%,
+    var(--pt-gold-mid) 32%,
+    var(--pt-gold-bright) 46%,
+    var(--pt-gold-specular) 50%,
+    var(--pt-gold-bright) 54%,
+    var(--pt-gold-mid) 68%,
+    var(--pt-gold-dark) 85%,
+    var(--pt-gold-deep) 100%);
+  background-size: 240% 240%;
   background-position: 0% 50%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
 
+  /* Letterpress depth: single subtle warm drop to seat the text on the bg */
+  filter:
+    drop-shadow(0 1px 0 rgba(255, 240, 210, 0.4))
+    drop-shadow(0 3px 6px rgba(45, 23, 8, 0.28))
+    drop-shadow(0 10px 22px rgba(92, 51, 21, 0.15));
+
   /* Slow shimmer that glides across the letterforms */
   animation:
     pageTitleNameIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s backwards,
     pageTitleShimmer 9s cubic-bezier(0.4, 0, 0.6, 1) 0.8s infinite;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 @keyframes pageTitleNameIn {
   from {
@@ -742,24 +796,49 @@ h4 {
   100% { background-position: 0% 50%; }
 }
 
-/* Animated accent underline */
+/* Animated accent underline — gold foil bar with soft glow */
 .page-title-name::after {
   content: "";
   position: absolute;
   left: 0;
   bottom: -0.45rem;
-  height: 2px;
+  height: 2.5px;
   width: 0;
   border-radius: 2px;
   background: linear-gradient(90deg,
-    color-mix(in srgb, var(--pt-accent) 95%, transparent) 0%,
-    color-mix(in srgb, var(--pt-accent) 55%, transparent) 55%,
+    color-mix(in srgb, var(--pt-gold-deep) 80%, transparent) 0%,
+    color-mix(in srgb, var(--pt-gold-mid) 90%, transparent) 18%,
+    color-mix(in srgb, var(--pt-gold-bright) 95%, transparent) 40%,
+    color-mix(in srgb, var(--pt-gold-mid) 75%, transparent) 70%,
     transparent 100%);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--pt-accent) 30%, transparent);
-  animation: pageTitleUnderline 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.45s forwards;
+  box-shadow:
+    0 0 6px color-mix(in srgb, var(--pt-gold-bright) 55%, transparent),
+    0 0 14px color-mix(in srgb, var(--pt-accent) 40%, transparent);
+  animation: pageTitleUnderline 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.45s forwards;
 }
 @keyframes pageTitleUnderline {
-  to { width: 58%; }
+  to { width: 64%; }
+}
+
+/* Italic caption below the underline */
+.page-title-caption {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-family: 'Fraunces', 'Playfair Display', Georgia, serif;
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--pt-ink-2) 70%, #7a5a32);
+  opacity: 0;
+  animation: pageTitleCaptionIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.9s forwards;
+}
+.page-title-caption em {
+  font-style: italic;
+  font-variation-settings: "SOFT" 100, "opsz" 14, "WONK" 1;
+}
+@keyframes pageTitleCaptionIn {
+  from { opacity: 0; transform: translateY(5px); letter-spacing: 0.08em; }
+  to   { opacity: 1; transform: translateY(0);  letter-spacing: 0.04em; }
 }
 
 /* Subtle highlight glint sliding across the name once on load */
@@ -801,17 +880,22 @@ h4 {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .page-title-halo,
   .page-title-eyebrow,
+  .page-title-eyebrow-diamond,
   .page-title-name,
   .page-title-name::before,
-  .page-title-name::after {
+  .page-title-name::after,
+  .page-title-caption {
     animation: none !important;
   }
   .page-title-name {
     background-position: 50% 50%;
   }
-  .page-title-name::after { width: 58%; }
-  .page-title-eyebrow { opacity: 1; }
+  .page-title-name::after { width: 64%; }
+  .page-title-halo,
+  .page-title-eyebrow,
+  .page-title-caption { opacity: 1; }
 }
 
 /*

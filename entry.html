@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>Fan Attendance - Entry Sheet</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
 </head>
 
 <body style="opacity:0; transform: translate3d(14px, 0, 0); transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
@@ -23,25 +23,25 @@
             <div>
                 <h1 id="page-title">Loading...</h1>
             </div>
-            <div style="display:flex; gap:0.5rem; align-items:center;">
-                <a href="index.html" class="btn"
-                    style="background:#fffcf5; color:#a1471d; font-weight:700; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); transition:transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);"
-                    onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">Back
-                    to Dashboard</a>
-                <button id="btn-export" class="btn"
-                    style="display:flex; align-items:center; gap:0.4rem; background:#fffcf5; color:#a1471d; font-weight:700; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); transition:transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);"
-                    onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            <div class="page-header-actions">
+                <a href="index.html" class="btn glass-btn glass-btn-amber">
+                    <svg class="glass-btn-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
-                    Export
+                    <span>Back to Dashboard</span>
+                </a>
+                <button id="btn-export" class="btn glass-btn glass-btn-amber">
+                    <svg class="glass-btn-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>Export</span>
                 </button>
-                <button id="btn-save" class="btn btn-primary"
-                    style="box-shadow:0 4px 6px -1px rgba(139,92,246,0.5), 0 2px 4px -1px rgba(139,92,246,0.3); transition:transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); letter-spacing:0.02em;"
-                    onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">Entry
-                    Update</button>
+                <button id="btn-save" class="btn btn-primary glass-btn glass-btn-primary">
+                    <svg class="glass-btn-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span>Entry Update</span>
+                </button>
             </div>
         </div>
 
@@ -53,8 +53,8 @@
     <!-- Firebase Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
-    <script src="app.js?v=6"></script>
-    <script src="tooltip.js?v=6" defer></script>
+    <script src="app.js?v=7"></script>
+    <script src="tooltip.js?v=7" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);

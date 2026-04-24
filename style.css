@@ -3476,3 +3476,34 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
 @media (prefers-reduced-motion: reduce) {
   .pfab *, .pfab { animation: none !important; transition: none !important; }
 }
+
+/* PIN input typing animation */
+.pin-box {
+  caret-color: #eab308;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  will-change: transform;
+}
+.pin-box:focus {
+  border-color: #eab308 !important;
+  box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.18);
+}
+.pin-box.pin-pop {
+  animation: pinPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes pinPop {
+  0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.55); }
+  45%  { transform: scale(1.14); box-shadow: 0 0 0 8px rgba(234, 179, 8, 0.00); }
+  100% { transform: scale(1);    box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.18); }
+}
+.pin-box.pin-shake {
+  animation: pinShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes pinShake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(3px); }
+  30%, 50%, 70% { transform: translateX(-5px); }
+  40%, 60% { transform: translateX(5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pin-box, .pin-box.pin-pop, .pin-box.pin-shake { animation: none !important; transition: none !important; }
+}

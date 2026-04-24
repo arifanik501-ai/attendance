@@ -402,11 +402,24 @@ function renderEntryPage(pageId) {
 
   // PIN input auto-advance logic
   const pins = document.querySelectorAll('.pin-box');
+  const popPin = (el) => {
+    el.classList.remove('pin-pop');
+    // Force reflow so the animation can retrigger on consecutive inputs.
+    void el.offsetWidth;
+    el.classList.add('pin-pop');
+  };
   pins.forEach((pin, i) => {
+    pin.addEventListener('animationend', () => {
+      pin.classList.remove('pin-pop');
+      pin.classList.remove('pin-shake');
+    });
     pin.addEventListener('input', (e) => {
       pin.style.borderColor = '#eab308';
-      if (e.target.value && i < 3) pins[i + 1].focus();
-      if (i === 3 && e.target.value) document.getElementById('pin-submit').click();
+      if (e.target.value) {
+        popPin(pin);
+        if (i < 3) pins[i + 1].focus();
+        if (i === 3) document.getElementById('pin-submit').click();
+      }
     });
     pin.addEventListener('keydown', (e) => {
       if (e.key === 'Backspace' && !pin.value && i > 0) {
@@ -425,7 +438,13 @@ function renderEntryPage(pageId) {
       _renderEntryContent(pageId);
     } else {
       document.getElementById('pin-error').textContent = 'Incorrect PIN. Please try again.';
-      pins.forEach(p => { p.value = ''; p.style.borderColor = '#ef4444'; });
+      pins.forEach(p => {
+        p.value = '';
+        p.style.borderColor = '#ef4444';
+        p.classList.remove('pin-shake');
+        void p.offsetWidth;
+        p.classList.add('pin-shake');
+      });
       pins[0].focus();
     }
   });

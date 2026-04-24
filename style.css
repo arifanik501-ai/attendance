@@ -3484,8 +3484,43 @@ body[data-theme="parrot"] {
 
 @media print { .mep-tip { display: none !important; } }
 
+/* Auto-dismiss: subtle progress bar that depletes across the bottom
+   while the tooltip is counting down, plus a soft fade-out at the end. */
+.mep-tip-body { overflow: hidden; }
+.mep-tip-body::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.55) 70%,
+    rgba(255, 255, 255, 0.15) 100%);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s linear;
+}
+.mep-tip--auto-dismiss .mep-tip-body::after {
+  width: 100%;
+  opacity: 0.85;
+  animation: mepTipCountdown var(--tip-dismiss-ms, 2200ms) linear forwards;
+}
+.mep-tip--auto-dismiss:not(.mep-tip--visible) {
+  opacity: 0;
+  transform: translate3d(0, 4px, 0) scale(0.96);
+}
+@keyframes mepTipCountdown {
+  0%   { width: 100%; opacity: 0.9; }
+  90%  { opacity: 0.9; }
+  100% { width: 0%;   opacity: 0.3; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mep-tip { transition: opacity 0.1s linear; transform: none !important; }
+  .mep-tip--auto-dismiss .mep-tip-body::after { animation: none !important; width: 0; }
 }
 
 /* ═══════════════════════════════════════════════════════════════

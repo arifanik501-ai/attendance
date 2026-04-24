@@ -29,6 +29,10 @@
   const LONG_PRESS_MS = 500;
   const VIEWPORT_MARGIN = 8;
   const ARROW_SIZE = 7;
+  // Tooltips auto-dismiss by default so they don't linger — especially on
+  // mobile where they're opened via long-press. Individual tooltips can
+  // override via `data-tip-auto-dismiss="N"` (ms), or disable with "0".
+  const DEFAULT_AUTO_DISMISS_MS = 2500;
 
   // ── Build tooltip DOM once ───────────────────────────────────────
   const tip = document.createElement('div');
@@ -52,8 +56,13 @@
   let currentTarget = null;
   let showTimer = null;
   let hideTimer = null;
+  let autoDismissTimer = null;
   let longPressTimer = null;
   let tipId = 0;
+  // Track the element whose tooltip most recently auto-dismissed,
+  // so we don't immediately re-show it while the pointer still hovers.
+  // Cleared on mouseout / focusout / next click elsewhere.
+  let suppressedTarget = null;
 
   // ── Migrate native `title` attributes so browser tooltip doesn't duplicate ──
   function migrate(el) {
@@ -83,7 +92,10 @@
       placement: (el.getAttribute('data-tip-placement') || 'auto').toLowerCase(),
       theme: (el.getAttribute('data-tip-theme') || 'default').toLowerCase(),
       html: el.getAttribute('data-tip-html') === 'true',
-      delay: parseInt(el.getAttribute('data-tip-delay'), 10)
+      delay: parseInt(el.getAttribute('data-tip-delay'), 10),
+      autoDismiss: el.hasAttribute('data-tip-auto-dismiss')
+        ? parseInt(el.getAttribute('data-tip-auto-dismiss'), 10)
+        : DEFAULT_AUTO_DISMISS_MS
     };
   }
 
@@ -188,19 +200,43 @@
     target.setAttribute('aria-describedby', id);
 
     position(target, cfg.placement);
+    // Reset progress bar animation before showing.
+    tip.classList.remove('mep-tip--auto-dismiss');
+    void tip.offsetWidth;
     tip.classList.add('mep-tip--visible');
     tip.setAttribute('aria-hidden', 'false');
+
+    // Auto-dismiss: hide the tooltip after the configured delay,
+    // regardless of hover/focus state. Gives it a countdown progress
+    // bar underneath. After it hides, mark the target as "suppressed"
+    // so we don't immediately re-show while the pointer is still on it.
+    clearTimeout(autoDismissTimer);
+    if (Number.isFinite(cfg.autoDismiss) && cfg.autoDismiss > 0) {
+      tip.style.setProperty('--tip-dismiss-ms', cfg.autoDismiss + 'ms');
+      requestAnimationFrame(() => tip.classList.add('mep-tip--auto-dismiss'));
+      const dismissedTarget = target;
+      autoDismissTimer = setTimeout(() => {
+        suppressedTarget = dismissedTarget;
+        hide();
+      }, cfg.autoDismiss);
+    }
   }
 
   function hide() {
     if (!currentTarget) return;
+    clearTimeout(autoDismissTimer);
     currentTarget.removeAttribute('aria-describedby');
     currentTarget = null;
     tip.classList.remove('mep-tip--visible');
+    tip.classList.remove('mep-tip--auto-dismiss');
     tip.setAttribute('aria-hidden', 'true');
   }
 
   function scheduleShow(target) {
+    // Don't re-show a tooltip we just auto-dismissed while the pointer
+    // is still on the same element — user has to move away and back
+    // (or focus again) to see it again.
+    if (target === suppressedTarget) return;
     clearTimeout(hideTimer);
     clearTimeout(showTimer);
     const cfg = configFrom(target);
@@ -231,7 +267,11 @@
   });
   document.addEventListener('mouseout', (e) => {
     const t = findTipTarget(e.target);
-    if (t && (!e.relatedTarget || !t.contains(e.relatedTarget))) scheduleHide();
+    if (t && (!e.relatedTarget || !t.contains(e.relatedTarget))) {
+      // User moved off the element → allow it to show again next time.
+      if (t === suppressedTarget) suppressedTarget = null;
+      scheduleHide();
+    }
   });
 
   document.addEventListener('focusin', (e) => {
@@ -240,7 +280,10 @@
   });
   document.addEventListener('focusout', (e) => {
     const t = findTipTarget(e.target);
-    if (t) hide();
+    if (t) {
+      if (t === suppressedTarget) suppressedTarget = null;
+      hide();
+    }
   });
 
   // Touch: long-press shows, tap outside hides
@@ -250,7 +293,12 @@
     clearTimeout(longPressTimer);
     longPressTimer = setTimeout(() => show(t), LONG_PRESS_MS);
   }, { passive: true });
-  const cancelLongPress = () => clearTimeout(longPressTimer);
+  const cancelLongPress = () => {
+    clearTimeout(longPressTimer);
+    // On touch, lifting the finger counts as leaving the element, so
+    // the next long-press can show the tooltip again.
+    suppressedTarget = null;
+  };
   document.addEventListener('touchend', cancelLongPress);
   document.addEventListener('touchmove', cancelLongPress, { passive: true });
   document.addEventListener('touchcancel', cancelLongPress);

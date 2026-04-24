@@ -460,8 +460,10 @@ function renderEntryPage(pageId) {
     const eyebrow = titleMatch[1];
     const name = titleMatch[2];
     document.getElementById('page-title').innerHTML =
-      `<span class="page-title-eyebrow">${eyebrow}</span>` +
-      `<span class="page-title-name" data-text="${name.replace(/"/g, '&quot;')}">${name}</span>`;
+      '<span class="page-title-halo" aria-hidden="true"></span>' +
+      `<span class="page-title-eyebrow"><span class="page-title-eyebrow-diamond" aria-hidden="true">\u2726</span>${eyebrow}<span class="page-title-eyebrow-diamond" aria-hidden="true">\u2726</span></span>` +
+      `<span class="page-title-name" data-text="${name.replace(/"/g, '&quot;')}">${name}</span>` +
+      '<span class="page-title-caption"><em>Daily Attendance Record</em></span>';
   } else {
     document.getElementById('page-title').innerHTML =
       `<span class="page-title-name">${config.title}</span>`;

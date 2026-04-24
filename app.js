@@ -1840,12 +1840,13 @@ window.addEventListener('beforeunload', () => {
   sessionStorage.setItem('dashboardScrollPos', window.scrollY);
 });
 
-// Close dropdowns when clicking outside
+// Close dropdowns / FAB menu when clicking outside
 document.addEventListener('click', (e) => {
   const notiBtn = document.getElementById('noti-btn');
   const notiDropdown = document.getElementById('noti-dropdown');
   const remBtn = document.getElementById('reminder-btn');
   const remDropdown = document.getElementById('reminder-dropdown');
+  const fabWrapper = document.getElementById('fab-menu-wrapper');
 
   if (notiBtn && notiDropdown && !notiBtn.contains(e.target) && !notiDropdown.contains(e.target)) {
     notiDropdown.style.display = 'none';
@@ -1853,6 +1854,11 @@ document.addEventListener('click', (e) => {
 
   if (remBtn && remDropdown && !remBtn.contains(e.target) && !remDropdown.contains(e.target)) {
     remDropdown.style.display = 'none';
+  }
+
+  // Minimize FAB when user clicks anywhere outside the FAB menu
+  if (window._fabOpen && fabWrapper && !fabWrapper.contains(e.target)) {
+    window.toggleFabMenu();
   }
 });
 

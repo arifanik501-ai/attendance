@@ -2526,13 +2526,42 @@ window.openHistoryModal = function() {
 
   modal.innerHTML = `
     <div class="ios-hm-card" role="dialog" aria-labelledby="ios-hm-title">
+      <span class="ios-hm-aurora ios-hm-aurora-1" aria-hidden="true"></span>
+      <span class="ios-hm-aurora ios-hm-aurora-2" aria-hidden="true"></span>
+      <span class="ios-hm-aurora ios-hm-aurora-3" aria-hidden="true"></span>
       <div class="ios-hm-header">
         <div class="ios-hm-title-wrap">
-          <div class="ios-hm-icon">
-            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+          <div class="ios-hm-icon" aria-hidden="true">
+            <svg class="ios-hm-icon-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="ios-hm-face" cx="50%" cy="40%" r="60%">
+                  <stop offset="0%" stop-color="#fff" stop-opacity="0.95"/>
+                  <stop offset="70%" stop-color="#ede9fe" stop-opacity="0.85"/>
+                  <stop offset="100%" stop-color="#c4b5fd" stop-opacity="0.75"/>
+                </radialGradient>
+              </defs>
+              <circle cx="12" cy="12" r="10" fill="url(#ios-hm-face)" stroke="#fff" stroke-width="1.2" stroke-opacity="0.85"/>
+              <circle cx="12" cy="12" r="10" fill="none" stroke="rgba(124,58,237,0.45)" stroke-width="0.6"/>
+              <g stroke="#fff" stroke-width="1" stroke-linecap="round">
+                <line x1="12" y1="3" x2="12" y2="4.5"/>
+                <line x1="21" y1="12" x2="19.5" y2="12"/>
+                <line x1="12" y1="21" x2="12" y2="19.5"/>
+                <line x1="3" y1="12" x2="4.5" y2="12"/>
+              </g>
+              <line class="ios-hm-icon-hand-hour" x1="12" y1="12" x2="12" y2="7.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+              <line class="ios-hm-icon-hand-min" x1="12" y1="12" x2="16.2" y2="12" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="12" cy="12" r="1" fill="#fff"/>
+            </svg>
           </div>
           <div>
-            <h2 id="ios-hm-title" class="ios-hm-title">Attendance History</h2>
+            <h2 id="ios-hm-title" class="ios-hm-title">
+              Attendance History
+              <span id="history-count-badge" class="ios-hm-count-badge" aria-hidden="true">
+                <span class="ios-hm-count-dot"></span>
+                <span class="ios-hm-count-num">\u2014</span>
+                <span class="ios-hm-count-lbl">snapshots</span>
+              </span>
+            </h2>
             <div class="ios-hm-sub">Browse past records by date</div>
           </div>
         </div>
@@ -2543,6 +2572,7 @@ window.openHistoryModal = function() {
 
       <div class="ios-hm-body">
         <aside class="ios-hm-sidebar">
+          <div class="ios-hm-sidebar-eyebrow" aria-hidden="true">Archive</div>
           <div class="ios-hm-month-nav">
             <button class="ios-hm-nav-btn" onclick="window.changeHistoryMonth(-1)" aria-label="Previous month">
               <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -2566,10 +2596,13 @@ window.openHistoryModal = function() {
 
         <section class="ios-hm-viewer" id="history-data-viewer">
           <div class="ios-hm-empty">
-            <div class="ios-hm-empty-ico">
-              <svg width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <div class="ios-hm-empty-ico" aria-hidden="true">
+              <span class="ios-hm-empty-ring"></span>
+              <span class="ios-hm-empty-ring ios-hm-empty-ring-2"></span>
+              <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><circle cx="8.5" cy="14.5" r="1" fill="currentColor"/><circle cx="12" cy="14.5" r="1" fill="currentColor"/><circle cx="15.5" cy="14.5" r="1" fill="currentColor"/></svg>
             </div>
             <div class="ios-hm-empty-text">Select a date to view history</div>
+            <div class="ios-hm-empty-hint">Days with a glowing dot have saved snapshots</div>
           </div>
         </section>
       </div>
@@ -2589,7 +2622,20 @@ window.openHistoryModal = function() {
   window.historyCurrentDate = new Date();
   window._fetchSavedHistoryDates(() => {
     window._renderHistoryCalendar();
+    window._updateHistoryCountBadge();
   });
+};
+
+window._updateHistoryCountBadge = function() {
+  const badge = document.getElementById('history-count-badge');
+  if (!badge) return;
+  const count = window.savedHistoryDates ? window.savedHistoryDates.size : 0;
+  const numEl = badge.querySelector('.ios-hm-count-num');
+  const lblEl = badge.querySelector('.ios-hm-count-lbl');
+  if (numEl) numEl.textContent = count;
+  if (lblEl) lblEl.textContent = count === 1 ? 'snapshot' : 'snapshots';
+  badge.classList.toggle('is-empty', count === 0);
+  badge.classList.add('is-ready');
 };
 
 window.closeHistoryModal = function() {

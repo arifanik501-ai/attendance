@@ -4264,6 +4264,440 @@ body[data-theme="parrot"] {
 }
 
 /* ═══════════════════════════════════════════════════
+ * ATTENDANCE HISTORY — PREMIUM UPGRADE LAYER
+ * ---------------------------------------------------
+ * Selectors below override / extend the base `.ios-hm-*`
+ * rules above to give the history modal a noticeably more
+ * premium feel: aurora-lit card, animated clock icon,
+ * glowing snapshot dots, pulsing "today" ring, floating
+ * empty state, and staged entrance cascade.
+ * ═══════════════════════════════════════════════════ */
+
+/* -- Card surface: richer shadows + ambient aurora blobs -- */
+.ios-hm-card {
+  box-shadow:
+    0 40px 80px -20px rgba(28, 17, 52, 0.45),
+    0 16px 40px -12px rgba(124, 58, 237, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(167, 139, 250, 0.18);
+}
+.ios-hm-aurora {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(42px);
+  opacity: 0.75;
+  will-change: transform, opacity;
+}
+.ios-hm-aurora-1 {
+  top: -14%;
+  left: -8%;
+  width: 42%;
+  height: 42%;
+  background: radial-gradient(circle at 30% 40%,
+    rgba(167, 139, 250, 0.55) 0%,
+    rgba(124, 58, 237, 0.32) 35%,
+    transparent 70%);
+  animation: ios-hm-aurora-drift-a 22s ease-in-out infinite;
+}
+.ios-hm-aurora-2 {
+  bottom: -16%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle at 70% 60%,
+    rgba(236, 72, 153, 0.35) 0%,
+    rgba(244, 114, 182, 0.18) 40%,
+    transparent 72%);
+  animation: ios-hm-aurora-drift-b 26s ease-in-out infinite;
+}
+.ios-hm-aurora-3 {
+  top: 30%;
+  right: 12%;
+  width: 30%;
+  height: 30%;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(251, 191, 36, 0.25) 0%,
+    rgba(245, 158, 11, 0.10) 40%,
+    transparent 70%);
+  animation: ios-hm-aurora-drift-c 18s ease-in-out infinite;
+}
+@keyframes ios-hm-aurora-drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(4%, 6%, 0) scale(1.08); }
+}
+@keyframes ios-hm-aurora-drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.7; }
+  50%      { transform: translate3d(-5%, -4%, 0) scale(1.12); opacity: 0.85; }
+}
+@keyframes ios-hm-aurora-drift-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.55; }
+  50%      { transform: translate3d(-3%, 5%, 0) scale(1.1); opacity: 0.8; }
+}
+/* Keep all inner content above the aurora layer */
+.ios-hm-card > .ios-hm-header,
+.ios-hm-card > .ios-hm-body { position: relative; z-index: 1; }
+
+/* -- Header icon: animated ticking clock with halo -- */
+.ios-hm-icon {
+  position: relative;
+  width: 48px; height: 48px;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55) 0%, transparent 55%),
+    linear-gradient(135deg, #a78bfa 0%, #7c3aed 55%, #4c1d95 100%);
+  box-shadow:
+    0 12px 26px -6px rgba(124, 58, 237, 0.55),
+    0 3px 8px -2px rgba(76, 29, 149, 0.35),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+}
+.ios-hm-icon::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 20px;
+  background: conic-gradient(from 0deg,
+    rgba(167,139,250,0) 0%,
+    rgba(167,139,250,0.55) 25%,
+    rgba(167,139,250,0) 50%,
+    rgba(167,139,250,0.55) 75%,
+    rgba(167,139,250,0) 100%);
+  filter: blur(6px);
+  opacity: 0.75;
+  z-index: -1;
+  animation: ios-hm-icon-halo 4s linear infinite;
+}
+@keyframes ios-hm-icon-halo {
+  to { transform: rotate(360deg); }
+}
+.ios-hm-icon-svg { display: block; }
+.ios-hm-icon-hand-hour {
+  transform-origin: 12px 12px;
+  transform-box: fill-box;
+  animation: ios-hm-tick-hour 60s linear infinite;
+}
+.ios-hm-icon-hand-min {
+  transform-origin: 12px 12px;
+  transform-box: fill-box;
+  animation: ios-hm-tick-min 5s linear infinite;
+}
+@keyframes ios-hm-tick-hour { to { transform: rotate(360deg); } }
+@keyframes ios-hm-tick-min  { to { transform: rotate(360deg); } }
+
+/* -- Title: subtle gradient fill -- */
+.ios-hm-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(92deg, #1c1134, #4c1d95 55%, #7c3aed);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+          color: transparent;
+}
+
+/* -- Snapshot count badge pill next to title -- */
+.ios-hm-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6d28d9;
+  background: linear-gradient(135deg, rgba(167,139,250,0.22), rgba(124,58,237,0.12));
+  -webkit-text-fill-color: #6d28d9;
+  box-shadow:
+    inset 0 0 0 1px rgba(124,58,237,0.28),
+    0 2px 6px -2px rgba(124,58,237,0.25);
+  opacity: 0;
+  transform: translateY(-4px) scale(0.92);
+  transition:
+    opacity 0.4s cubic-bezier(0.22, 1.2, 0.36, 1),
+    transform 0.4s cubic-bezier(0.22, 1.2, 0.36, 1);
+}
+.ios-hm-count-badge.is-ready {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.ios-hm-count-badge.is-empty {
+  color: #94a3b8;
+  -webkit-text-fill-color: #94a3b8;
+  background: rgba(148,163,184,0.12);
+  box-shadow: inset 0 0 0 1px rgba(148,163,184,0.28);
+}
+.ios-hm-count-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34,197,94,0.25), 0 0 8px rgba(34,197,94,0.85);
+  animation: ios-hm-count-pulse 1.6s ease-in-out infinite;
+}
+.ios-hm-count-badge.is-empty .ios-hm-count-dot {
+  background: #94a3b8;
+  box-shadow: none;
+  animation: none;
+}
+.ios-hm-count-num {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  letter-spacing: 0;
+}
+@keyframes ios-hm-count-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(34,197,94,0.22), 0 0 8px rgba(34,197,94,0.85); }
+  50%      { box-shadow: 0 0 0 5px rgba(34,197,94,0.0),  0 0 12px rgba(34,197,94,0.95); }
+}
+
+/* -- Sidebar eyebrow label (small caps) -- */
+.ios-hm-sidebar-eyebrow {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: transparent;
+  background: linear-gradient(92deg, #a78bfa, #7c3aed, #d946ef);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+  padding-left: 4px;
+  animation: ios-hm-eyebrow-flow 7s ease-in-out infinite;
+}
+@keyframes ios-hm-eyebrow-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* -- Month label: slightly bigger, gradient -- */
+.ios-hm-month-label {
+  font-size: 1.12rem;
+  background: linear-gradient(92deg, #1c1134, #6d28d9);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+          color: transparent;
+}
+
+/* -- Nav buttons: glass rim + hover lift -- */
+.ios-hm-nav-btn {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(237,233,254,0.55));
+  box-shadow:
+    inset 0 0 0 1px rgba(124, 58, 237, 0.22),
+    0 3px 8px -2px rgba(124, 58, 237, 0.2);
+}
+.ios-hm-nav-btn:hover {
+  transform: translateY(-1px) scale(1.08);
+  box-shadow:
+    inset 0 0 0 1px rgba(124, 58, 237, 0.45),
+    0 8px 18px -4px rgba(124, 58, 237, 0.45);
+}
+
+/* -- Calendar day cells: premium hover lift + tinted filled state -- */
+.ios-hm-day {
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.22s,
+    box-shadow 0.22s,
+    color 0.22s;
+}
+.ios-hm-day:hover:not(.ios-hm-day--future) {
+  transform: translateY(-1px) scale(1.05);
+  color: #4c1d95;
+  background: rgba(237, 233, 254, 0.5);
+}
+.ios-hm-day--filled {
+  background: linear-gradient(145deg,
+    rgba(255,255,255,0.95) 0%,
+    rgba(237,233,254,0.8) 55%,
+    rgba(221,214,254,0.7) 100%);
+  box-shadow:
+    0 3px 10px -3px rgba(76, 29, 149, 0.2),
+    inset 0 0 0 1px rgba(255,255,255,0.9),
+    inset 0 -6px 12px -6px rgba(167,139,250,0.35);
+  color: #3d2a7a;
+  font-weight: 700;
+}
+.ios-hm-day--filled:hover {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow:
+    0 14px 26px -6px rgba(124, 58, 237, 0.45),
+    inset 0 0 0 1px rgba(167, 139, 250, 0.5),
+    inset 0 -6px 14px -4px rgba(167,139,250,0.55);
+  color: #1c1134;
+}
+.ios-hm-day--today {
+  color: #6d28d9;
+  font-weight: 800;
+}
+.ios-hm-day--today::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 2px #8b5cf6,
+    0 0 0 0 rgba(139, 92, 246, 0.55);
+  animation: ios-hm-today-pulse 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes ios-hm-today-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 2px #8b5cf6,
+      0 0 0 0 rgba(139, 92, 246, 0.55);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px #a78bfa,
+      0 0 0 6px rgba(139, 92, 246, 0);
+  }
+}
+
+/* -- Snapshot dot: glowing gradient orb with pulse -- */
+.ios-hm-dot {
+  width: 6px;
+  height: 6px;
+  background: radial-gradient(circle, #6ee7b7 0%, #22c55e 60%, #15803d 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.8),
+    0 0 10px rgba(34, 197, 94, 0.9);
+  animation: ios-hm-dot-pulse 2s ease-in-out infinite;
+}
+@keyframes ios-hm-dot-pulse {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 1px rgba(255,255,255,0.8), 0 0 8px  rgba(34,197,94,0.9); }
+  50%      { transform: scale(1.25); box-shadow: 0 0 0 1px rgba(255,255,255,0.85),0 0 14px rgba(34,197,94,1);   }
+}
+
+/* -- Legend: softer gradient bg -- */
+.ios-hm-legend {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(236, 72, 153, 0.06));
+  border-color: rgba(124, 58, 237, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+/* -- Empty state: bigger icon with rings & slow float -- */
+.ios-hm-empty {
+  gap: 14px;
+}
+.ios-hm-empty-ico {
+  position: relative;
+  width: 96px; height: 96px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.85) 0%, transparent 55%),
+    linear-gradient(135deg, rgba(167,139,250,0.26) 0%, rgba(124,58,237,0.14) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(167, 139, 250, 0.3),
+    0 12px 28px -10px rgba(124, 58, 237, 0.4);
+  color: #7c3aed;
+  animation: ios-hm-empty-float 3.6s ease-in-out infinite;
+}
+.ios-hm-empty-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 30px;
+  border: 1.5px solid rgba(167, 139, 250, 0.55);
+  opacity: 0;
+  animation: ios-hm-empty-ring 2.8s ease-out infinite;
+}
+.ios-hm-empty-ring-2 { animation-delay: 1.4s; }
+@keyframes ios-hm-empty-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50%      { transform: translateY(-6px) rotate(1deg); }
+}
+@keyframes ios-hm-empty-ring {
+  0%   { transform: scale(0.9); opacity: 0.75; }
+  100% { transform: scale(1.35); opacity: 0;    }
+}
+.ios-hm-empty-text {
+  background: linear-gradient(92deg, #1c1134, #6d28d9);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+          color: transparent;
+  font-size: 1.08rem;
+}
+.ios-hm-empty-hint {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #9e8fb7;
+  letter-spacing: -0.005em;
+  max-width: 280px;
+}
+
+/* -- Staged entrance cascade -- */
+.ios-hm-overlay .ios-hm-header,
+.ios-hm-overlay .ios-hm-sidebar,
+.ios-hm-overlay .ios-hm-viewer {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1.2, 0.36, 1);
+}
+.ios-hm-overlay.is-open .ios-hm-header   { opacity: 1; transform: translateY(0); transition-delay: 0.12s; }
+.ios-hm-overlay.is-open .ios-hm-sidebar  { opacity: 1; transform: translateY(0); transition-delay: 0.22s; }
+.ios-hm-overlay.is-open .ios-hm-viewer   { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+
+/* -- Custom scrollbar inside the viewer -- */
+.ios-hm-viewer::-webkit-scrollbar { width: 10px; }
+.ios-hm-viewer::-webkit-scrollbar-track { background: transparent; }
+.ios-hm-viewer::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(167,139,250,0.55), rgba(124,58,237,0.45));
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.ios-hm-viewer::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(167,139,250,0.8), rgba(124,58,237,0.65));
+  background-clip: padding-box;
+}
+
+/* -- Responsive: mobile tweaks -- */
+@media (max-width: 720px) {
+  .ios-hm-card {
+    width: 100%;
+    height: 92vh;
+    border-radius: 24px;
+  }
+  .ios-hm-body { flex-direction: column; }
+  .ios-hm-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(60, 30, 90, 0.08);
+  }
+  .ios-hm-count-badge { display: none; }
+}
+
+/* -- Reduced motion: disable everything non-essential -- */
+@media (prefers-reduced-motion: reduce) {
+  .ios-hm-aurora,
+  .ios-hm-icon::after,
+  .ios-hm-icon-hand-hour,
+  .ios-hm-icon-hand-min,
+  .ios-hm-count-dot,
+  .ios-hm-dot,
+  .ios-hm-day--today::after,
+  .ios-hm-empty-ico,
+  .ios-hm-empty-ring,
+  .ios-hm-sidebar-eyebrow {
+    animation: none !important;
+  }
+  .ios-hm-overlay .ios-hm-header,
+  .ios-hm-overlay .ios-hm-sidebar,
+  .ios-hm-overlay .ios-hm-viewer {
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
    PREMIUM FAB ICON ANIMATIONS (pfab-*)
    ═══════════════════════════════════════════════════ */
 .pfab { overflow: visible; }

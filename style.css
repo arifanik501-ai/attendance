@@ -3507,3 +3507,90 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
 @media (prefers-reduced-motion: reduce) {
   .pin-box, .pin-box.pin-pop, .pin-box.pin-shake { animation: none !important; transition: none !important; }
 }
+
+/* Show / Hide PIN toggle button */
+.toggle-pin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem 0.4rem 0.7rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease,
+              transform 0.15s ease, box-shadow 0.2s ease;
+}
+.toggle-pin-btn:hover {
+  border-color: #eab308;
+  color: #a16207;
+  background: #fffbeb;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(234, 179, 8, 0.18);
+}
+.toggle-pin-btn:active { transform: translateY(0); }
+.toggle-pin-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.28);
+}
+.toggle-pin-btn[aria-pressed="true"] {
+  border-color: #eab308;
+  color: #a16207;
+  background: #fef9c3;
+  box-shadow: 0 2px 6px rgba(234, 179, 8, 0.15);
+}
+
+.toggle-pin-icon {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  flex: 0 0 16px;
+}
+.toggle-pin-icon svg {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.toggle-pin-icon .eye-open {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+.toggle-pin-icon .eye-closed {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+.toggle-pin-btn[aria-pressed="true"] .eye-open {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+}
+.toggle-pin-btn[aria-pressed="true"] .eye-closed {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+.toggle-pin-label {
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+/* Reveal flip when toggling Show/Hide PIN */
+.pin-box.pin-reveal {
+  animation: pinReveal 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes pinReveal {
+  0%   { transform: rotateX(0deg);  filter: blur(0); }
+  50%  { transform: rotateX(90deg); filter: blur(2px); }
+  100% { transform: rotateX(0deg);  filter: blur(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle-pin-btn, .toggle-pin-icon svg, .pin-box.pin-reveal {
+    animation: none !important;
+    transition: none !important;
+  }
+}

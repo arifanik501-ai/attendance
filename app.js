@@ -387,9 +387,13 @@ function renderEntryPage(pageId) {
           <input type="password" maxlength="1" class="pin-box" id="pin3" inputmode="numeric" pattern="[0-9]*" autocomplete="off" style="width:48px; height:56px; text-align:center; font-size:1.5rem; font-weight:700; border:2px solid #cbd5e1; border-radius:10px; background:rgba(255,255,255,0.9); color:#1e293b; outline:none; transition:border-color 0.2s;">
           <input type="password" maxlength="1" class="pin-box" id="pin4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" style="width:48px; height:56px; text-align:center; font-size:1.5rem; font-weight:700; border:2px solid #cbd5e1; border-radius:10px; background:rgba(255,255,255,0.9); color:#1e293b; outline:none; transition:border-color 0.2s;">
         </div>
-        <div style="margin-bottom:0.8rem;">
-          <button type="button" id="toggle-pin" style="background:none; border:none; cursor:pointer; font-size:0.85rem; color:#64748b; font-weight:600; display:flex; align-items:center; gap:4px; margin:0 auto;" onclick="const pins=document.querySelectorAll('.pin-box'); const isHidden=pins[0].type==='password'; pins.forEach(p=>p.type=isHidden?'text':'password'); this.innerHTML=isHidden?'🙈 Hide PIN':'👁️ Show PIN';">
-            👁️ Show PIN
+        <div style="margin-bottom:0.8rem; display:flex; justify-content:center;">
+          <button type="button" id="toggle-pin" class="toggle-pin-btn" aria-pressed="false" aria-label="Show PIN">
+            <span class="toggle-pin-icon" aria-hidden="true">
+              <svg class="eye-open" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-closed" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.9 20.9 0 0 1 5.06-6.06M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a20.8 20.8 0 0 1-3.17 4.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </span>
+            <span class="toggle-pin-label">Show PIN</span>
           </button>
         </div>
         <div id="pin-error" style="color:#ef4444; font-size:0.85rem; min-height:1.5rem; margin-bottom:0.5rem;"></div>
@@ -412,6 +416,7 @@ function renderEntryPage(pageId) {
     pin.addEventListener('animationend', () => {
       pin.classList.remove('pin-pop');
       pin.classList.remove('pin-shake');
+      pin.classList.remove('pin-reveal');
     });
     pin.addEventListener('input', (e) => {
       pin.style.borderColor = '#eab308';
@@ -429,6 +434,25 @@ function renderEntryPage(pageId) {
     });
   });
   pins[0].focus();
+
+  // Show/Hide PIN toggle
+  const toggleBtn = document.getElementById('toggle-pin');
+  const toggleLabel = toggleBtn.querySelector('.toggle-pin-label');
+  toggleBtn.addEventListener('click', () => {
+    const isHidden = pins[0].type === 'password';
+    const nextType = isHidden ? 'text' : 'password';
+    pins.forEach((p, idx) => {
+      setTimeout(() => {
+        p.type = nextType;
+        p.classList.remove('pin-reveal');
+        void p.offsetWidth;
+        p.classList.add('pin-reveal');
+      }, idx * 60);
+    });
+    toggleBtn.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+    toggleBtn.setAttribute('aria-label', isHidden ? 'Hide PIN' : 'Show PIN');
+    toggleLabel.textContent = isHidden ? 'Hide PIN' : 'Show PIN';
+  });
 
   // Submit handler
   document.getElementById('pin-submit').addEventListener('click', () => {

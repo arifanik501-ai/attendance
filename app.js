@@ -858,7 +858,7 @@ function _performDashboardRender() {
         position:relative; z-index:10002;"
         onmouseover="this.style.transform='scale(1.08)'; this.style.boxShadow='0 12px 35px rgba(99,102,241,0.5)';"
         onmouseout="if(!window._fabOpen){this.style.transform='scale(1)'; this.style.boxShadow='0 8px 25px rgba(99,102,241,0.4)';}">
-        <svg id="fab-icon" width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="none" style="transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1); filter:drop-shadow(0 1px 2px rgba(0,0,0,0.2));"><rect x="3" y="3" width="7.5" height="7.5" rx="2.4" opacity="0.98"></rect><rect x="13.5" y="3" width="7.5" height="7.5" rx="2.4" opacity="0.82"></rect><rect x="3" y="13.5" width="7.5" height="7.5" rx="2.4" opacity="0.82"></rect><circle cx="17.25" cy="17.25" r="3.75" opacity="0.98"></circle><circle cx="17.25" cy="17.25" r="1.55" fill="#6366f1"></circle></svg>
+        <svg id="fab-icon" class="pfab pfab-main" width="24" height="24" viewBox="0 0 24 24" style="transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1); filter:drop-shadow(0 2px 4px rgba(0,0,0,0.25));"><defs><linearGradient id="g-main-tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#e0e7ff"/></linearGradient><radialGradient id="g-main-dot" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#6366f1"/></radialGradient></defs><g><rect class="pf-tile pf-t1" x="3" y="3" width="7.5" height="7.5" rx="2.4" fill="url(#g-main-tile)"/><rect class="pf-tile pf-t2" x="13.5" y="3" width="7.5" height="7.5" rx="2.4" fill="url(#g-main-tile)" opacity="0.85"/><rect class="pf-tile pf-t3" x="3" y="13.5" width="7.5" height="7.5" rx="2.4" fill="url(#g-main-tile)" opacity="0.85"/><circle class="pf-tile pf-t4" cx="17.25" cy="17.25" r="3.75" fill="#ffffff"/><circle cx="17.25" cy="17.25" r="2" fill="url(#g-main-dot)"/><circle cx="16.3" cy="16.3" r="0.7" fill="#ffffff" opacity="0.85"/></g></svg>
       </button>
 
       <!-- FAB Child Items Container (hidden by default) -->
@@ -874,7 +874,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(239,68,68,0.3), 0 0 0 4px rgba(239,68,68,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); const d = document.getElementById('noti-dropdown'); const r = document.getElementById('reminder-dropdown'); if(r) r.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; document.getElementById('noti-badge').style.display='none'; localStorage.removeItem('has_new_notifications');">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 0 5px rgba(239,68,68,0.45));"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="#ef4444"></path><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#ef4444" stroke-width="2" stroke-linecap="round" fill="none"></path><circle cx="18" cy="5.8" r="3.2" fill="#ffffff"></circle><circle cx="18" cy="5.8" r="2" fill="#ef4444"></circle></svg>
+            <svg class="pfab pfab-feed" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(239,68,68,0.45));"><defs><linearGradient id="g-feed-bell" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fca5a5"/><stop offset="45%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient><radialGradient id="g-feed-badge" cx="30%" cy="30%" r="80%"><stop offset="0%" stop-color="#fca5a5"/><stop offset="100%" stop-color="#dc2626"/></radialGradient></defs><g class="pf-bell"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="url(#g-feed-bell)"/><path d="M7 8.2c.6-1.9 2.5-3.3 5-3.3" stroke="rgba(255,255,255,0.55)" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" fill="none"/></g><g class="pf-badge"><circle cx="18" cy="5.8" r="3.4" fill="#ffffff"/><circle cx="18" cy="5.8" r="2.2" fill="url(#g-feed-badge)"/><circle cx="17.3" cy="5.1" r="0.55" fill="#ffffff" opacity="0.85"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#ef4444; letter-spacing:0.04em; font-family:'Inter',sans-serif;">FEED</span>
             <span id="noti-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#ef4444; border-radius:50%; border:2px solid white; display:${hasNewNoti ? 'block' : 'none'}; box-shadow:0 0 10px rgba(239,68,68,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
           </button>
@@ -903,7 +903,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(234,179,8,0.35), 0 0 0 4px rgba(234,179,8,0.12)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 0 5px rgba(234,179,8,0.45));"><rect x="3.2" y="5.5" width="17.6" height="15" rx="2.6" fill="#eab308" opacity="0.16"></rect><rect x="3.2" y="5.5" width="17.6" height="15" rx="2.6" stroke="#eab308" stroke-width="1.8" fill="none"></rect><rect x="3.2" y="5.5" width="17.6" height="4.6" fill="#eab308"></rect><rect x="6.8" y="2.8" width="2.4" height="5" rx="1.2" fill="#eab308"></rect><rect x="14.8" y="2.8" width="2.4" height="5" rx="1.2" fill="#eab308"></rect><circle cx="8.2" cy="13.8" r="1.35" fill="#eab308"></circle><circle cx="12" cy="13.8" r="1.35" fill="#eab308" opacity="0.42"></circle><circle cx="15.8" cy="13.8" r="1.35" fill="#eab308" opacity="0.42"></circle><circle cx="8.2" cy="17.4" r="1.35" fill="#eab308" opacity="0.42"></circle><circle cx="12" cy="17.4" r="1.35" fill="#eab308"></circle></svg>
+            <svg class="pfab pfab-plan" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(234,179,8,0.45));"><defs><linearGradient id="g-plan-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef9c3"/><stop offset="100%" stop-color="#fde68a"/></linearGradient><linearGradient id="g-plan-ribbon" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fcd34d"/><stop offset="100%" stop-color="#d97706"/></linearGradient><radialGradient id="g-plan-today" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#fcd34d"/><stop offset="100%" stop-color="#ca8a04"/></radialGradient></defs><g class="pf-book"><rect x="3.2" y="5.5" width="17.6" height="15" rx="2.6" fill="url(#g-plan-body)" stroke="#ca8a04" stroke-width="1.4"/><rect x="3.2" y="5.5" width="17.6" height="4.8" fill="url(#g-plan-ribbon)"/><rect x="3.2" y="9.4" width="17.6" height="0.9" fill="#7c2d12" opacity="0.25"/><rect x="6.6" y="2.6" width="2.6" height="5.2" rx="1.3" fill="#78350f"/><rect x="14.8" y="2.6" width="2.6" height="5.2" rx="1.3" fill="#78350f"/><rect x="6.6" y="3.4" width="2.6" height="1.3" rx="0.6" fill="#fef3c7" opacity="0.7"/><rect x="14.8" y="3.4" width="2.6" height="1.3" rx="0.6" fill="#fef3c7" opacity="0.7"/><circle class="pf-dot pf-d1" cx="8.2" cy="13.8" r="1.4" fill="#d97706"/><circle class="pf-dot" cx="12" cy="13.8" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot" cx="15.8" cy="13.8" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot" cx="8.2" cy="17.4" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot pf-today" cx="12" cy="17.4" r="1.6" fill="url(#g-plan-today)"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">PLAN</span>
             <span id="reminder-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#eab308; border-radius:50%; border:2px solid white; display:none; box-shadow:0 0 10px rgba(234,179,8,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
           </button>
@@ -928,7 +928,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(16,185,129,0.3), 0 0 0 4px rgba(16,185,129,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="window.forceSaveHistory()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 0 5px rgba(16,185,129,0.45));"><path d="M4.8 3.5h11.4l4.3 4.3V19a2.2 2.2 0 0 1-2.2 2.2H4.8A2.2 2.2 0 0 1 2.6 19V5.7A2.2 2.2 0 0 1 4.8 3.5z" fill="#10b981" opacity="0.16"></path><path d="M4.8 3.5h11.4l4.3 4.3V19a2.2 2.2 0 0 1-2.2 2.2H4.8A2.2 2.2 0 0 1 2.6 19V5.7A2.2 2.2 0 0 1 4.8 3.5z" stroke="#10b981" stroke-width="1.8" stroke-linejoin="round" fill="none"></path><rect x="7" y="3.5" width="8" height="4.5" rx="0.8" fill="#10b981"></rect><rect x="5.8" y="13" width="12.4" height="8.2" rx="1.3" fill="#ffffff" stroke="#10b981" stroke-width="1.6"></rect><path d="M8.8 17.2l2 2 4.2-4.2" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path></svg>
+            <svg class="pfab pfab-save" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(16,185,129,0.45));"><defs><linearGradient id="g-save-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6ee7b7"/><stop offset="55%" stop-color="#10b981"/><stop offset="100%" stop-color="#047857"/></linearGradient><linearGradient id="g-save-shutter" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1f2937"/><stop offset="100%" stop-color="#111827"/></linearGradient><linearGradient id="g-save-label" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d1fae5"/></linearGradient></defs><g class="pf-disk"><path d="M4.8 3.5h11.4l4.3 4.3V19a2.2 2.2 0 0 1-2.2 2.2H4.8A2.2 2.2 0 0 1 2.6 19V5.7A2.2 2.2 0 0 1 4.8 3.5z" fill="url(#g-save-body)" stroke="#047857" stroke-width="1.1"/><path d="M4.8 3.5h11.4l4.3 4.3H4.8z" fill="rgba(255,255,255,0.18)"/><rect x="6.5" y="3.5" width="9" height="4.8" rx="0.7" fill="url(#g-save-shutter)"/><rect x="12.8" y="4.4" width="1.6" height="2.9" rx="0.2" fill="#f3f4f6"/><rect x="5.6" y="12.6" width="12.8" height="8.6" rx="1.4" fill="url(#g-save-label)" stroke="#047857" stroke-width="1.1"/><path class="pf-check" d="M8.5 17l2.2 2.2 4.6-4.6" stroke="#10b981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#10b981; letter-spacing:0.04em; font-family:'Inter',sans-serif;">SAVE</span>
           </button>
         </div>
@@ -943,7 +943,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(139,92,246,0.3), 0 0 0 4px rgba(139,92,246,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="window.openHistoryModal()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 0 5px rgba(139,92,246,0.45));"><circle cx="12" cy="12.6" r="8.6" fill="#8b5cf6" opacity="0.14"></circle><circle cx="12" cy="12.6" r="8.6" stroke="#8b5cf6" stroke-width="1.9" fill="none"></circle><path d="M3.6 9.6A9 9 0 0 1 12 3.6a9.5 9.5 0 0 0-6.6 2.7L3 8.7" stroke="#8b5cf6" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" fill="none"></path><path d="M3 3.6v5h5" stroke="#8b5cf6" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" fill="none"></path><path d="M12 8v4.6l3.3 2" stroke="#8b5cf6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path><circle cx="12" cy="12.6" r="1.55" fill="#8b5cf6"></circle></svg>
+            <svg class="pfab pfab-hist" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(139,92,246,0.45));"><defs><radialGradient id="g-hist-face" cx="35%" cy="35%" r="75%"><stop offset="0%" stop-color="#ede9fe"/><stop offset="60%" stop-color="#c4b5fd"/><stop offset="100%" stop-color="#7c3aed"/></radialGradient><linearGradient id="g-hist-ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#6d28d9"/></linearGradient></defs><g class="pf-clock"><circle cx="12" cy="12.8" r="8.8" fill="url(#g-hist-face)"/><circle cx="12" cy="12.8" r="8.8" stroke="url(#g-hist-ring)" stroke-width="1.7" fill="none"/><circle cx="12" cy="12.8" r="6.4" stroke="rgba(255,255,255,0.5)" stroke-width="0.7" fill="none" stroke-dasharray="1 2"/><path class="pf-rewind-arc" d="M3.6 9.6A9 9 0 0 1 12 3.6a9.5 9.5 0 0 0-6.6 2.7L3 8.7" stroke="#7c3aed" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M3 3.6v5h5" stroke="#7c3aed" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><g class="pf-hands"><path class="pf-minute" d="M12 12.8V7.2" stroke="#4c1d95" stroke-width="2.1" stroke-linecap="round"/><path class="pf-hour" d="M12 12.8l3.2 2" stroke="#4c1d95" stroke-width="2.3" stroke-linecap="round"/></g><circle cx="12" cy="12.8" r="1.4" fill="#4c1d95"/><circle cx="12" cy="12.8" r="0.6" fill="#ffffff"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#8b5cf6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">HIST</span>
           </button>
         </div>
@@ -963,7 +963,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(250,204,21,0.3), 0 0 0 4px rgba(250,204,21,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); var dd=document.getElementById('theme-dropdown'); var bd=document.getElementById('theme-backdrop'); if(dd) dd.classList.toggle('open'); if(bd) bd.classList.toggle('show');">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px rgba(234,179,8,0.45));"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+            <svg class="pfab pfab-theme" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(234,179,8,0.45));"><defs><linearGradient id="g-theme-brush" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fde047"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient><linearGradient id="g-theme-handle" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#d97706"/></linearGradient><linearGradient id="g-theme-tip1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f472b6"/><stop offset="100%" stop-color="#db2777"/></linearGradient><linearGradient id="g-theme-tip2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#2563eb"/></linearGradient></defs><g class="pf-palette"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4z" fill="url(#g-theme-handle)" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/><path d="M7 21h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343" fill="url(#g-theme-handle)" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/><rect x="4.5" y="4.5" width="3" height="13" rx="1" fill="rgba(255,255,255,0.4)"/><g class="pf-brush"><path d="M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485" fill="url(#g-theme-brush)" stroke="#78350f" stroke-width="1.2" stroke-linejoin="round"/><circle cx="14" cy="8.5" r="1.1" fill="url(#g-theme-tip1)"/><circle cx="16.3" cy="10.8" r="1.1" fill="url(#g-theme-tip2)"/></g><circle cx="7.2" cy="18" r="0.9" fill="#78350f"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">THEME</span>
           </button>
         </div>
@@ -978,7 +978,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.boxShadow='0 12px 30px rgba(245,158,11,0.5), 0 0 0 4px rgba(245,158,11,0.15)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.boxShadow='0 8px 20px rgba(245,158,11,0.35)';"
             onclick="exportReport()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.25));"><rect x="2.8" y="3" width="13" height="10" rx="1.8" fill="rgba(255,255,255,0.28)" stroke="white" stroke-width="1.7"></rect><circle cx="6.8" cy="6.8" r="1.3" fill="white"></circle><path d="M3.2 12.4l3.4-3.4 2.6 2.6 2.8-2.8 3.8 3.8" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"></path><path d="M12 12v8.2m-3-3.2l3 3 3-3" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"></path><path d="M6 21.6h12" stroke="white" stroke-width="2.3" stroke-linecap="round"></path></svg>
+            <svg class="pfab pfab-jpg" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(0,0,0,0.3));"><defs><linearGradient id="g-jpg-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#fbbf24"/></linearGradient><radialGradient id="g-jpg-sun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fef08a"/><stop offset="100%" stop-color="#f59e0b"/></radialGradient><linearGradient id="g-jpg-mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#b45309"/></linearGradient><linearGradient id="g-jpg-arrow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#fef3c7"/></linearGradient></defs><g class="pf-photo"><rect x="2.4" y="2.8" width="13.4" height="10.4" rx="1.8" fill="url(#g-jpg-sky)" stroke="#ffffff" stroke-width="1.5"/><circle cx="6.6" cy="6.4" r="1.5" fill="url(#g-jpg-sun)"/><path d="M2.8 12.4l3.4-3.4 2.6 2.6 2.8-2.8 3.8 3.8" fill="url(#g-jpg-mtn)" stroke="#ffffff" stroke-width="1.3" stroke-linejoin="round"/></g><g class="pf-download"><path d="M12 12v8.2" stroke="url(#g-jpg-arrow)" stroke-width="2.6" stroke-linecap="round"/><path d="M9 17l3 3 3-3" stroke="url(#g-jpg-arrow)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M5.5 21.6h13" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:white; letter-spacing:0.04em; font-family:'Inter',sans-serif; text-shadow:0 1px 2px rgba(0,0,0,0.2);">JPG</span>
           </button>
         </div>
@@ -1248,24 +1248,24 @@ function exportReport() {
 // ═══════════════════════════════════════════════════
 
 const THEMES = [
-  { id: 'amber', name: 'Golden Amber', swatch: 'linear-gradient(135deg, #facc15, #eab308)' },
-  { id: 'ocean', name: 'Ocean Blue', swatch: 'linear-gradient(135deg, #38bdf8, #0ea5e9)' },
-  { id: 'rose', name: 'Rose Garden', swatch: 'linear-gradient(135deg, #fb7185, #f43f5e)' },
-  { id: 'emerald', name: 'Emerald Forest', swatch: 'linear-gradient(135deg, #34d399, #10b981)' },
-  { id: 'purple', name: 'Purple Haze', swatch: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' },
-  { id: 'mint', name: 'Mint Fresh', swatch: 'linear-gradient(135deg, #6ee7b7, #34d399)' },
-  { id: 'sunset', name: 'Sunset Orange', swatch: 'linear-gradient(135deg, #fb923c, #f97316)' },
-  { id: 'arctic', name: 'Arctic Ice', swatch: 'linear-gradient(135deg, #22d3ee, #06b6d4)' },
-  { id: 'lavender', name: 'Lavender Dream', swatch: 'linear-gradient(135deg, #c084fc, #a855f7)' },
-  { id: 'peach', name: 'Peach Blossom', swatch: 'linear-gradient(135deg, #fdba74, #fb923c)' },
-  { id: 'silver-mist', name: 'Silver Mist', swatch: 'linear-gradient(135deg, #e2e8f0, #94a3b8)' },
-  { id: 'sky-azure', name: 'Sky Azure', swatch: 'linear-gradient(135deg, #bae6fd, #38bdf8)' },
-  { id: 'honey-glow', name: 'Honey Glow', swatch: 'linear-gradient(135deg, #fef08a, #facc15)' },
-  { id: 'mint-sorbet', name: 'Mint Sorbet', swatch: 'linear-gradient(135deg, #a7f3d0, #34d399)' },
-  { id: 'light-maroon', name: 'Light Maroon', swatch: 'linear-gradient(135deg, #fda4af, #fb7185)' },
-  { id: 'chocolate', name: 'Chocolate', swatch: 'linear-gradient(135deg, #fcd34d, #d97706)' },
-  { id: 'watermelon', name: 'Watermelon', swatch: 'linear-gradient(135deg, #fb7185, #f43f5e)' },
-  { id: 'parrot', name: 'Parrot', swatch: 'linear-gradient(135deg, #d9f99d, #a3e635)' }
+  { id: 'amber',        name: 'Golden Amber',    desc: 'Warm sunlit gold',         swatch: 'linear-gradient(135deg, #facc15, #eab308)',    palette: ['#fde68a','#facc15','#ca8a04'] },
+  { id: 'ocean',        name: 'Ocean Blue',      desc: 'Deep tidal serenity',      swatch: 'linear-gradient(135deg, #38bdf8, #0ea5e9)',    palette: ['#7dd3fc','#0ea5e9','#0369a1'] },
+  { id: 'rose',         name: 'Rose Garden',     desc: 'Soft blushing petals',     swatch: 'linear-gradient(135deg, #fb7185, #f43f5e)',    palette: ['#fecdd3','#fb7185','#be123c'] },
+  { id: 'emerald',      name: 'Emerald Forest',  desc: 'Cool mossy green',         swatch: 'linear-gradient(135deg, #34d399, #10b981)',    palette: ['#a7f3d0','#10b981','#065f46'] },
+  { id: 'purple',       name: 'Purple Haze',     desc: 'Dreamy violet mist',       swatch: 'linear-gradient(135deg, #a78bfa, #8b5cf6)',    palette: ['#ddd6fe','#8b5cf6','#5b21b6'] },
+  { id: 'mint',         name: 'Mint Fresh',      desc: 'Crisp cool mint',          swatch: 'linear-gradient(135deg, #6ee7b7, #34d399)',    palette: ['#d1fae5','#6ee7b7','#047857'] },
+  { id: 'sunset',       name: 'Sunset Orange',   desc: 'Dusk fire glow',           swatch: 'linear-gradient(135deg, #fb923c, #f97316)',    palette: ['#fed7aa','#fb923c','#c2410c'] },
+  { id: 'arctic',       name: 'Arctic Ice',      desc: 'Frosted cyan chill',       swatch: 'linear-gradient(135deg, #22d3ee, #06b6d4)',    palette: ['#cffafe','#22d3ee','#0891b2'] },
+  { id: 'lavender',     name: 'Lavender Dream',  desc: 'Soft purple haze',         swatch: 'linear-gradient(135deg, #c084fc, #a855f7)',    palette: ['#e9d5ff','#c084fc','#7e22ce'] },
+  { id: 'peach',        name: 'Peach Blossom',   desc: 'Ripe summer fruit',        swatch: 'linear-gradient(135deg, #fdba74, #fb923c)',    palette: ['#fed7aa','#fdba74','#ea580c'] },
+  { id: 'silver-mist',  name: 'Silver Mist',     desc: 'Calm cloud gray',          swatch: 'linear-gradient(135deg, #e2e8f0, #94a3b8)',    palette: ['#f1f5f9','#cbd5e1','#64748b'] },
+  { id: 'sky-azure',    name: 'Sky Azure',       desc: 'Open horizon blue',        swatch: 'linear-gradient(135deg, #bae6fd, #38bdf8)',    palette: ['#e0f2fe','#7dd3fc','#0284c7'] },
+  { id: 'honey-glow',   name: 'Honey Glow',      desc: 'Liquid amber honey',       swatch: 'linear-gradient(135deg, #fef08a, #facc15)',    palette: ['#fef9c3','#fde047','#a16207'] },
+  { id: 'mint-sorbet',  name: 'Mint Sorbet',     desc: 'Cool dessert green',       swatch: 'linear-gradient(135deg, #a7f3d0, #34d399)',    palette: ['#d1fae5','#6ee7b7','#059669'] },
+  { id: 'light-maroon', name: 'Light Maroon',    desc: 'Faded rose wine',          swatch: 'linear-gradient(135deg, #fda4af, #fb7185)',    palette: ['#fecdd3','#fda4af','#9f1239'] },
+  { id: 'chocolate',    name: 'Chocolate',       desc: 'Rich cocoa warmth',        swatch: 'linear-gradient(135deg, #fcd34d, #d97706)',    palette: ['#fde68a','#fbbf24','#92400e'] },
+  { id: 'watermelon',   name: 'Watermelon',      desc: 'Juicy pink crush',         swatch: 'linear-gradient(135deg, #fb7185, #f43f5e)',    palette: ['#fecaca','#fb7185','#9f1239'] },
+  { id: 'parrot',       name: 'Parrot',          desc: 'Vivid tropical lime',      swatch: 'linear-gradient(135deg, #d9f99d, #a3e635)',    palette: ['#ecfccb','#a3e635','#4d7c0f'] }
 ];
 
 function setTheme(themeId) {
@@ -1307,10 +1307,34 @@ function setTheme(themeId) {
   document.querySelectorAll('.theme-option').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.theme === themeId);
   });
+  // Update header "current theme" label
+  const hdrLabel = document.getElementById('theme-hdr-current');
+  if (hdrLabel) {
+    const current = THEMES.find(t => t.id === themeId);
+    if (current) hdrLabel.textContent = current.name;
+  }
 
   if (!document.body.classList.contains('theme-init-done')) {
     setTimeout(() => document.body.classList.add('theme-init-done'), 100);
   }
+}
+
+function pickRandomTheme() {
+  const current = document.body.getAttribute('data-theme') || 'rose';
+  const pool = THEMES.filter(t => t.id !== current);
+  const next = pool[Math.floor(Math.random() * pool.length)];
+  setTheme(next.id);
+  // Subtle haptic-style pulse on the card
+  const card = document.querySelector(`.theme-option[data-theme="${next.id}"]`);
+  if (card) {
+    card.classList.add('just-selected');
+    setTimeout(() => card.classList.remove('just-selected'), 900);
+  }
+}
+
+function closeThemeDropdown() {
+  document.getElementById('theme-dropdown')?.classList.remove('open');
+  document.getElementById('theme-backdrop')?.classList.remove('show');
 }
 
 function initThemePicker() {
@@ -1319,34 +1343,104 @@ function initThemePicker() {
 
   const savedTheme = localStorage.getItem('mep_theme') || 'rose';
 
+  const cardsHtml = THEMES.map((t, i) => {
+    const dotsHtml = t.palette.map(c => `<i style="background:${c}"></i>`).join('');
+    const paletteSpans = t.palette.map(c => `<span style='background:${c}'></span>`).join('');
+    const descHtml = `${t.desc}<span class='tt-pal'>${paletteSpans}</span>`;
+    return `
+      <button class="theme-option ${t.id === savedTheme ? 'active' : ''}"
+              data-theme="${t.id}"
+              style="--i:${i}; --tg:${t.swatch};"
+              data-tip-title="${t.name}"
+              data-tip-desc="${descHtml}"
+              data-tip-shortcut="Click to apply"
+              data-tip-html="true"
+              data-tip-placement="auto"
+              onclick="event.stopPropagation(); setTheme('${t.id}'); this.classList.add('just-selected'); setTimeout(()=>this.classList.remove('just-selected'), 900);">
+        <span class="theme-swatch" style="background: ${t.swatch}">
+          <span class="theme-swatch-sheen"></span>
+          <span class="theme-swatch-check">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>
+          </span>
+        </span>
+        <span class="theme-meta">
+          <span class="theme-name">${t.name}</span>
+          <span class="theme-dots">${dotsHtml}</span>
+        </span>
+        <span class="theme-ripple"></span>
+      </button>`;
+  }).join('');
+
   const fab = document.createElement('div');
   fab.className = 'theme-fab no-print';
   fab.innerHTML = `
-    <div class="theme-backdrop" id="theme-backdrop"></div>
-    <div class="theme-dropdown" id="theme-dropdown">
-      ${THEMES.map(t => `
-        <button class="theme-option ${t.id === savedTheme ? 'active' : ''}" data-theme="${t.id}" onclick="setTheme('${t.id}')">
-          <span class="theme-swatch" style="background: ${t.swatch}"></span>
-          ${t.name}
+    <div class="theme-backdrop" id="theme-backdrop" onclick="closeThemeDropdown()"></div>
+    <div class="theme-dropdown" id="theme-dropdown" role="dialog" aria-label="Theme Gallery">
+      <div class="theme-hdr">
+        <div class="theme-hdr-left">
+          <div class="theme-hdr-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+          </div>
+          <div class="theme-hdr-text">
+            <span class="theme-hdr-title">Theme Gallery</span>
+            <span class="theme-hdr-sub"><span id="theme-hdr-current">${(THEMES.find(x=>x.id===savedTheme)||{name:''}).name}</span> · ${THEMES.length} themes</span>
+          </div>
+        </div>
+        <button class="theme-hdr-close"
+                data-tip-title="Close"
+                data-tip-shortcut="Esc"
+                onclick="event.stopPropagation(); closeThemeDropdown();"
+                aria-label="Close theme gallery">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
         </button>
-      `).join('')}
+      </div>
+
+      <div class="theme-grid">
+        ${cardsHtml}
+      </div>
+
+      <div class="theme-ftr">
+        <button class="theme-ftr-btn theme-ftr-random"
+                data-tip-title="Surprise Me"
+                data-tip-desc="Apply a random theme"
+                data-tip-theme="info"
+                onclick="event.stopPropagation(); pickRandomTheme();">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>
+          <span>Surprise Me</span>
+        </button>
+        <button class="theme-ftr-btn theme-ftr-done"
+                data-tip-title="Done"
+                data-tip-shortcut="Esc"
+                onclick="event.stopPropagation(); closeThemeDropdown();">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>
+          <span>Done</span>
+        </button>
+      </div>
     </div>
   `;
   document.body.appendChild(fab);
-  
+
   // Call to populate change count immediately after injection
   setTimeout(_loadAndDisplayChangeCount, 100);
 
-  // Toggle dropdown via FAB menu button - old fab-btn listener removed
   // Close dropdown on outside click or backdrop click
-  document.addEventListener('click', () => {
-    document.getElementById('theme-dropdown')?.classList.remove('open');
-    document.getElementById('theme-backdrop')?.classList.remove('show');
+  document.addEventListener('click', (e) => {
+    // Don't close when clicking inside the dropdown itself
+    if (e.target.closest('.theme-dropdown')) return;
+    closeThemeDropdown();
+  });
+  // Esc to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeThemeDropdown();
   });
 
   // Apply saved theme
   setTheme(savedTheme);
 }
+
+// Expose helpers for inline onclick
+window.pickRandomTheme = pickRandomTheme;
+window.closeThemeDropdown = closeThemeDropdown;
 
 
 // ═══════════════════════════════════════════════════
@@ -1915,8 +2009,8 @@ function buildPushNotificationButton() {
         onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.boxShadow='${enabled ? '0 6px 24px rgba(16,185,129,0.5),0 0 0 4px rgba(16,185,129,0.15)' : 'var(--glass-shadow)'}'; this.style.background='${enabled ? 'linear-gradient(135deg,#10b981,#059669)' : 'var(--glass-bg)'}';"
         onclick="handlePushToggle()">
         <span class="push-icon" style="line-height:1; filter:${enabled ? 'drop-shadow(0 0 6px rgba(255,255,255,0.55))' : 'none'}; display:flex; align-items:center; justify-content:center;">${enabled
-          ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="#ffffff"></path><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none"></path><path d="M19.3 4.4l1.8 1.8M14.8 2.6L16.4 1" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round" opacity="0.9"></path></svg>'
-          : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="#64748b" opacity="0.18"></path><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" stroke="#64748b" stroke-width="1.8" stroke-linejoin="round" fill="none"></path><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" fill="none"></path><line x1="4.2" y1="4.2" x2="19.8" y2="19.8" stroke="#64748b" stroke-width="2.4" stroke-linecap="round"></line></svg>'
+          ? '<svg class="pfab pfab-push pfab-push-on" width="24" height="24" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="g-push-on" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d1fae5"/></linearGradient></defs><g class="pf-bell"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="url(#g-push-on)"/><path d="M7 8.2c.6-1.9 2.5-3.3 5-3.3" stroke="rgba(16,185,129,0.55)" stroke-width="1.2" stroke-linecap="round" fill="none"/><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none"/></g><g class="pf-sparkles"><path d="M19.3 4.4l1.8 1.8" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/><path d="M14.8 2.6L16.4 1" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/><circle cx="21" cy="10" r="0.9" fill="#ffffff" opacity="0.9"/></g></svg>'
+          : '<svg class="pfab pfab-push pfab-push-off" width="24" height="24" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="g-push-off" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#cbd5e1"/><stop offset="100%" stop-color="#64748b"/></linearGradient></defs><g class="pf-bell"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="url(#g-push-off)" opacity="0.28"/><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" stroke="#64748b" stroke-width="1.8" stroke-linejoin="round" fill="none"/><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" fill="none"/></g><line class="pf-slash-bg" x1="4.2" y1="4.2" x2="19.8" y2="19.8" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/><line class="pf-slash" x1="4.2" y1="4.2" x2="19.8" y2="19.8" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round"/></svg>'
         }</span>
         <span class="push-label" style="font-size:0.52rem; font-weight:800; letter-spacing:0.04em; font-family:'Inter',sans-serif; color:${enabled ? 'white' : '#64748b'}; line-height:1;">${enabled ? 'ON' : 'OFF'}</span>
       </button>

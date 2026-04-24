@@ -305,6 +305,70 @@ function calculateRow(row) {
   return row;
 }
 
+// ────────────────────────────────────────────────────────────
+// Smooth click + page transition for internal links.
+// Delegates a single click listener on the document so it works for any
+// sidebar re-renders. Spawns a water-ripple at the click point on nav-links,
+// adds a brief press-feedback class, then fades the page out before
+// navigating. The next page already starts with opacity:0/translateX(14px)
+// and slides in — so the two halves feel like one smooth transition.
+// ────────────────────────────────────────────────────────────
+let __smoothNavInFlight = false;
+function installSmoothNav() {
+  if (window.__smoothNavInstalled) return;
+  window.__smoothNavInstalled = true;
+
+  document.addEventListener('click', (e) => {
+    if (__smoothNavInFlight) return;
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    const rawHref = a.getAttribute('href');
+    if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('mailto:') || rawHref.startsWith('tel:') || rawHref.startsWith('javascript:')) return;
+
+    let url;
+    try { url = new URL(rawHref, window.location.href); }
+    catch { return; }
+    if (url.origin !== window.location.origin) return;
+    // Ignore anchors/no-op navigations
+    if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) return;
+    // Ignore if target=_blank or download
+    if (a.target && a.target !== '' && a.target !== '_self') return;
+    if (a.hasAttribute('download')) return;
+
+    e.preventDefault();
+    __smoothNavInFlight = true;
+
+    // Ripple + press feedback for sidebar nav links
+    if (a.classList.contains('nav-link')) {
+      const rect = a.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const ripple = document.createElement('span');
+      ripple.className = 'nav-link-ripple';
+      ripple.style.left = x + 'px';
+      ripple.style.top = y + 'px';
+      a.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+      a.classList.add('nav-link-pressing');
+    }
+
+    // Fade page out + slide slightly to the left
+    document.body.classList.add('page-leaving');
+
+    window.setTimeout(() => {
+      window.location.href = rawHref;
+    }, 300);
+  }, true);
+}
+
+// Install once as soon as possible. Safe to call repeatedly.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', installSmoothNav, { once: true });
+} else {
+  installSmoothNav();
+}
+
 function generateSidebar(activePage) {
   const pages = [
     { id: 'index', title: 'Dashboard', url: 'index.html', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>' },

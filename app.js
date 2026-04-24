@@ -314,11 +314,42 @@ function calculateRow(row) {
 // and slides in — so the two halves feel like one smooth transition.
 // ────────────────────────────────────────────────────────────
 let __smoothNavInFlight = false;
+
+function spawnRipple(el, e, className) {
+  const rect = el.getBoundingClientRect();
+  const x = (e && typeof e.clientX === 'number') ? e.clientX - rect.left : rect.width / 2;
+  const y = (e && typeof e.clientY === 'number') ? e.clientY - rect.top : rect.height / 2;
+  const ripple = document.createElement('span');
+  ripple.className = className;
+  ripple.style.left = x + 'px';
+  ripple.style.top = y + 'px';
+  el.appendChild(ripple);
+  ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+}
+
 function installSmoothNav() {
   if (window.__smoothNavInstalled) return;
   window.__smoothNavInstalled = true;
 
   document.addEventListener('click', (e) => {
+    // Non-navigating glass buttons: ripple + spring press only
+    if (!__smoothNavInFlight) {
+      const glassBtn = e.target.closest('.glass-btn');
+      if (glassBtn && !glassBtn.matches('a[href]')) {
+        spawnRipple(glassBtn, e, 'glass-btn-ripple');
+        glassBtn.classList.remove('glass-btn-pressing');
+        // force reflow so animation restarts even on rapid clicks
+        void glassBtn.offsetWidth;
+        glassBtn.classList.add('glass-btn-pressing');
+        glassBtn.addEventListener('animationend', function handler(ev) {
+          if (ev.animationName === 'glassBtnPressSpring') {
+            glassBtn.classList.remove('glass-btn-pressing');
+            glassBtn.removeEventListener('animationend', handler);
+          }
+        });
+      }
+    }
+
     if (__smoothNavInFlight) return;
     const a = e.target.closest('a[href]');
     if (!a) return;
@@ -330,9 +361,7 @@ function installSmoothNav() {
     try { url = new URL(rawHref, window.location.href); }
     catch { return; }
     if (url.origin !== window.location.origin) return;
-    // Ignore anchors/no-op navigations
     if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) return;
-    // Ignore if target=_blank or download
     if (a.target && a.target !== '' && a.target !== '_self') return;
     if (a.hasAttribute('download')) return;
 
@@ -341,19 +370,15 @@ function installSmoothNav() {
 
     // Ripple + press feedback for sidebar nav links
     if (a.classList.contains('nav-link')) {
-      const rect = a.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const ripple = document.createElement('span');
-      ripple.className = 'nav-link-ripple';
-      ripple.style.left = x + 'px';
-      ripple.style.top = y + 'px';
-      a.appendChild(ripple);
-      ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+      spawnRipple(a, e, 'nav-link-ripple');
       a.classList.add('nav-link-pressing');
     }
+    // Ripple + press feedback for glass buttons that are also links
+    if (a.classList.contains('glass-btn')) {
+      spawnRipple(a, e, 'glass-btn-ripple');
+      a.classList.add('glass-btn-pressing');
+    }
 
-    // Fade page out + slide slightly to the left
     document.body.classList.add('page-leaving');
 
     window.setTimeout(() => {

@@ -636,6 +636,255 @@ h4 {
   .secondary-entry-link.active { background: linear-gradient(180deg, rgba(14, 165, 233, 0.22) 0%, rgba(14, 165, 233, 0.10) 100%); }
 }
 
+/*
+ * ──────────────────────────────────────────────────────────────
+ * Premium liquid-glass buttons (page header actions).
+ * Same design language as .nav-link: frosted glass surface,
+ * ambient liquid blob, specular glint on hover, spring press,
+ * ripple on click.
+ * ──────────────────────────────────────────────────────────────
+ */
+.page-header-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn.glass-btn {
+  --gb-accent: #b45309;
+  --gb-accent-strong: #78350f;
+  --gb-tint: rgba(234, 179, 8, 0.14);
+  --gb-tint-strong: rgba(234, 179, 8, 0.28);
+  --gb-blob: rgba(250, 204, 21, 0.5);
+  --gb-glass-top: rgba(255, 255, 255, 0.82);
+  --gb-glass-bottom: rgba(255, 255, 255, 0.4);
+  --gb-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.58rem 0.95rem 0.58rem 0.8rem;
+  min-height: 42px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  color: var(--gb-accent-strong);
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  /* Frosted glass surface + drifting liquid blob */
+  background:
+    radial-gradient(circle at 25% 30%, var(--gb-blob) 0%, transparent 50%),
+    linear-gradient(180deg, var(--gb-glass-top) 0%, var(--gb-glass-bottom) 100%);
+  background-size: 180% 180%, auto;
+  background-repeat: no-repeat;
+  backdrop-filter: blur(14px) saturate(1.5);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.35) inset,
+    0 -8px 14px rgba(15, 23, 42, 0.04) inset,
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 6px 18px -8px rgba(15, 23, 42, 0.14),
+    0 16px 36px -20px rgba(15, 23, 42, 0.2);
+
+  transition:
+    background 0.35s var(--gb-ease),
+    border-color 0.35s var(--gb-ease),
+    color 0.3s ease,
+    transform 0.28s var(--gb-ease),
+    box-shadow 0.35s var(--gb-ease);
+  animation: glassBtnLiquid 9s ease-in-out infinite alternate;
+}
+.btn.glass-btn:nth-child(1) { animation-delay: 0s; }
+.btn.glass-btn:nth-child(2) { animation-delay: -3s; }
+.btn.glass-btn:nth-child(3) { animation-delay: -6s; }
+
+@keyframes glassBtnLiquid {
+  0%   { background-position: 0%   30%, 0 0; }
+  25%  { background-position: 50%  70%, 0 0; }
+  50%  { background-position: 80%  20%, 0 0; }
+  75%  { background-position: 30%  80%, 0 0; }
+  100% { background-position: 70%  40%, 0 0; }
+}
+
+/* Icon chip inside the button */
+.btn.glass-btn .glass-btn-icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  color: var(--gb-accent);
+  stroke: currentColor;
+  transition: color 0.3s ease, transform 0.28s var(--gb-ease);
+}
+
+.btn.glass-btn > span {
+  white-space: nowrap;
+}
+
+/* Color groups */
+.btn.glass-btn.glass-btn-amber {
+  --gb-accent: #b45309;
+  --gb-accent-strong: #78350f;
+  --gb-tint: rgba(234, 179, 8, 0.14);
+  --gb-tint-strong: rgba(234, 179, 8, 0.28);
+  --gb-blob: rgba(250, 204, 21, 0.55);
+}
+
+/* Primary — emerald/lime metallic glass (affirmative action) */
+.btn.glass-btn.glass-btn-primary {
+  --gb-accent: #15803d;
+  --gb-accent-strong: #064e3b;
+  --gb-tint: rgba(34, 197, 94, 0.2);
+  --gb-tint-strong: rgba(34, 197, 94, 0.4);
+  --gb-blob: rgba(74, 222, 128, 0.6);
+  --gb-glass-top: color-mix(in srgb, #86efac 35%, rgba(255, 255, 255, 0.8));
+  --gb-glass-bottom: color-mix(in srgb, #22c55e 22%, rgba(255, 255, 255, 0.4));
+  color: #064e3b;
+  border-color: color-mix(in srgb, #22c55e 40%, rgba(255, 255, 255, 0.6));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.45) inset,
+    0 -8px 14px color-mix(in srgb, #22c55e 22%, transparent) inset,
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 6px 18px -8px color-mix(in srgb, #22c55e 50%, transparent),
+    0 18px 38px -22px color-mix(in srgb, #22c55e 55%, transparent);
+}
+.btn.glass-btn.glass-btn-primary .glass-btn-icon { color: #15803d; }
+
+/* Hover — lift, brighter glass, specular glint, faster liquid */
+.btn.glass-btn:hover {
+  border-color: color-mix(in srgb, var(--gb-accent) 45%, rgba(255, 255, 255, 0.6));
+  color: var(--gb-accent-strong);
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+    0 -10px 18px color-mix(in srgb, var(--gb-accent) 14%, transparent) inset,
+    0 2px 4px rgba(15, 23, 42, 0.06),
+    0 12px 26px -10px color-mix(in srgb, var(--gb-accent) 45%, transparent),
+    0 22px 46px -22px color-mix(in srgb, var(--gb-accent) 50%, transparent);
+  animation-duration: 6s;
+}
+.btn.glass-btn:hover .glass-btn-icon {
+  transform: scale(1.08);
+  color: var(--gb-accent-strong);
+}
+
+/* Specular glint — thin light arc sliding across on hover */
+.btn.glass-btn::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg,
+    transparent 0%,
+    transparent 42%,
+    rgba(255, 255, 255, 0.0) 46%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0.0) 54%,
+    transparent 58%,
+    transparent 100%);
+  background-size: 260% 100%;
+  background-position: 200% 0;
+  opacity: 0;
+  filter: blur(0.6px);
+  transition: opacity 0.18s ease,
+              background-position 1.1s var(--gb-ease);
+  mix-blend-mode: screen;
+  z-index: 2;
+}
+.btn.glass-btn:hover::after {
+  opacity: 1;
+  background-position: -60% 0;
+}
+
+/* Pressed */
+.btn.glass-btn:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.08s;
+}
+
+/* Focus ring */
+.btn.glass-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--gb-accent) 35%, transparent),
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 12px 26px -10px color-mix(in srgb, var(--gb-accent) 40%, transparent);
+}
+
+/* Spring press animation on click */
+.btn.glass-btn.glass-btn-pressing {
+  animation: glassBtnPressSpring 0.48s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.btn.glass-btn.glass-btn-pressing .glass-btn-icon {
+  animation: glassBtnIconPress 0.48s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes glassBtnPressSpring {
+  0%   { transform: translateY(-2px) scale(1); }
+  35%  { transform: translateY(0) scale(0.95); }
+  65%  { transform: translateY(-1px) scale(1.025); }
+  100% { transform: translateY(-2px) scale(1); }
+}
+@keyframes glassBtnIconPress {
+  0%   { transform: scale(1.08); }
+  35%  { transform: scale(0.9); }
+  65%  { transform: scale(1.15); }
+  100% { transform: scale(1.08); }
+}
+
+/* Ripple (reuses the same shape as nav-link but named separately) */
+.glass-btn-ripple {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--gb-accent) 60%, rgba(255, 255, 255, 0.85)) 0%,
+    color-mix(in srgb, var(--gb-accent) 40%, transparent) 40%,
+    transparent 70%);
+  mix-blend-mode: screen;
+  animation: glassBtnRipple 0.72s cubic-bezier(0.22, 0.8, 0.3, 1) forwards;
+  z-index: 1;
+}
+@keyframes glassBtnRipple {
+  0%   { transform: translate(-50%, -50%) scale(0.35); opacity: 0.9; }
+  40%  { opacity: 0.75; }
+  100% { transform: translate(-50%, -50%) scale(30); opacity: 0; }
+}
+
+/* Graceful fallback for browsers without color-mix() */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .btn.glass-btn.glass-btn-primary {
+    background: linear-gradient(180deg, #86efac 0%, #bbf7d0 100%);
+    border-color: #22c55e;
+    box-shadow: 0 6px 18px -8px rgba(34, 197, 94, 0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn.glass-btn,
+  .btn.glass-btn .glass-btn-icon,
+  .btn.glass-btn::after,
+  .glass-btn-ripple {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
 /* Click ripple — water drop expanding from cursor position */
 .nav-link-ripple {
   position: absolute;

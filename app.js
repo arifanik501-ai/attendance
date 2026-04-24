@@ -482,7 +482,62 @@ function renderEntryPage(pageId) {
   container.innerHTML = `
     <div style="display:flex; justify-content:center; align-items:center; min-height:50vh;">
       <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(12px); border-radius:16px; padding:2.5rem; box-shadow:0 8px 32px rgba(0,0,0,0.1); border:1px solid rgba(255,255,255,0.5); text-align:center; max-width:360px; width:100%;">
-        <div style="font-size:2.5rem; margin-bottom:1rem;">🔒</div>
+        <div class="glass-lock-wrap" id="glass-lock-wrap" aria-hidden="true">
+          <svg class="glass-lock" viewBox="0 0 120 140" width="96" height="112">
+            <defs>
+              <linearGradient id="lockBody" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#fff4d6" stop-opacity="0.95"/>
+                <stop offset="45%" stop-color="#fde68a" stop-opacity="0.72"/>
+                <stop offset="100%" stop-color="#c9954b" stop-opacity="0.55"/>
+              </linearGradient>
+              <linearGradient id="lockShackle" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#fde68a"/>
+                <stop offset="40%" stop-color="#e9c16d"/>
+                <stop offset="70%" stop-color="#b45309"/>
+                <stop offset="100%" stop-color="#7a3e09"/>
+              </linearGradient>
+              <linearGradient id="lockShine" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+              </linearGradient>
+              <radialGradient id="lockHalo" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0%" stop-color="#fde68a" stop-opacity="0.7"/>
+                <stop offset="60%" stop-color="#f59e0b" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+              </radialGradient>
+              <filter id="lockSoftShadow" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                <feOffset dy="3"/>
+                <feComponentTransfer><feFuncA type="linear" slope="0.35"/></feComponentTransfer>
+                <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <circle class="glass-lock-halo" cx="60" cy="78" r="58" fill="url(#lockHalo)"/>
+            <g class="glass-lock-shackle" filter="url(#lockSoftShadow)">
+              <path d="M36 62 L36 44 Q36 20 60 20 Q84 20 84 44 L84 62"
+                    stroke="url(#lockShackle)" stroke-width="10" fill="none"
+                    stroke-linecap="round"/>
+              <path d="M40 60 L40 44 Q40 24 60 24"
+                    stroke="rgba(255,255,255,0.55)" stroke-width="2.4" fill="none"
+                    stroke-linecap="round"/>
+            </g>
+            <g class="glass-lock-body" filter="url(#lockSoftShadow)">
+              <rect x="20" y="58" width="80" height="74" rx="15"
+                    fill="url(#lockBody)" stroke="rgba(180,83,9,0.55)" stroke-width="1.5"/>
+              <rect x="25" y="63" width="70" height="20" rx="10"
+                    fill="url(#lockShine)" opacity="0.8"/>
+              <path class="glass-lock-glint" d="M28 70 Q50 84 92 78"
+                    stroke="rgba(255,255,255,0.85)" stroke-width="2" fill="none"
+                    stroke-linecap="round" opacity="0.55"/>
+              <g class="glass-lock-keyhole">
+                <circle cx="60" cy="90" r="6.5" fill="#3d2110"/>
+                <path d="M57 91 L57 108 Q57 111 60 111 Q63 111 63 108 L63 91 Z" fill="#3d2110"/>
+              </g>
+              <circle class="glass-lock-sparkle glass-lock-sparkle-a" cx="36" cy="72" r="1.5" fill="#fff"/>
+              <circle class="glass-lock-sparkle glass-lock-sparkle-b" cx="84" cy="120" r="1.2" fill="#fff"/>
+            </g>
+          </svg>
+        </div>
         <h2 style="margin:0 0 0.5rem 0; color:#1e293b; font-size:1.3rem; font-weight:700;">Password Required</h2>
         <p style="color:#64748b; font-size:0.9rem; margin-bottom:1.5rem;">Enter your PIN to access <strong>${config.title}</strong></p>
         <div style="display:flex; justify-content:center; gap:0.5rem; margin-bottom:1rem;" id="pin-container">
@@ -561,11 +616,23 @@ function renderEntryPage(pageId) {
   // Submit handler
   document.getElementById('pin-submit').addEventListener('click', () => {
     const entered = Array.from(pins).map(p => p.value).join('');
+    const lockWrap = document.getElementById('glass-lock-wrap');
     if (entered === config.password) {
       sessionStorage.setItem('auth_' + pageId, 'true');
-      _renderEntryContent(pageId);
+      if (lockWrap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        lockWrap.classList.add('is-unlocked');
+        setTimeout(() => _renderEntryContent(pageId), 520);
+      } else {
+        _renderEntryContent(pageId);
+      }
     } else {
       document.getElementById('pin-error').textContent = 'Incorrect PIN. Please try again.';
+      if (lockWrap) {
+        lockWrap.classList.remove('is-wrong');
+        void lockWrap.offsetWidth;
+        lockWrap.classList.add('is-wrong');
+        setTimeout(() => lockWrap.classList.remove('is-wrong'), 650);
+      }
       pins.forEach(p => {
         p.value = '';
         p.style.borderColor = '#ef4444';

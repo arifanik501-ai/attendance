@@ -3,17 +3,19 @@
 // Daily 8:00 AM & 1:00 PM Attendance Notifications
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-fan-v6';
+const CACHE_NAME = 'mep-fan-v7';
 const NOTIFICATION_HOUR_AM = 8; // 8:00 AM
 const NOTIFICATION_HOUR_PM = 13; // 1:00 PM
 const NOTIFICATION_MINUTE = 0;
 
+const ASSET_VERSION = 'v=2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './entry.html',
-  './app.js',
-  './style.css',
+  `./app.js?${ASSET_VERSION}`,
+  `./style.css?${ASSET_VERSION}`,
+  `./tooltip.js?${ASSET_VERSION}`,
   './firebase-init.js',
   './manifest.json',
   './icon-192.png',

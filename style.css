@@ -5223,7 +5223,7 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
   body {
     display: block;
     min-height: 100dvh;
@@ -5364,7 +5364,7 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 420px) {
   .sidebar nav {
     grid-template-columns: 1fr;
   }

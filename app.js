@@ -459,10 +459,23 @@ function renderEntryPage(pageId) {
   if (titleMatch) {
     const eyebrow = titleMatch[1];
     const name = titleMatch[2];
+    // Split the display name into individual letter spans so each
+    // letter can cascade in (and float) with a stagger.
+    const nameLetters = Array.from(name).map((ch, i) => {
+      const safe = ch === ' ' ? '&nbsp;'
+        : ch.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return `<span class="page-title-letter" style="--i:${i}">${safe}</span>`;
+    }).join('');
     document.getElementById('page-title').innerHTML =
       '<span class="page-title-halo" aria-hidden="true"></span>' +
+      '<span class="page-title-stars" aria-hidden="true">' +
+        '<span class="page-title-star s1"></span>' +
+        '<span class="page-title-star s2"></span>' +
+        '<span class="page-title-star s3"></span>' +
+        '<span class="page-title-star s4"></span>' +
+      '</span>' +
       `<span class="page-title-eyebrow"><span class="page-title-eyebrow-diamond" aria-hidden="true">\u2726</span>${eyebrow}<span class="page-title-eyebrow-diamond" aria-hidden="true">\u2726</span></span>` +
-      `<span class="page-title-name" data-text="${name.replace(/"/g, '&quot;')}">${name}</span>` +
+      `<span class="page-title-name" data-text="${name.replace(/"/g, '&quot;')}" aria-label="${name.replace(/"/g, '&quot;')}">${nameLetters}</span>` +
       '<span class="page-title-caption"><em>Daily Attendance Record</em></span>';
   } else {
     document.getElementById('page-title').innerHTML =

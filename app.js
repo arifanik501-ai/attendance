@@ -453,7 +453,20 @@ function renderEntryPage(pageId) {
   document.getElementById('sidebar').innerHTML = generateSidebar(pageId);
   const config = SECTIONS_CONFIG[pageId];
 
-  document.getElementById('page-title').innerHTML = `${config.title}`;
+  // Split "Entry Sheet (Name)" into a small eyebrow label + a large
+  // display name so the heading feels editorial.
+  const titleMatch = config.title.match(/^(.+?)\s*\((.+)\)\s*$/);
+  if (titleMatch) {
+    const eyebrow = titleMatch[1];
+    const name = titleMatch[2];
+    document.getElementById('page-title').innerHTML =
+      `<span class="page-title-eyebrow">${eyebrow}</span>` +
+      `<span class="page-title-name" data-text="${name.replace(/"/g, '&quot;')}">${name}</span>`;
+  } else {
+    document.getElementById('page-title').innerHTML =
+      `<span class="page-title-name">${config.title}</span>`;
+  }
+  document.getElementById('page-title').classList.add('page-title-premium');
 
   // Check if already authenticated this session
   const authed = sessionStorage.getItem('auth_' + pageId);

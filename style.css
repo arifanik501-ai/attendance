@@ -348,15 +348,19 @@ h4 {
 }
 
 /*
- * Sidebar nav links — modern, unified pill style.
- * Color families are defined per variant via CSS vars so hover / active /
- * focus / pressed states can all share the same rules.
+ * Sidebar nav links — liquid-glass pill.
+ * Translucent frosted surface with inner rim highlight + a slow "liquid"
+ * blob that drifts inside, plus a hover shimmer sweep.
+ * Color families are defined via CSS variables so every state shares rules.
  */
 .nav-link {
   --nl-accent: #64748b;         /* accent color for icon + indicator */
   --nl-accent-strong: #334155;  /* stronger accent for active text */
   --nl-tint: rgba(100, 116, 139, 0.08);
   --nl-tint-strong: rgba(100, 116, 139, 0.14);
+  --nl-blob: rgba(100, 116, 139, 0.35);
+  --nl-glass-top: rgba(255, 255, 255, 0.75);
+  --nl-glass-bottom: rgba(255, 255, 255, 0.35);
 
   text-decoration: none;
   font-size: 0.92rem;
@@ -364,23 +368,60 @@ h4 {
   letter-spacing: 0.005em;
   color: #334155;
   padding: 0.65rem 0.85rem;
-  border-radius: 14px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   gap: 0.7rem;
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  /* Frosted glass surface */
+  background:
+    linear-gradient(180deg, var(--nl-glass-top) 0%, var(--nl-glass-bottom) 100%);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.9) inset,            /* top rim highlight */
+    0 -6px 12px rgba(15, 23, 42, 0.04) inset,            /* soft bottom vignette */
+    0 4px 14px -6px rgba(15, 23, 42, 0.12),              /* outer soft shadow */
+    0 1px 2px rgba(15, 23, 42, 0.04);
   transition:
-    background-color 0.22s ease,
-    border-color 0.22s ease,
-    color 0.22s ease,
-    transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.22s ease;
+    background 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease,
+    transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s ease;
   transform: translateZ(0);
+}
+
+/* Ambient liquid blob drifting behind the label.  Using a large blurred
+ * radial background and animating its position for a gentle liquid motion.
+ * Each link gets a slight delay so adjacent pills don't pulse in lockstep. */
+.nav-link {
+  background-image:
+    radial-gradient(circle at var(--blob-x, 20%) var(--blob-y, 30%),
+                    var(--nl-blob) 0%, transparent 45%),
+    linear-gradient(180deg, var(--nl-glass-top) 0%, var(--nl-glass-bottom) 100%);
+  background-size: 180% 180%, auto;
+  background-repeat: no-repeat;
+  animation: navLinkLiquid 9s ease-in-out infinite alternate;
+}
+.nav-link:nth-child(1) { animation-delay: 0s; }
+.nav-link:nth-child(2) { animation-delay: -1.6s; }
+.nav-link:nth-child(3) { animation-delay: -3.2s; }
+.nav-link:nth-child(4) { animation-delay: -4.8s; }
+.nav-link:nth-child(5) { animation-delay: -6.4s; }
+.nav-link:nth-child(6) { animation-delay: -8.0s; }
+
+@keyframes navLinkLiquid {
+  0%   { background-position: 0%   30%, 0 0; }
+  25%  { background-position: 40%  70%, 0 0; }
+  50%  { background-position: 80%  20%, 0 0; }
+  75%  { background-position: 30%  80%, 0 0; }
+  100% { background-position: 70%  40%, 0 0; }
 }
 
 /* Rounded icon container */
@@ -420,52 +461,90 @@ h4 {
   text-overflow: ellipsis;
 }
 
-/* Group color variables */
+/* Group color variables (liquid blob tint matches the accent) */
 .main-dashboard-link {
   --nl-accent: #475569;
   --nl-accent-strong: #0f172a;
   --nl-tint: rgba(71, 85, 105, 0.10);
-  --nl-tint-strong: rgba(71, 85, 105, 0.18);
+  --nl-tint-strong: rgba(71, 85, 105, 0.22);
+  --nl-blob: rgba(71, 85, 105, 0.32);
 }
 .special-entry-link {
   --nl-accent: #b45309;
   --nl-accent-strong: #78350f;
   --nl-tint: rgba(234, 179, 8, 0.14);
-  --nl-tint-strong: rgba(234, 179, 8, 0.28);
+  --nl-tint-strong: rgba(234, 179, 8, 0.32);
+  --nl-blob: rgba(250, 204, 21, 0.55);
 }
 .secondary-entry-link {
   --nl-accent: #0369a1;
   --nl-accent-strong: #0c4a6e;
   --nl-tint: rgba(14, 165, 233, 0.12);
-  --nl-tint-strong: rgba(14, 165, 233, 0.22);
+  --nl-tint-strong: rgba(14, 165, 233, 0.28);
+  --nl-blob: rgba(56, 189, 248, 0.45);
 }
 
-/* Hover — subtle lift with tint */
+/* Hover — lift + brighter glass + shimmer */
 .nav-link:hover {
-  background: var(--nl-tint);
-  border-color: color-mix(in srgb, var(--nl-accent) 25%, transparent);
+  border-color: color-mix(in srgb, var(--nl-accent) 35%, rgba(255, 255, 255, 0.55));
   color: var(--nl-accent-strong);
-  transform: translateX(2px);
-  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--nl-accent) 35%, transparent);
+  transform: translateX(2px) translateY(-1px);
+  box-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.95) inset,
+    0 -6px 12px rgba(15, 23, 42, 0.05) inset,
+    0 10px 22px -8px color-mix(in srgb, var(--nl-accent) 35%, transparent),
+    0 2px 4px rgba(15, 23, 42, 0.06);
+  animation-duration: 5s; /* liquid speeds up on hover */
 }
 .nav-link:hover svg {
   background: var(--nl-tint-strong);
   color: var(--nl-accent-strong);
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
-/* Active (current page) */
+/* Shimmer sweep across the pill on hover (repurposed ::after) */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(255, 255, 255, 0.55) 48%,
+    rgba(255, 255, 255, 0.0) 62%,
+    transparent 100%);
+  background-size: 250% 100%;
+  background-position: 200% 0;
+  opacity: 0;
+  transition: opacity 0.2s ease, background-position 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  mix-blend-mode: screen;
+}
+.nav-link:hover::after {
+  opacity: 1;
+  background-position: -50% 0;
+}
+
+/* Active (current page) — glass turns tinted + icon becomes a filled chip */
 .nav-link.active {
-  background: var(--nl-tint-strong);
-  border-color: color-mix(in srgb, var(--nl-accent) 35%, transparent);
+  --nl-glass-top: color-mix(in srgb, var(--nl-accent) 22%, rgba(255, 255, 255, 0.75));
+  --nl-glass-bottom: color-mix(in srgb, var(--nl-accent) 14%, rgba(255, 255, 255, 0.4));
+  border-color: color-mix(in srgb, var(--nl-accent) 45%, rgba(255, 255, 255, 0.6));
   color: var(--nl-accent-strong);
   transform: none;
-  box-shadow: 0 2px 8px -2px color-mix(in srgb, var(--nl-accent) 28%, transparent);
+  box-shadow:
+    0 1px 1px rgba(255, 255, 255, 0.95) inset,
+    0 -6px 12px color-mix(in srgb, var(--nl-accent) 18%, transparent) inset,
+    0 6px 16px -6px color-mix(in srgb, var(--nl-accent) 45%, transparent),
+    0 2px 4px rgba(15, 23, 42, 0.05);
+  animation-duration: 6s;
 }
 .nav-link.active svg {
   background: var(--nl-accent);
   color: #fff;
-  transform: scale(1.02);
+  transform: scale(1.04);
+  box-shadow: 0 2px 6px -1px color-mix(in srgb, var(--nl-accent) 55%, transparent);
 }
 .nav-link.active::before {
   height: 55%;
@@ -476,45 +555,37 @@ h4 {
 .nav-link:focus-visible {
   outline: none;
   box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--nl-accent) 30%, transparent),
-    0 2px 8px -2px color-mix(in srgb, var(--nl-accent) 28%, transparent);
+    0 0 0 3px color-mix(in srgb, var(--nl-accent) 35%, transparent),
+    0 1px 1px rgba(255, 255, 255, 0.95) inset,
+    0 10px 22px -8px color-mix(in srgb, var(--nl-accent) 35%, transparent);
 }
 
-/* Pressed — brief scale-down feedback */
+/* Pressed — glass compresses slightly */
 .nav-link:active {
   transform: translateX(2px) scale(0.985);
   transition-duration: 0.08s;
 }
 
-/* Ripple overlay (uses ::after, triggered via :active) */
-.nav-link::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(circle at center, color-mix(in srgb, var(--nl-accent) 22%, transparent), transparent 60%);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease;
-}
-.nav-link:active::after {
-  opacity: 1;
-  transition-duration: 0.05s;
-}
-
 /* Graceful fallback for browsers without color-mix() */
 @supports not (color: color-mix(in srgb, red 50%, blue)) {
-  .nav-link:hover { border-color: rgba(100, 116, 139, 0.28); box-shadow: 0 6px 16px -6px rgba(100, 116, 139, 0.35); }
-  .nav-link.active { border-color: rgba(100, 116, 139, 0.4); box-shadow: 0 2px 8px -2px rgba(100, 116, 139, 0.3); }
-  .main-dashboard-link:hover { border-color: rgba(71, 85, 105, 0.3); }
-  .special-entry-link:hover { border-color: rgba(234, 179, 8, 0.5); }
-  .secondary-entry-link:hover { border-color: rgba(14, 165, 233, 0.45); }
-  .nav-link::after { background: radial-gradient(circle at center, rgba(100, 116, 139, 0.22), transparent 60%); }
+  .nav-link:hover { border-color: rgba(100, 116, 139, 0.35); box-shadow: 0 10px 22px -8px rgba(100, 116, 139, 0.35); }
+  .nav-link.active {
+    border-color: rgba(100, 116, 139, 0.45);
+    background: linear-gradient(180deg, rgba(100, 116, 139, 0.22) 0%, rgba(100, 116, 139, 0.12) 100%);
+    box-shadow: 0 6px 16px -6px rgba(100, 116, 139, 0.4);
+  }
+  .main-dashboard-link.active { background: linear-gradient(180deg, rgba(71, 85, 105, 0.22) 0%, rgba(71, 85, 105, 0.12) 100%); }
+  .special-entry-link.active { background: linear-gradient(180deg, rgba(234, 179, 8, 0.25) 0%, rgba(234, 179, 8, 0.12) 100%); }
+  .secondary-entry-link.active { background: linear-gradient(180deg, rgba(14, 165, 233, 0.22) 0%, rgba(14, 165, 233, 0.10) 100%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav-link, .nav-link svg, .nav-link::before, .nav-link::after {
+  .nav-link,
+  .nav-link svg,
+  .nav-link::before,
+  .nav-link::after {
     transition: none !important;
+    animation: none !important;
   }
 }
 

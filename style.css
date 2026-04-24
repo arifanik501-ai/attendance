@@ -347,104 +347,303 @@ h4 {
   box-shadow: 0 1px 0 rgba(255,255,255,0.6);
 }
 
+/*
+ * Sidebar nav links — liquid-glass pill.
+ * Translucent frosted surface with inner rim highlight + a slow "liquid"
+ * blob that drifts inside, plus a hover shimmer sweep.
+ * Color families are defined via CSS variables so every state shares rules.
+ */
 .nav-link {
+  --nl-accent: #64748b;
+  --nl-accent-strong: #334155;
+  --nl-tint: rgba(100, 116, 139, 0.08);
+  --nl-tint-strong: rgba(100, 116, 139, 0.14);
+  --nl-blob: rgba(100, 116, 139, 0.35);
+  --nl-glass-top: rgba(255, 255, 255, 0.78);
+  --nl-glass-bottom: rgba(255, 255, 255, 0.32);
+  --nl-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
   text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  padding: 0.85rem 1.4rem;
-  border-radius: 30px;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.004em;
+  color: #334155;
+  padding: 0.72rem 0.95rem 0.72rem 0.78rem;
+  border-radius: 18px;
+  min-height: 52px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
+  gap: 0.72rem;
   position: relative;
   overflow: hidden;
+  isolation: isolate;
+
+  /* Frosted glass surface — top-light + bottom-shade linear gradient */
+  background:
+    linear-gradient(180deg, var(--nl-glass-top) 0%, var(--nl-glass-bottom) 100%);
+  backdrop-filter: blur(16px) saturate(1.55);
+  -webkit-backdrop-filter: blur(16px) saturate(1.55);
+
+  border: 1px solid rgba(255, 255, 255, 0.55);
+
+  /* Multi-layer depth: inner specular rim + subtle bottom shade + two
+   * outer shadows (ambient + soft key light) for premium glass depth. */
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.35) inset,
+    0 -10px 16px rgba(15, 23, 42, 0.05) inset,
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 8px 20px -10px rgba(15, 23, 42, 0.16),
+    0 18px 38px -22px rgba(15, 23, 42, 0.22);
+
+  transition:
+    background 0.35s var(--nl-ease),
+    border-color 0.35s var(--nl-ease),
+    color 0.35s var(--nl-ease),
+    transform 0.28s var(--nl-ease),
+    box-shadow 0.35s var(--nl-ease);
   transform: translateZ(0);
 }
 
-.special-entry-link {
-  background: linear-gradient(180deg, #fef08a 0%, #eab308 100%);
-  color: #422006;
-  border: 1px solid #ca8a04;
-  box-shadow: 
-    0 10px 20px rgba(202, 138, 4, 0.2), /* Smooth drop */
-    0 3px 6px rgba(0, 0, 0, 0.1), /* Sharp drop */
-    inset 0 4px 6px rgba(255, 255, 255, 0.8), /* Top light reflection rim */
-    inset 0 -4px 6px rgba(161, 98, 7, 0.4); /* Bottom edge shade */
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+/* Ambient liquid blob drifting behind the label.  Using a large blurred
+ * radial background and animating its position for a gentle liquid motion.
+ * Each link gets a slight delay so adjacent pills don't pulse in lockstep. */
+.nav-link {
+  background-image:
+    radial-gradient(circle at var(--blob-x, 20%) var(--blob-y, 30%),
+                    var(--nl-blob) 0%, transparent 45%),
+    linear-gradient(180deg, var(--nl-glass-top) 0%, var(--nl-glass-bottom) 100%);
+  background-size: 180% 180%, auto;
+  background-repeat: no-repeat;
+  animation: navLinkLiquid 9s ease-in-out infinite alternate;
+}
+.nav-link:nth-child(1) { animation-delay: 0s; }
+.nav-link:nth-child(2) { animation-delay: -1.6s; }
+.nav-link:nth-child(3) { animation-delay: -3.2s; }
+.nav-link:nth-child(4) { animation-delay: -4.8s; }
+.nav-link:nth-child(5) { animation-delay: -6.4s; }
+.nav-link:nth-child(6) { animation-delay: -8.0s; }
+
+@keyframes navLinkLiquid {
+  0%   { background-position: 0%   30%, 0 0; }
+  25%  { background-position: 40%  70%, 0 0; }
+  50%  { background-position: 80%  20%, 0 0; }
+  75%  { background-position: 30%  80%, 0 0; }
+  100% { background-position: 70%  40%, 0 0; }
 }
 
-.secondary-entry-link {
-  background: linear-gradient(180deg, #bae6fd 0%, #38bdf8 100%);
-  color: #0c4a6e;
-  border: 1px solid #0284c7;
-  box-shadow: 
-    0 10px 20px rgba(2, 132, 199, 0.2),
-    0 3px 6px rgba(0, 0, 0, 0.1),
-    inset 0 4px 6px rgba(255, 255, 255, 0.8),
-    inset 0 -4px 6px rgba(3, 105, 161, 0.4);
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+/* Icon chip — beveled glass square with inner highlight */
+.nav-link svg {
+  flex: 0 0 36px;
+  width: 36px !important;
+  height: 36px !important;
+  padding: 8px;
+  border-radius: 11px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, transparent 55%),
+    var(--nl-tint);
+  color: var(--nl-accent);
+  stroke: currentColor;
+  stroke-width: 2.2;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -1px 0 rgba(15, 23, 42, 0.08),
+    0 1px 2px rgba(15, 23, 42, 0.06);
+  transition:
+    background 0.35s var(--nl-ease, cubic-bezier(0.25, 0.46, 0.45, 0.94)),
+    color 0.3s ease,
+    transform 0.28s var(--nl-ease, cubic-bezier(0.25, 0.46, 0.45, 0.94)),
+    box-shadow 0.35s ease;
 }
 
+/* Active left indicator bar — short gradient bar with breathing glow */
+.nav-link::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  width: 3px;
+  height: 0;
+  border-radius: 3px;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--nl-accent) 75%, white 25%) 0%,
+    var(--nl-accent) 100%);
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: height 0.28s var(--nl-ease, cubic-bezier(0.25, 0.46, 0.45, 0.94)), opacity 0.22s ease;
+}
+
+/* Label span uses remaining space cleanly */
+.nav-link > span {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Group color variables (liquid blob tint matches the accent) */
 .main-dashboard-link {
-  background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
-  color: #0f172a;
-  border: 1px solid #475569;
-  box-shadow: 
-    0 10px 20px rgba(71, 85, 105, 0.2),
-    0 3px 6px rgba(0, 0, 0, 0.1),
-    inset 0 4px 6px rgba(255, 255, 255, 0.9),
-    inset 0 -4px 6px rgba(51, 65, 85, 0.4);
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+  --nl-accent: #475569;
+  --nl-accent-strong: #0f172a;
+  --nl-tint: rgba(71, 85, 105, 0.10);
+  --nl-tint-strong: rgba(71, 85, 105, 0.22);
+  --nl-blob: rgba(71, 85, 105, 0.32);
+}
+.special-entry-link {
+  --nl-accent: #b45309;
+  --nl-accent-strong: #78350f;
+  --nl-tint: rgba(234, 179, 8, 0.14);
+  --nl-tint-strong: rgba(234, 179, 8, 0.32);
+  --nl-blob: rgba(250, 204, 21, 0.55);
+}
+.secondary-entry-link {
+  --nl-accent: #0369a1;
+  --nl-accent-strong: #0c4a6e;
+  --nl-tint: rgba(14, 165, 233, 0.12);
+  --nl-tint-strong: rgba(14, 165, 233, 0.28);
+  --nl-blob: rgba(56, 189, 248, 0.45);
 }
 
-.nav-link:hover,
+/* Hover — lift, brighter glass, specular glint */
+.nav-link:hover {
+  border-color: color-mix(in srgb, var(--nl-accent) 40%, rgba(255, 255, 255, 0.55));
+  color: var(--nl-accent-strong);
+  transform: translateX(2px) translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.45) inset,
+    0 -10px 16px color-mix(in srgb, var(--nl-accent) 14%, transparent) inset,
+    0 2px 4px rgba(15, 23, 42, 0.06),
+    0 12px 24px -10px color-mix(in srgb, var(--nl-accent) 40%, transparent),
+    0 22px 44px -24px color-mix(in srgb, var(--nl-accent) 45%, transparent);
+  animation-duration: 6s; /* liquid slightly speeds up on hover */
+}
+.nav-link:hover svg {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, transparent 55%),
+    var(--nl-tint-strong);
+  color: var(--nl-accent-strong);
+  transform: scale(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(15, 23, 42, 0.08),
+    0 2px 6px -1px color-mix(in srgb, var(--nl-accent) 30%, transparent);
+}
+
+/* Specular glint — a thin, focused light arc sliding across on hover */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg,
+    transparent 0%,
+    transparent 42%,
+    rgba(255, 255, 255, 0.0) 46%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0.0) 54%,
+    transparent 58%,
+    transparent 100%);
+  background-size: 260% 100%;
+  background-position: 200% 0;
+  opacity: 0;
+  filter: blur(0.6px);
+  transition: opacity 0.18s ease, background-position 1.1s var(--nl-ease, cubic-bezier(0.25, 0.46, 0.45, 0.94));
+  mix-blend-mode: screen;
+}
+.nav-link:hover::after {
+  opacity: 1;
+  background-position: -60% 0;
+}
+
+/* Active (current page) — glass tints with accent, icon chip becomes
+ * metallic, accent bar breathes, pill glows chromatically */
 .nav-link.active {
-  transform: translateY(-2px);
+  --nl-glass-top: color-mix(in srgb, var(--nl-accent) 24%, rgba(255, 255, 255, 0.82));
+  --nl-glass-bottom: color-mix(in srgb, var(--nl-accent) 18%, rgba(255, 255, 255, 0.38));
+  border-color: color-mix(in srgb, var(--nl-accent) 55%, rgba(255, 255, 255, 0.6));
+  color: var(--nl-accent-strong);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+  transform: none;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+    0 -10px 18px color-mix(in srgb, var(--nl-accent) 22%, transparent) inset,
+    0 2px 4px rgba(15, 23, 42, 0.06),
+    0 10px 22px -8px color-mix(in srgb, var(--nl-accent) 55%, transparent),
+    0 0 22px -4px color-mix(in srgb, var(--nl-accent) 40%, transparent),
+    0 24px 46px -22px color-mix(in srgb, var(--nl-accent) 55%, transparent);
+  animation-duration: 7s;
+}
+.nav-link.active svg {
+  /* Metallic filled chip with top-light gradient + chromatic glow */
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--nl-accent) 55%, white 45%) 0%,
+      var(--nl-accent) 55%,
+      color-mix(in srgb, var(--nl-accent) 82%, black 18%) 100%);
+  color: #fff;
+  transform: scale(1.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(15, 23, 42, 0.22),
+    0 2px 8px -1px color-mix(in srgb, var(--nl-accent) 60%, transparent),
+    0 0 16px -4px color-mix(in srgb, var(--nl-accent) 55%, transparent);
+}
+.nav-link.active::before {
+  height: 58%;
+  opacity: 1;
+  animation: navBarBreath 2.6s ease-in-out infinite;
+}
+@keyframes navBarBreath {
+  0%, 100% {
+    opacity: 0.78;
+    box-shadow: 0 0 6px color-mix(in srgb, var(--nl-accent) 60%, transparent);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 14px color-mix(in srgb, var(--nl-accent) 75%, transparent);
+  }
 }
 
-.special-entry-link:hover,
-.special-entry-link.active {
-  background: linear-gradient(180deg, #fef4a3 0%, #facc15 100%);
-  color: #422006;
-  box-shadow: 
-    0 12px 24px rgba(202, 138, 4, 0.3),
-    0 4px 8px rgba(0, 0, 0, 0.15),
-    inset 0 5px 8px rgba(255, 255, 255, 0.9),
-    inset 0 -5px 8px rgba(161, 98, 7, 0.5);
+/* Focus ring for accessibility */
+.nav-link:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--nl-accent) 35%, transparent),
+    0 1px 1px rgba(255, 255, 255, 0.95) inset,
+    0 10px 22px -8px color-mix(in srgb, var(--nl-accent) 35%, transparent);
 }
 
-.secondary-entry-link:hover,
-.secondary-entry-link.active {
-  background: linear-gradient(180deg, #e0f2fe 0%, #7dd3fc 100%);
-  color: #0c4a6e;
-  box-shadow: 
-    0 12px 24px rgba(2, 132, 199, 0.3),
-    0 4px 8px rgba(0, 0, 0, 0.15),
-    inset 0 5px 8px rgba(255, 255, 255, 0.9),
-    inset 0 -5px 8px rgba(3, 105, 161, 0.5);
-}
-
-.main-dashboard-link:hover,
-.main-dashboard-link.active {
-  background: linear-gradient(180deg, #f1f5f9 0%, #cbd5e1 100%);
-  color: #0f172a;
-  box-shadow: 
-    0 12px 24px rgba(71, 85, 105, 0.3),
-    0 4px 8px rgba(0, 0, 0, 0.15),
-    inset 0 5px 8px rgba(255, 255, 255, 1),
-    inset 0 -5px 8px rgba(51, 65, 85, 0.5);
-}
-
+/* Pressed — glass compresses slightly */
 .nav-link:active {
-  transform: translateY(2px) scale(0.98);
-  box-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.1),
-    inset 0 2px 4px rgba(0, 0, 0, 0.2),
-    inset 0 -2px 4px rgba(255, 255, 255, 0.5) !important;
-  transition: all 0.1s;
+  transform: translateX(2px) scale(0.985);
+  transition-duration: 0.08s;
+}
+
+/* Graceful fallback for browsers without color-mix() */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .nav-link:hover { border-color: rgba(100, 116, 139, 0.35); box-shadow: 0 10px 22px -8px rgba(100, 116, 139, 0.35); }
+  .nav-link.active {
+    border-color: rgba(100, 116, 139, 0.45);
+    background: linear-gradient(180deg, rgba(100, 116, 139, 0.22) 0%, rgba(100, 116, 139, 0.12) 100%);
+    box-shadow: 0 6px 16px -6px rgba(100, 116, 139, 0.4);
+  }
+  .main-dashboard-link.active { background: linear-gradient(180deg, rgba(71, 85, 105, 0.22) 0%, rgba(71, 85, 105, 0.12) 100%); }
+  .special-entry-link.active { background: linear-gradient(180deg, rgba(234, 179, 8, 0.25) 0%, rgba(234, 179, 8, 0.12) 100%); }
+  .secondary-entry-link.active { background: linear-gradient(180deg, rgba(14, 165, 233, 0.22) 0%, rgba(14, 165, 233, 0.10) 100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-link,
+  .nav-link svg,
+  .nav-link::before,
+  .nav-link::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 .main-content {

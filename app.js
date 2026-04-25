@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.5.5';
+const APP_VERSION = '2.6.0';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -68,6 +68,131 @@ const SECTIONS_CONFIG = {
 let globalAppState = null;
 let currentActivePageId = null;
 const SESSION_DEVICE_ID = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+const CUSTOM_PERIOD_CUTOFF_DAY = 26;
+const META_STATE_KEYS = ['history', 'branchAttendance'];
+
+function isMetaStateKey(key) {
+  return META_STATE_KEYS.includes(key);
+}
+
+function toIsoDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function buildCustomPeriodFromStart(startDate) {
+  const start = new Date(startDate.getFullYear(), startDate.getMonth(), CUSTOM_PERIOD_CUTOFF_DAY);
+  const end = new Date(start.getFullYear(), start.getMonth() + 1, CUSTOM_PERIOD_CUTOFF_DAY - 1);
+  return {
+    key: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(CUSTOM_PERIOD_CUTOFF_DAY).padStart(2, '0')}`,
+    start,
+    end,
+    label: start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    monthName: start.toLocaleDateString('en-US', { month: 'long' }),
+    rangeLabel: `${start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })} to ${end.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}`
+  };
+}
+
+function getCustomPeriodForDate(dateLike) {
+  const date = new Date(dateLike);
+  const startMonth = date.getDate() >= CUSTOM_PERIOD_CUTOFF_DAY ? date.getMonth() : date.getMonth() - 1;
+  return buildCustomPeriodFromStart(new Date(date.getFullYear(), startMonth, CUSTOM_PERIOD_CUTOFF_DAY));
+}
+
+function getCustomPeriodByOffset(offset = 0) {
+  const currentPeriod = getCustomPeriodForDate(new Date());
+  return buildCustomPeriodFromStart(new Date(currentPeriod.start.getFullYear(), currentPeriod.start.getMonth() + offset, CUSTOM_PERIOD_CUTOFF_DAY));
+}
+
+function getCustomPeriodDates(period) {
+  const dates = [];
+  const cursor = new Date(period.start);
+  while (cursor <= period.end) {
+    dates.push({
+      key: toIsoDate(cursor),
+      dayNumber: String(cursor.getDate()).padStart(2, '0'),
+      weekday: cursor.toLocaleDateString('en-US', { weekday: 'short' }),
+      shortLabel: cursor.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+      fullLabel: cursor.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+      isToday: toIsoDate(cursor) === toIsoDate(new Date())
+    });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return dates;
+}
+
+function getEntryBranchPeriodOffset(pageId) {
+  return parseInt(sessionStorage.getItem(`branch_period_offset_${pageId}`) || '0', 10) || 0;
+}
+
+function setEntryBranchPeriodOffset(pageId, offset) {
+  sessionStorage.setItem(`branch_period_offset_${pageId}`, String(offset));
+}
+
+function getBranchAttendanceRoot(state, createIfMissing = false) {
+  if (!state.branchAttendance || typeof state.branchAttendance !== 'object' || Array.isArray(state.branchAttendance)) {
+    if (!createIfMissing) return null;
+    state.branchAttendance = {};
+  }
+  return state.branchAttendance;
+}
+
+function getBranchAttendancePeriodState(state, pageId, periodKey, createIfMissing = false) {
+  const root = getBranchAttendanceRoot(state, createIfMissing);
+  if (!root) return null;
+  if (!root[pageId] || typeof root[pageId] !== 'object' || Array.isArray(root[pageId])) {
+    if (!createIfMissing) return null;
+    root[pageId] = {};
+  }
+  if (!root[pageId][periodKey] || typeof root[pageId][periodKey] !== 'object' || Array.isArray(root[pageId][periodKey])) {
+    if (!createIfMissing) return null;
+    root[pageId][periodKey] = {};
+  }
+  return root[pageId][periodKey];
+}
+
+function isTickValueChecked(value) {
+  return value === true || value === 1 || value === '1' || value === 'true';
+}
+
+function getAllBranchAttendanceRows() {
+  const rows = [];
+  for (const [pageId, config] of Object.entries(SECTIONS_CONFIG)) {
+    Object.keys(config.groups).forEach(groupName => {
+      rows.push({
+        pageId,
+        pageTitle: config.title.replace('Entry Sheet ', '').replace(/[()]/g, ''),
+        groupName
+      });
+    });
+  }
+  return rows;
+}
+
+function getBranchAttendanceStatsForPage(state, pageId, periodKey) {
+  const periodState = getBranchAttendancePeriodState(state, pageId, periodKey, false) || {};
+  const groups = Object.keys(SECTIONS_CONFIG[pageId]?.groups || {});
+  let checkedCount = 0;
+  let activeBranches = 0;
+  let totalSlots = 0;
+
+  groups.forEach(groupName => {
+    const dayMap = periodState[groupName] || {};
+    let branchChecks = 0;
+    Object.values(dayMap).forEach(value => {
+      if (isTickValueChecked(value)) {
+        checkedCount += 1;
+        branchChecks += 1;
+      }
+    });
+    if (branchChecks > 0) activeBranches += 1;
+  });
+
+  const selectedPeriod = periodKey
+    ? buildCustomPeriodFromStart(new Date(`${periodKey}T00:00:00`))
+    : getCustomPeriodByOffset(0);
+  totalSlots = groups.length * getCustomPeriodDates(selectedPeriod).length;
+  return { checkedCount, activeBranches, totalSlots };
+}
 
 window.playAlertSoundAndVibrate = function () {
   if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
@@ -119,10 +244,13 @@ function getAppState() {
 
   // NORMALIZE DATA: Sync historical loaded state with current SECTIONS_CONFIG structure
   for (const pageKey of Object.keys(stateToReturn)) {
-    if (pageKey === 'history') continue;
+    if (isMetaStateKey(pageKey)) continue;
     if (!SECTIONS_CONFIG[pageKey]) {
       delete stateToReturn[pageKey];
     }
+  }
+  if (!stateToReturn.branchAttendance || typeof stateToReturn.branchAttendance !== 'object' || Array.isArray(stateToReturn.branchAttendance)) {
+    stateToReturn.branchAttendance = {};
   }
 
   for (const [pageKey, pageData] of Object.entries(SECTIONS_CONFIG)) {
@@ -718,6 +846,8 @@ function _renderEntryContent(pageId) {
       container.appendChild(card);
     }
 
+    container.appendChild(renderBranchAttendanceCard(pageId, state));
+
     document.querySelectorAll('.entry-input').forEach(input => {
       input.addEventListener('input', (e) => {
         const g = e.target.getAttribute('data-group');
@@ -735,6 +865,8 @@ function _renderEntryContent(pageId) {
         updateGroupTotals(e.target.closest('table'), state[pageId][g]);
       });
     });
+
+    bindBranchAttendanceControls(pageId, state);
 
     // Re-init reveal to catch the new tables
     initScrollReveal();
@@ -879,7 +1011,12 @@ function exportEntryReport(pageId, title) {
     // Convert inputs to text for print
     const input = td.querySelector('input');
     if (input) {
-      td.textContent = input.value;
+      td.textContent = input.type === 'checkbox' ? (input.checked ? '✓' : '') : input.value;
+      if (input.type === 'checkbox' && input.checked) {
+        td.style.textAlign = 'center';
+        td.style.fontWeight = '900';
+        td.style.color = '#0f766e';
+      }
     }
 
     // Keep absent cells red, others black
@@ -957,6 +1094,273 @@ function updateGroupTotals(table, rows) {
   table.querySelector('.sum-abs').textContent = sums.abs;
 }
 
+function renderBranchAttendanceCard(pageId, state) {
+  const config = SECTIONS_CONFIG[pageId];
+  const offset = getEntryBranchPeriodOffset(pageId);
+  const period = getCustomPeriodByOffset(offset);
+  const dates = getCustomPeriodDates(period);
+  const periodState = getBranchAttendancePeriodState(state, pageId, period.key, true);
+  const groups = Object.keys(config.groups);
+
+  const bodyRows = groups.map(groupName => {
+    if (!periodState[groupName] || typeof periodState[groupName] !== 'object' || Array.isArray(periodState[groupName])) {
+      periodState[groupName] = {};
+    }
+    const checkedCount = dates.reduce((count, day) => count + (isTickValueChecked(periodState[groupName][day.key]) ? 1 : 0), 0);
+    const cells = dates.map(day => {
+      const checked = isTickValueChecked(periodState[groupName][day.key]);
+      return `
+        <td class="branch-att-cell ${day.isToday ? 'is-today' : ''}">
+          <label class="branch-tick" aria-label="${groupName} ${day.fullLabel}">
+            <input type="checkbox" class="branch-att-input" data-branch="${groupName}" data-date="${day.key}" ${checked ? 'checked' : ''}>
+            <span class="branch-tick-box"></span>
+          </label>
+        </td>`;
+    }).join('');
+
+    return `
+      <tr>
+        <td class="branch-name-cell">
+          <div class="branch-name-main">${groupName}</div>
+          <div class="branch-name-sub">${checkedCount}/${dates.length} days ticked</div>
+        </td>
+        ${cells}
+      </tr>`;
+  }).join('');
+
+  const headerCells = dates.map(day => `
+    <th class="branch-date-head ${day.isToday ? 'is-today' : ''}">
+      <span class="branch-day-no">${day.dayNumber}</span>
+      <span class="branch-weekday">${day.weekday}</span>
+    </th>
+  `).join('');
+
+  const checkedTotal = groups.reduce((total, groupName) => {
+    const dayMap = periodState[groupName] || {};
+    return total + dates.reduce((count, day) => count + (isTickValueChecked(dayMap[day.key]) ? 1 : 0), 0);
+  }, 0);
+
+  const card = document.createElement('div');
+  card.className = 'glass-card branch-att-card';
+  card.innerHTML = `
+    <div class="branch-att-header">
+      <div>
+        <div class="branch-att-eyebrow">Branch Monthly Tick Sheet</div>
+        <h3 class="branch-att-title">Branch Attendance — ${period.monthName}</h3>
+        <p class="branch-att-range">${period.rangeLabel} · ${period.label}</p>
+      </div>
+      <div class="branch-period-actions no-print">
+        <button class="branch-period-btn" data-branch-period-step="-1" type="button">‹ Previous</button>
+        <button class="branch-period-btn" data-branch-period-step="0" type="button">Current</button>
+        <button class="branch-period-btn" data-branch-period-step="1" type="button">Next ›</button>
+      </div>
+    </div>
+    <div class="branch-att-summary">
+      <span>${groups.length} branches</span>
+      <span>${dates.length} days</span>
+      <span>${checkedTotal} ticks saved</span>
+    </div>
+    <div class="table-container branch-table-wrap">
+      <table class="branch-att-table">
+        <thead>
+          <tr>
+            <th class="branch-name-head">Branch Name</th>
+            ${headerCells}
+          </tr>
+        </thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+  `;
+
+  return card;
+}
+
+function bindBranchAttendanceControls(pageId, state) {
+  document.querySelectorAll('[data-branch-period-step]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const step = parseInt(btn.getAttribute('data-branch-period-step'), 10) || 0;
+      const nextOffset = step === 0 ? 0 : getEntryBranchPeriodOffset(pageId) + step;
+      setEntryBranchPeriodOffset(pageId, nextOffset);
+      _renderEntryContent(pageId);
+    });
+  });
+
+  document.querySelectorAll('.branch-att-input').forEach(input => {
+    input.addEventListener('change', e => {
+      const period = getCustomPeriodByOffset(getEntryBranchPeriodOffset(pageId));
+      const branchName = e.target.getAttribute('data-branch');
+      const dateKey = e.target.getAttribute('data-date');
+      const periodState = getBranchAttendancePeriodState(state, pageId, period.key, true);
+      if (!periodState[branchName] || typeof periodState[branchName] !== 'object' || Array.isArray(periodState[branchName])) {
+        periodState[branchName] = {};
+      }
+      periodState[branchName][dateKey] = e.target.checked;
+      const row = e.target.closest('tr');
+      const sub = row?.querySelector('.branch-name-sub');
+      if (sub) {
+        const checkedCount = row.querySelectorAll('.branch-att-input:checked').length;
+        sub.textContent = `${checkedCount}/${getCustomPeriodDates(period).length} days ticked`;
+      }
+      const summary = document.querySelector('.branch-att-summary span:last-child');
+      if (summary) {
+        summary.textContent = `${document.querySelectorAll('.branch-att-input:checked').length} ticks saved`;
+      }
+    });
+  });
+}
+
+function buildBranchAttendanceOverviewHtml(state, period) {
+  const dates = getCustomPeriodDates(period);
+  const rows = getAllBranchAttendanceRows();
+  const bodyRows = rows.map(row => {
+    const periodState = getBranchAttendancePeriodState(state, row.pageId, period.key, false) || {};
+    const dayMap = periodState[row.groupName] || {};
+    const tickCount = dates.reduce((count, day) => count + (isTickValueChecked(dayMap[day.key]) ? 1 : 0), 0);
+    const cells = dates.map(day => {
+      const checked = isTickValueChecked(dayMap[day.key]);
+      return `<td class="branch-att-cell ${day.isToday ? 'is-today' : ''}"><span class="branch-overview-mark ${checked ? 'checked' : ''}">${checked ? '✓' : ''}</span></td>`;
+    }).join('');
+    return `
+      <tr>
+        <td class="branch-name-cell">
+          <div class="branch-name-main">${row.groupName}</div>
+          <div class="branch-name-sub">${row.pageTitle} · ${tickCount}/${dates.length}</div>
+        </td>
+        ${cells}
+      </tr>`;
+  }).join('');
+
+  const headerCells = dates.map(day => `
+    <th class="branch-date-head ${day.isToday ? 'is-today' : ''}">
+      <span class="branch-day-no">${day.dayNumber}</span>
+      <span class="branch-weekday">${day.weekday}</span>
+    </th>
+  `).join('');
+
+  return `
+    <div class="branch-att-header">
+      <div>
+        <div class="branch-att-eyebrow">All Entry Sheets</div>
+        <h3 class="branch-att-title">Branch Attendance — ${period.monthName}</h3>
+        <p class="branch-att-range">${period.rangeLabel} · ${period.label}</p>
+      </div>
+      <div class="branch-period-actions no-print">
+        <button class="branch-period-btn" data-branch-modal-step="-1" type="button">‹ Previous</button>
+        <button class="branch-period-btn" data-branch-modal-step="0" type="button">Current</button>
+        <button class="branch-period-btn" data-branch-modal-step="1" type="button">Next ›</button>
+        <button class="branch-period-btn branch-download-btn" onclick="window.downloadBranchAttendanceData()" type="button">Download CSV</button>
+      </div>
+    </div>
+    <div class="branch-att-summary">
+      <span>${Object.keys(SECTIONS_CONFIG).length} entry sheets</span>
+      <span>${rows.length} branches</span>
+      <span>${dates.length} days</span>
+    </div>
+    <div class="table-container branch-table-wrap branch-overview-wrap">
+      <table class="branch-att-table branch-overview-table">
+        <thead>
+          <tr>
+            <th class="branch-name-head">Branch Name</th>
+            ${headerCells}
+          </tr>
+        </thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+window.openBranchAttendanceModal = function () {
+  if (document.getElementById('branch-att-modal')) return;
+  window.branchAttendanceModalOffset = window.branchAttendanceModalOffset || 0;
+  const period = getCustomPeriodByOffset(window.branchAttendanceModalOffset);
+  const modal = document.createElement('div');
+  modal.id = 'branch-att-modal';
+  modal.className = 'ios-hm-overlay branch-modal-overlay no-print';
+  modal.innerHTML = `
+    <div class="ios-hm-card branch-modal-card" role="dialog" aria-labelledby="branch-modal-title">
+      <span class="ios-hm-aurora ios-hm-aurora-1" aria-hidden="true"></span>
+      <span class="ios-hm-aurora ios-hm-aurora-2" aria-hidden="true"></span>
+      <div class="ios-hm-header">
+        <div class="ios-hm-title-wrap">
+          <div class="ios-hm-icon branch-modal-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="4" fill="rgba(20,184,166,0.88)" stroke="#fff" stroke-width="1.2"/><path d="M7 9h10M7 13h10M7 17h6" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><path d="M8 13l2 2 4-5" stroke="#ecfeff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <h2 id="branch-modal-title" class="ios-hm-title">Branch Attendance Sheet</h2>
+            <div class="ios-hm-sub">26-to-25 monthly branch tick records</div>
+          </div>
+        </div>
+        <button class="ios-hm-close" onclick="window.closeBranchAttendanceModal()" aria-label="Close">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div id="branch-modal-content" class="branch-modal-content">
+        ${buildBranchAttendanceOverviewHtml(getAppState(), period)}
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('is-open'));
+  bindBranchAttendanceModalControls();
+};
+
+window.closeBranchAttendanceModal = function () {
+  const modal = document.getElementById('branch-att-modal');
+  if (!modal) return;
+  modal.classList.remove('is-open');
+  setTimeout(() => modal.remove(), 260);
+};
+
+function renderBranchAttendanceModalContent() {
+  const content = document.getElementById('branch-modal-content');
+  if (!content) return;
+  content.innerHTML = buildBranchAttendanceOverviewHtml(getAppState(), getCustomPeriodByOffset(window.branchAttendanceModalOffset || 0));
+  bindBranchAttendanceModalControls();
+}
+
+function bindBranchAttendanceModalControls() {
+  document.querySelectorAll('[data-branch-modal-step]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const step = parseInt(btn.getAttribute('data-branch-modal-step'), 10) || 0;
+      window.branchAttendanceModalOffset = step === 0 ? 0 : (window.branchAttendanceModalOffset || 0) + step;
+      renderBranchAttendanceModalContent();
+    });
+  });
+}
+
+function csvEscape(value) {
+  const text = String(value ?? '');
+  if (/[",\n]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+}
+
+window.downloadBranchAttendanceData = function () {
+  const state = getAppState();
+  const period = getCustomPeriodByOffset(window.branchAttendanceModalOffset || 0);
+  const dates = getCustomPeriodDates(period);
+  const header = ['Entry Sheet', 'Branch Name', 'Month', 'Range', ...dates.map(day => `${day.shortLabel} ${day.weekday}`), 'Total Ticks'];
+  const rows = getAllBranchAttendanceRows().map(row => {
+    const periodState = getBranchAttendancePeriodState(state, row.pageId, period.key, false) || {};
+    const dayMap = periodState[row.groupName] || {};
+    const dateValues = dates.map(day => isTickValueChecked(dayMap[day.key]) ? '✓' : '');
+    const totalTicks = dateValues.filter(Boolean).length;
+    return [row.pageTitle, row.groupName, period.label, period.rangeLabel, ...dateValues, totalTicks];
+  });
+  const csv = [header, ...rows].map(cols => cols.map(csvEscape).join(',')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `branch-attendance-${period.monthName.toLowerCase()}-${period.start.getFullYear()}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  URL.revokeObjectURL(link.href);
+  link.remove();
+};
+
 // Exactly mapping the structure of Excel rows
 const EXACT_DASHBOARD_ROWS = [
   // id, section (if defined, otherwise spans from above if blank, or empty), designation, how to calc
@@ -994,7 +1398,7 @@ function calculateDashboardData(state) {
       let auth = 0, exist = 0, pres = 0, abs = 0;
 
       for (const [pageId, groups] of Object.entries(state)) {
-        if (pageId === 'history') continue;
+        if (isMetaStateKey(pageId)) continue;
         if (cfg.filters.page && pageId !== cfg.filters.page) continue;
         if (cfg.filters.excludePage && pageId === cfg.filters.excludePage) continue;
 
@@ -1166,6 +1570,21 @@ function _performDashboardRender() {
             onclick="window.forceSaveHistory()">
             <svg class="pfab pfab-save" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(16,185,129,0.45));"><defs><linearGradient id="g-save-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6ee7b7"/><stop offset="55%" stop-color="#10b981"/><stop offset="100%" stop-color="#047857"/></linearGradient><linearGradient id="g-save-shutter" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1f2937"/><stop offset="100%" stop-color="#111827"/></linearGradient><linearGradient id="g-save-label" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d1fae5"/></linearGradient></defs><g class="pf-disk"><path d="M4.8 3.5h11.4l4.3 4.3V19a2.2 2.2 0 0 1-2.2 2.2H4.8A2.2 2.2 0 0 1 2.6 19V5.7A2.2 2.2 0 0 1 4.8 3.5z" fill="url(#g-save-body)" stroke="#047857" stroke-width="1.1"/><path d="M4.8 3.5h11.4l4.3 4.3H4.8z" fill="rgba(255,255,255,0.18)"/><rect x="6.5" y="3.5" width="9" height="4.8" rx="0.7" fill="url(#g-save-shutter)"/><rect x="12.8" y="4.4" width="1.6" height="2.9" rx="0.2" fill="#f3f4f6"/><rect x="5.6" y="12.6" width="12.8" height="8.6" rx="1.4" fill="url(#g-save-label)" stroke="#047857" stroke-width="1.1"/><path class="pf-check" d="M8.5 17l2.2 2.2 4.6-4.6" stroke="#10b981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#10b981; letter-spacing:0.04em; font-family:'Inter',sans-serif;">SAVE</span>
+          </button>
+        </div>
+
+        <!-- Branch Attendance Button -->
+        <div class="fab-child branch-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+          <button id="branch-att-btn" class="no-print" data-tip-title="Branch Sheet" data-tip-desc="View and download branch tick data" data-tip-theme="success" data-tip-placement="left"
+            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+            display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
+            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(20,184,166,0.3), 0 0 0 4px rgba(20,184,166,0.1)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onclick="window.openBranchAttendanceModal()">
+            <svg class="pfab pfab-branch" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(20,184,166,0.45));"><defs><linearGradient id="g-branch-board" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#99f6e4"/><stop offset="100%" stop-color="#0d9488"/></linearGradient><linearGradient id="g-branch-check" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#ccfbf1"/></linearGradient></defs><rect x="3" y="4" width="18" height="16" rx="3" fill="url(#g-branch-board)" stroke="#0f766e" stroke-width="1.2"/><path d="M7 8h10M7 12h10M7 16h10" stroke="rgba(255,255,255,0.72)" stroke-width="1.1" stroke-linecap="round"/><path d="M7.2 12.1l2 2 4.2-4.4" stroke="url(#g-branch-check)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="font-size:0.52rem; font-weight:800; color:#14b8a6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">BRANCH</span>
           </button>
         </div>
 
@@ -2838,7 +3257,7 @@ function _renderHistoryState(dateStr, state, container) {
 
     var pageIds = Object.keys(state);
     pageIds.forEach(function(pageId) {
-      if (pageId === 'history') return;
+      if (isMetaStateKey(pageId)) return;
       if (!state[pageId] || typeof state[pageId] !== 'object' || Array.isArray(state[pageId])) return;
 
       var pageData = state[pageId];

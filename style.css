@@ -1541,6 +1541,307 @@ input[type="number"]:focus {
   box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.4);
 }
 
+.branch-att-card {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(45, 212, 191, 0.2), transparent 34%),
+    radial-gradient(circle at 94% 0%, rgba(59, 130, 246, 0.16), transparent 30%),
+    rgba(255, 255, 255, 0.56);
+}
+
+.branch-att-card::before,
+.branch-modal-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,0.54), transparent 38%, rgba(20,184,166,0.09));
+}
+
+.branch-att-header {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.branch-att-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(20, 184, 166, 0.12);
+  color: #0f766e;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.branch-att-title {
+  margin: 0.45rem 0 0.2rem 0;
+  color: #134e4a;
+  font-size: 1.28rem;
+  letter-spacing: -0.03em;
+}
+
+.branch-att-range {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.branch-period-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.branch-period-btn {
+  border: 1px solid rgba(20, 184, 166, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #0f766e;
+  padding: 0.45rem 0.8rem;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -18px rgba(15, 118, 110, 0.45), inset 0 1px 0 rgba(255,255,255,0.78);
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.branch-period-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(240, 253, 250, 0.92);
+  box-shadow: 0 14px 30px -18px rgba(15, 118, 110, 0.62), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.branch-download-btn {
+  color: #fff;
+  border-color: rgba(20, 184, 166, 0.45);
+  background: linear-gradient(135deg, #14b8a6, #0f766e);
+}
+
+.branch-download-btn:hover {
+  background: linear-gradient(135deg, #2dd4bf, #0d9488);
+}
+
+.branch-att-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.branch-att-summary span {
+  padding: 0.36rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.66);
+  color: #155e75;
+  font-size: 0.75rem;
+  font-weight: 900;
+  border: 1px solid rgba(255,255,255,0.74);
+}
+
+.branch-table-wrap {
+  position: relative;
+  max-height: 72vh;
+  border: 1px solid rgba(20, 184, 166, 0.14);
+}
+
+.branch-att-table {
+  min-width: 1120px;
+  table-layout: fixed;
+}
+
+.branch-att-table th,
+.branch-att-table td {
+  padding: 0.34rem 0.28rem;
+}
+
+.branch-name-head,
+.branch-name-cell {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  min-width: 210px;
+  width: 210px;
+  text-align: left !important;
+  background: rgba(240, 253, 250, 0.94);
+  box-shadow: 8px 0 18px -18px rgba(15, 23, 42, 0.58);
+}
+
+.branch-name-head {
+  z-index: 5;
+  color: #0f766e;
+}
+
+.branch-name-main {
+  color: #0f172a;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.branch-name-sub {
+  margin-top: 0.12rem;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.branch-date-head {
+  min-width: 38px;
+  width: 38px;
+  color: #155e75;
+  background: rgba(20, 184, 166, 0.12);
+}
+
+.branch-date-head.is-today,
+.branch-att-cell.is-today {
+  background: rgba(20, 184, 166, 0.18);
+}
+
+.branch-day-no,
+.branch-weekday {
+  display: block;
+  line-height: 1.05;
+}
+
+.branch-day-no {
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.branch-weekday {
+  margin-top: 0.18rem;
+  font-size: 0.55rem;
+  color: #0f766e;
+}
+
+.branch-att-cell {
+  text-align: center !important;
+}
+
+.branch-tick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.branch-tick input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.branch-tick-box,
+.branch-overview-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(15, 118, 110, 0.25);
+  background: rgba(255,255,255,0.82);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 8px 18px -16px rgba(15,118,110,0.8);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.branch-tick input:checked + .branch-tick-box,
+.branch-overview-mark.checked {
+  border-color: rgba(15, 118, 110, 0.55);
+  background: linear-gradient(135deg, #2dd4bf, #0f766e);
+  box-shadow: 0 8px 18px -12px rgba(15,118,110,0.9), inset 0 1px 0 rgba(255,255,255,0.35);
+}
+
+.branch-tick input:checked + .branch-tick-box::before {
+  content: '✓';
+}
+
+.branch-tick:hover .branch-tick-box {
+  transform: scale(1.08);
+  border-color: rgba(20, 184, 166, 0.62);
+}
+
+.branch-modal-overlay {
+  z-index: 10020;
+}
+
+.branch-modal-card {
+  width: min(1240px, 100%);
+}
+
+.branch-modal-icon {
+  background: radial-gradient(circle at 28% 20%, #ccfbf1 0%, #2dd4bf 46%, #0f766e 100%);
+}
+
+.branch-modal-content {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  padding: 22px;
+}
+
+.branch-overview-wrap {
+  max-height: calc(82vh - 220px);
+}
+
+.branch-overview-table {
+  min-width: 1280px;
+}
+
+.a4-report .branch-period-actions {
+  display: none !important;
+}
+
+.a4-report .branch-att-card::before,
+.a4-report .branch-modal-card::before {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  .branch-att-header {
+    flex-direction: column;
+  }
+
+  .branch-period-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .branch-att-title {
+    font-size: 1.08rem;
+  }
+
+  .branch-name-head,
+  .branch-name-cell {
+    min-width: 160px;
+    width: 160px;
+  }
+
+  .branch-att-table {
+    min-width: 980px;
+  }
+
+  .branch-modal-content {
+    padding: 14px;
+  }
+}
+
 /* Export specifics */
 .a4-report {
   width: 210mm;
@@ -5209,6 +5510,20 @@ button:hover .pfab-save .pf-check { animation: pfabCheckDraw 0.6s cubic-bezier(0
 }
 .pfab-save .pf-disk { transform-origin: center; transform-box: fill-box; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); }
 button:hover .pfab-save .pf-disk { transform: scale(1.06); }
+
+.pfab-branch { overflow: visible; }
+.pfab-branch rect,
+.pfab-branch path {
+  transform-origin: center;
+  transform-box: fill-box;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+button:hover .pfab-branch rect {
+  transform: scale(1.04);
+}
+button:hover .pfab-branch path:last-child {
+  transform: scale(1.16);
+}
 
 /* ── HIST hourglass: premium animated time-snapshot icon
       Idle: sand grains continuously trickle through the neck,

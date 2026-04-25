@@ -3600,11 +3600,11 @@ input[type="number"]:focus {
   }
   .theme-dropdown {
     position: fixed;
-    left: 50%;
+    left: 0;
     right: auto;
     bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 64px);
-    width: calc(100vw - 1.5rem);
-    max-width: 420px;
+    width: min(calc(100vw - 2rem - env(safe-area-inset-right, 0px)), 420px);
+    max-width: none;
     max-height: min(76vh, 620px);
     border-radius: 24px;
     transform-origin: bottom center;

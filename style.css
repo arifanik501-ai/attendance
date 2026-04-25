@@ -1960,11 +1960,29 @@ input[type="number"]:focus {
 .ot-dashboard-wrap {
   position: relative;
   max-height: 72vh;
-  background: rgba(255,255,255,0.72);
+  padding: 0.7rem;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(20,184,166,0.12), transparent 34%),
+    rgba(255,255,255,0.72);
 }
 
 .ot-dashboard-table {
   min-width: 1320px;
+  border-collapse: separate;
+  border-spacing: 7px;
+}
+
+.ot-dashboard-table th,
+.ot-dashboard-table td {
+  border: 1px solid rgba(20, 184, 166, 0.12) !important;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.76), 0 10px 24px -22px rgba(15, 118, 110, 0.6);
+}
+
+.ot-dashboard-table tbody tr:hover {
+  background: transparent;
 }
 
 .ot-dashboard-name-head,
@@ -1973,9 +1991,11 @@ input[type="number"]:focus {
   left: 0;
   z-index: 4;
   width: 230px;
-  min-width: 230px;
+  min-width: 210px;
   text-align: left !important;
-  background: rgba(240, 253, 250, 0.96);
+  padding-left: 0.92rem !important;
+  background:
+    linear-gradient(135deg, rgba(240,253,250,0.98), rgba(204,251,241,0.72));
   box-shadow: 8px 0 18px -18px rgba(15, 23, 42, 0.58);
 }
 
@@ -1986,28 +2006,25 @@ input[type="number"]:focus {
 
 .ot-dashboard-branch strong {
   color: #0f172a;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 950;
 }
 
 .ot-dashboard-branch em {
-  margin-top: 0.12rem;
-  color: #64748b;
-  font-size: 0.66rem;
-  font-style: normal;
-  font-weight: 850;
+  display: none;
 }
 
 .ot-dashboard-date,
 .ot-dashboard-cell {
   text-align: center !important;
-  width: 40px;
-  min-width: 40px;
+  width: 42px;
+  min-width: 42px;
 }
 
 .ot-dashboard-date {
   color: #155e75;
-  background: rgba(20, 184, 166, 0.12);
+  background:
+    linear-gradient(180deg, rgba(204,251,241,0.9), rgba(240,253,250,0.72));
 }
 
 .ot-dashboard-date b,
@@ -2026,11 +2043,11 @@ input[type="number"]:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 10px;
   color: #fff;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 950;
   background: linear-gradient(135deg, #2dd4bf, #0f766e);
   box-shadow: 0 8px 18px -12px rgba(15,118,110,0.9), inset 0 1px 0 rgba(255,255,255,0.35);
@@ -2213,8 +2230,8 @@ input[type="number"]:focus {
 
 .ot-export-name-head,
 .ot-export-branch {
-  width: 260px;
-  min-width: 260px;
+  width: 240px;
+  min-width: 240px;
   text-align: left !important;
   padding-left: 16px !important;
 }
@@ -2230,10 +2247,7 @@ input[type="number"]:focus {
 }
 
 .ot-export-branch span {
-  margin-top: 2px;
-  color: #64748b;
-  font-size: 11px;
-  font-weight: 850;
+  display: none;
 }
 
 .ot-export-total-head,
@@ -2243,11 +2257,11 @@ input[type="number"]:focus {
   background: rgba(240, 253, 250, 0.9);
 }
 
-.ot-export-table td:not(.ot-export-branch):not(.ot-export-total) {
+.ot-export-table td:not(.ot-export-branch) {
   color: #fff;
 }
 
-.ot-export-table td:not(.ot-export-branch):not(.ot-export-total):not(:empty) {
+.ot-export-table td:not(.ot-export-branch):not(:empty) {
   background: linear-gradient(135deg, #2dd4bf, #0f766e);
 }
 

@@ -1678,6 +1678,11 @@ input[type="number"]:focus {
   color: #fff;
   border-color: rgba(20, 184, 166, 0.45);
   background: linear-gradient(135deg, #14b8a6, #0f766e);
+  margin-left: -0.35rem;
+  padding: 0.28rem 0.56rem;
+  font-size: 0.7rem;
+  line-height: 1.05;
+  min-height: 0;
 }
 
 .branch-download-btn:hover {

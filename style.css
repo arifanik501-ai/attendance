@@ -3600,14 +3600,13 @@ input[type="number"]:focus {
   }
   .theme-dropdown {
     position: fixed;
-    left: 50%;
+    left: 1rem;
     right: auto;
     bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 64px);
-    width: calc(100vw - 1.5rem);
-    max-width: 420px;
+    width: min(calc(100vw - 2rem - env(safe-area-inset-right, 0px)), 420px);
+    max-width: none;
     max-height: min(76vh, 620px);
     border-radius: 24px;
-    transform: translateX(-50%);
     transform-origin: bottom center;
   }
   .theme-dropdown::before { border-radius: 25px; }
@@ -3650,9 +3649,9 @@ input[type="number"]:focus {
 }
 
 @keyframes themeSheetIn {
-  0%   { opacity: 0; transform: translateX(-50%) translateY(28px) scale(0.94); filter: blur(8px); }
+  0%   { opacity: 0; transform: translateY(28px) scale(0.94); filter: blur(8px); }
   62%  { opacity: 1; filter: blur(0); }
-  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
 
 .theme-auto-toggle {

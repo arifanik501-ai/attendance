@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.3';
+const APP_VERSION = '2.6.4';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -168,6 +168,16 @@ function getAllBranchAttendanceRows() {
   }
   return rows;
 }
+
+function getOvertimeDashboardPeriodOffset() {
+  return parseInt(sessionStorage.getItem('overtime_dashboard_period_offset') || '0', 10) || 0;
+}
+
+function setOvertimeDashboardPeriodOffset(offset) {
+  sessionStorage.setItem('overtime_dashboard_period_offset', String(offset));
+}
+
+window.getOvertimeDashboardPeriodOffset = getOvertimeDashboardPeriodOffset;
 
 function getBranchAttendanceStatsForPage(state, pageId, periodKey) {
   const periodState = getBranchAttendancePeriodState(state, pageId, periodKey, false) || {};
@@ -526,6 +536,7 @@ if (document.readyState === 'loading') {
 function generateSidebar(activePage) {
   const pages = [
     { id: 'index', title: 'Dashboard', url: 'index.html', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>' },
+    { id: 'overtime-dashboard', title: 'Overtime Dashboard', url: 'index.html#overtime-dashboard', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 8h10M7 12h10M7 16h6"/><path d="M8 13l2 2 4-5"/></svg>' },
     { id: 'anik', title: 'Entry (Anik)', url: 'entry.html?page=anik', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
     { id: 'takbir', title: 'Entry (Takbir)', url: 'entry.html?page=takbir', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
     { id: 'monir', title: 'Entry (Monir)', url: 'entry.html?page=monir', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
@@ -552,6 +563,7 @@ function generateSidebar(activePage) {
     if (isSpecialPrimary) specialClass = 'special-entry-link';
     if (isSpecialSecondary) specialClass = 'secondary-entry-link';
     if (isMainDashboard) specialClass = 'main-dashboard-link';
+    if (p.id === 'overtime-dashboard') specialClass = 'overtime-dashboard-link';
 
     html += `<a href="${p.url}" class="nav-link ${specialClass} ${activePage === p.id ? 'active' : ''}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
       ${p.icon} <span style="white-space:nowrap;">${p.title}</span>
@@ -1397,8 +1409,92 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
     </div>`;
 }
 
+function buildOvertimeDashboardReportHtml(state, period) {
+  const dates = getCustomPeriodDates(period);
+  const rows = getAllBranchAttendanceRows();
+  let totalTicks = 0;
+
+  const bodyRows = rows.map(row => {
+    const periodState = getBranchAttendancePeriodState(state, row.pageId, period.key, false) || {};
+    const dayMap = periodState[row.groupName] || {};
+    let rowTicks = 0;
+    const cells = dates.map(day => {
+      const checked = !day.isFuture && isTickValueChecked(dayMap[day.key]);
+      if (checked) rowTicks += 1;
+      return `<td class="ot-dashboard-cell ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">${checked ? '<span>✓</span>' : ''}</td>`;
+    }).join('');
+    totalTicks += rowTicks;
+    return `
+      <tr>
+        <td class="ot-dashboard-branch">
+          <strong>${row.groupName}</strong>
+          <em>${row.pageTitle}</em>
+        </td>
+        ${cells}
+        <td class="ot-dashboard-total">${rowTicks}</td>
+      </tr>`;
+  }).join('');
+
+  const headerCells = dates.map(day => `
+    <th class="ot-dashboard-date ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
+      <b>${day.dayNumber}</b>
+      <span>${day.weekday}</span>
+    </th>
+  `).join('');
+
+  return `
+    <section id="overtime-dashboard-report" class="glass-card overtime-dashboard-report">
+      <div class="ot-dashboard-glow"></div>
+      <div class="ot-dashboard-header">
+        <div>
+          <div class="branch-att-eyebrow">All Entry Sheets</div>
+          <h2>Overtime Dashboard</h2>
+          <p>${period.rangeLabel} · ${period.label}</p>
+        </div>
+        <div class="ot-dashboard-actions no-print">
+          <button class="branch-period-btn" data-overtime-dashboard-step="-1" type="button">‹ Previous</button>
+          <button class="branch-period-btn" data-overtime-dashboard-step="0" type="button">Current</button>
+          <button class="branch-period-btn" data-overtime-dashboard-step="1" type="button">Next ›</button>
+          <button class="branch-period-btn branch-download-btn" onclick="window.downloadOvertimeAttendanceJpg()" type="button">Download JPG</button>
+        </div>
+      </div>
+      <div class="ot-dashboard-stats">
+        <div><strong>${Object.keys(SECTIONS_CONFIG).length}</strong><span>Entry Sheets</span></div>
+        <div><strong>${rows.length}</strong><span>Branches</span></div>
+        <div><strong>${dates.length}</strong><span>Days</span></div>
+        <div><strong>${totalTicks}</strong><span>Total Ticks</span></div>
+      </div>
+      <div class="table-container branch-table-wrap ot-dashboard-wrap">
+        <table class="branch-att-table ot-dashboard-table">
+          <thead>
+            <tr>
+              <th class="ot-dashboard-name-head">Branch Name</th>
+              ${headerCells}
+              <th class="ot-dashboard-total-head">Total</th>
+            </tr>
+          </thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+      </div>
+    </section>`;
+}
+
+function bindOvertimeDashboardControls() {
+  document.querySelectorAll('[data-overtime-dashboard-step]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const step = parseInt(btn.getAttribute('data-overtime-dashboard-step'), 10) || 0;
+      const nextOffset = step === 0 ? 0 : getOvertimeDashboardPeriodOffset() + step;
+      setOvertimeDashboardPeriodOffset(nextOffset);
+      _performDashboardRender();
+    });
+  });
+}
+
 window.downloadOvertimeAttendanceJpg = function () {
-  const period = getCustomPeriodByOffset(window.branchAttendanceModalOffset || 0);
+  const periodOffset = document.getElementById('overtime-dashboard-report')
+    ? getOvertimeDashboardPeriodOffset()
+    : (window.branchAttendanceModalOffset || 0);
+  const period = getCustomPeriodByOffset(periodOffset);
   const exportNode = document.createElement('div');
   exportNode.className = 'ot-export-canvas';
   exportNode.innerHTML = buildOvertimeAttendanceJpgHtml(getAppState(), period);
@@ -1521,7 +1617,7 @@ function calculateDashboardData(state) {
 }
 
 window.renderDashboard = function () {
-  currentActivePageId = 'index';
+  currentActivePageId = window.location.hash === '#overtime-dashboard' ? 'overtime-dashboard' : 'index';
   if (globalAppState) {
     _performDashboardRender();
   }
@@ -1529,7 +1625,9 @@ window.renderDashboard = function () {
 
 function _performDashboardRender() {
   try {
-    document.getElementById('sidebar').innerHTML = generateSidebar('index');
+    const activeDashboardPage = window.location.hash === '#overtime-dashboard' ? 'overtime-dashboard' : 'index';
+    currentActivePageId = activeDashboardPage;
+    document.getElementById('sidebar').innerHTML = generateSidebar(activeDashboardPage);
 
     // Clear all entry page auth so password is required again
     Object.keys(SECTIONS_CONFIG).forEach(key => sessionStorage.removeItem('auth_' + key));
@@ -1638,21 +1736,6 @@ function _performDashboardRender() {
             onclick="window.forceSaveHistory()">
             <svg class="pfab pfab-save" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(16,185,129,0.45));"><defs><linearGradient id="g-save-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6ee7b7"/><stop offset="55%" stop-color="#10b981"/><stop offset="100%" stop-color="#047857"/></linearGradient><linearGradient id="g-save-shutter" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1f2937"/><stop offset="100%" stop-color="#111827"/></linearGradient><linearGradient id="g-save-label" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d1fae5"/></linearGradient></defs><g class="pf-disk"><path d="M4.8 3.5h11.4l4.3 4.3V19a2.2 2.2 0 0 1-2.2 2.2H4.8A2.2 2.2 0 0 1 2.6 19V5.7A2.2 2.2 0 0 1 4.8 3.5z" fill="url(#g-save-body)" stroke="#047857" stroke-width="1.1"/><path d="M4.8 3.5h11.4l4.3 4.3H4.8z" fill="rgba(255,255,255,0.18)"/><rect x="6.5" y="3.5" width="9" height="4.8" rx="0.7" fill="url(#g-save-shutter)"/><rect x="12.8" y="4.4" width="1.6" height="2.9" rx="0.2" fill="#f3f4f6"/><rect x="5.6" y="12.6" width="12.8" height="8.6" rx="1.4" fill="url(#g-save-label)" stroke="#047857" stroke-width="1.1"/><path class="pf-check" d="M8.5 17l2.2 2.2 4.6-4.6" stroke="#10b981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#10b981; letter-spacing:0.04em; font-family:'Inter',sans-serif;">SAVE</span>
-          </button>
-        </div>
-
-        <!-- Overtime Attendance Button -->
-        <div class="fab-child branch-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="branch-att-btn" class="no-print solid-fab-btn" data-tip-title="Overtime Sheet" data-tip-desc="View and download overtime tick data" data-tip-theme="success" data-tip-placement="left"
-            style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
-            display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
-            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(20,184,166,0.3), 0 0 0 4px rgba(20,184,166,0.1)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
-            onclick="window.openBranchAttendanceModal()">
-            <svg class="pfab pfab-branch" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(20,184,166,0.45));"><defs><linearGradient id="g-branch-board" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#99f6e4"/><stop offset="100%" stop-color="#0d9488"/></linearGradient><linearGradient id="g-branch-check" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#ccfbf1"/></linearGradient></defs><rect x="3" y="4" width="18" height="16" rx="3" fill="url(#g-branch-board)" stroke="#0f766e" stroke-width="1.2"/><path d="M7 8h10M7 12h10M7 16h10" stroke="rgba(255,255,255,0.72)" stroke-width="1.1" stroke-linecap="round"/><path d="M7.2 12.1l2 2 4.2-4.4" stroke="url(#g-branch-check)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span style="font-size:0.52rem; font-weight:800; color:#14b8a6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">OT</span>
           </button>
         </div>
 
@@ -1806,8 +1889,11 @@ function _performDashboardRender() {
 
       html += `</tbody></table></div>`;
 
-      mainCard.innerHTML = html;
+      mainCard.innerHTML = activeDashboardPage === 'overtime-dashboard'
+        ? html.replace('ATTENDANCE REPORT', 'ATTENDANCE DASHBOARD') + buildOvertimeDashboardReportHtml(state, getCustomPeriodByOffset(getOvertimeDashboardPeriodOffset()))
+        : html;
       container.appendChild(mainCard);
+      if (activeDashboardPage === 'overtime-dashboard') bindOvertimeDashboardControls();
 
       if (window.clockInterval) clearInterval(window.clockInterval);
       window.clockInterval = setInterval(updateClock, 1000);

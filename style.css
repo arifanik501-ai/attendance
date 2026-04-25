@@ -533,6 +533,13 @@ h4 {
   --nl-tint-strong: rgba(14, 165, 233, 0.28);
   --nl-blob: rgba(56, 189, 248, 0.45);
 }
+.overtime-dashboard-link {
+  --nl-accent: #0f766e;
+  --nl-accent-strong: #134e4a;
+  --nl-tint: rgba(20, 184, 166, 0.13);
+  --nl-tint-strong: rgba(20, 184, 166, 0.28);
+  --nl-blob: rgba(45, 212, 191, 0.46);
+}
 
 /* Hover — lift, brighter glass, specular glint */
 .nav-link:hover {
@@ -1837,6 +1844,191 @@ input[type="number"]:focus {
   min-width: 1280px;
 }
 
+.overtime-dashboard-report {
+  position: relative;
+  overflow: hidden;
+  margin-top: 1.2rem;
+  padding: 1.2rem;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(20, 184, 166, 0.2), transparent 28%),
+    radial-gradient(circle at 92% 10%, rgba(59, 130, 246, 0.16), transparent 30%),
+    rgba(255,255,255,0.64);
+}
+
+.ot-dashboard-glow {
+  position: absolute;
+  right: -120px;
+  bottom: -120px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.16), transparent 68%);
+  pointer-events: none;
+}
+
+.ot-dashboard-header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ot-dashboard-header h2 {
+  margin: 0.45rem 0 0.2rem;
+  color: #134e4a;
+  font-size: 1.8rem;
+  letter-spacing: -0.045em;
+}
+
+.ot-dashboard-header p {
+  margin: 0;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.ot-dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.ot-dashboard-stats {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.ot-dashboard-stats div {
+  padding: 0.9rem;
+  border: 1px solid rgba(255,255,255,0.74);
+  border-radius: 22px;
+  background: rgba(255,255,255,0.68);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 16px 34px -28px rgba(15, 118, 110, 0.55);
+}
+
+.ot-dashboard-stats strong,
+.ot-dashboard-stats span {
+  display: block;
+}
+
+.ot-dashboard-stats strong {
+  color: #0f766e;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.ot-dashboard-stats span {
+  margin-top: 0.28rem;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.ot-dashboard-wrap {
+  position: relative;
+  max-height: 72vh;
+  background: rgba(255,255,255,0.72);
+}
+
+.ot-dashboard-table {
+  min-width: 1320px;
+}
+
+.ot-dashboard-name-head,
+.ot-dashboard-branch {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  width: 230px;
+  min-width: 230px;
+  text-align: left !important;
+  background: rgba(240, 253, 250, 0.96);
+  box-shadow: 8px 0 18px -18px rgba(15, 23, 42, 0.58);
+}
+
+.ot-dashboard-branch strong,
+.ot-dashboard-branch em {
+  display: block;
+}
+
+.ot-dashboard-branch strong {
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.ot-dashboard-branch em {
+  margin-top: 0.12rem;
+  color: #64748b;
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.ot-dashboard-date,
+.ot-dashboard-cell {
+  text-align: center !important;
+  width: 40px;
+  min-width: 40px;
+}
+
+.ot-dashboard-date {
+  color: #155e75;
+  background: rgba(20, 184, 166, 0.12);
+}
+
+.ot-dashboard-date b,
+.ot-dashboard-date span {
+  display: block;
+  line-height: 1.05;
+}
+
+.ot-dashboard-date span {
+  margin-top: 0.18rem;
+  color: #0f766e;
+  font-size: 0.55rem;
+}
+
+.ot-dashboard-cell span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 950;
+  background: linear-gradient(135deg, #2dd4bf, #0f766e);
+  box-shadow: 0 8px 18px -12px rgba(15,118,110,0.9), inset 0 1px 0 rgba(255,255,255,0.35);
+}
+
+.ot-dashboard-date.is-today,
+.ot-dashboard-cell.is-today {
+  background: rgba(20, 184, 166, 0.18);
+}
+
+.ot-dashboard-date.is-future,
+.ot-dashboard-cell.is-future {
+  color: rgba(100, 116, 139, 0.48);
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.ot-dashboard-total-head,
+.ot-dashboard-total {
+  width: 62px;
+  min-width: 62px;
+  color: #0f766e;
+  text-align: center !important;
+  font-weight: 950;
+  background: rgba(240, 253, 250, 0.92);
+}
+
 .ot-export-canvas {
   position: fixed;
   left: -99999px;
@@ -2054,9 +2246,22 @@ input[type="number"]:focus {
     flex-direction: column;
   }
 
+  .ot-dashboard-header {
+    flex-direction: column;
+  }
+
   .branch-period-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .ot-dashboard-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .ot-dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .branch-att-title {
@@ -2071,6 +2276,10 @@ input[type="number"]:focus {
 
   .branch-att-table {
     min-width: 980px;
+  }
+
+  .ot-dashboard-table {
+    min-width: 1080px;
   }
 
   .branch-modal-content {

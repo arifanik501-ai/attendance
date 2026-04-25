@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.9';
+const APP_VERSION = '2.6.10';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1224,6 +1224,7 @@ function bindBranchAttendanceControls(pageId, state) {
       if (summary) {
         summary.textContent = `${document.querySelectorAll('.branch-att-input:checked').length} ticks saved`;
       }
+      saveAppState(state, `🔄 Overtime Attendance (${SECTIONS_CONFIG[pageId].title}) has been updated`);
     });
   });
 }

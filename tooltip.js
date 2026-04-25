@@ -118,8 +118,14 @@
       $short.style.display = 'none';
       $short.innerHTML = '';
     }
-    tip.dataset.theme = ['default','info','success','warning','danger']
+    tip.dataset.theme = ['default','info','success','warning','danger','liquid']
       .includes(cfg.theme) ? cfg.theme : 'default';
+    const accent = currentTarget?.getAttribute('data-tip-accent') || '';
+    if (accent) {
+      tip.style.setProperty('--tip-accent', accent);
+    } else {
+      tip.style.removeProperty('--tip-accent');
+    }
   }
 
   function escapeHtml(s) {
@@ -192,8 +198,8 @@
     if (currentTarget === target && tip.classList.contains('mep-tip--visible')) return;
     const cfg = configFrom(target);
     if (!cfg.title && !cfg.desc) return;
-    render(cfg);
     currentTarget = target;
+    render(cfg);
 
     const id = 'mep-tip-' + (++tipId);
     tip.id = id;

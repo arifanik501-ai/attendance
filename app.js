@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.5.4';
+const APP_VERSION = '2.5.5';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1617,6 +1617,8 @@ function initThemePicker() {
               style="--i:${i}; --tg:${t.swatch};"
               data-tip-title="${t.name}"
               data-tip-desc="${descHtml}"
+              data-tip-theme="liquid"
+              data-tip-accent="${t.swatch}"
               data-tip-shortcut="Click to apply"
               data-tip-html="true"
               data-tip-placement="auto"
@@ -1634,6 +1636,9 @@ function initThemePicker() {
         <span class="theme-ripple"></span>
       </button>`;
   }).join('');
+  const showcaseHtml = THEMES.slice(0, 7).map((t, i) => `
+    <span class="theme-gradient-pill" style="--i:${i}; --tg:${t.swatch};"></span>
+  `).join('');
 
   const fab = document.createElement('div');
   fab.className = 'theme-fab no-print';
@@ -1657,6 +1662,16 @@ function initThemePicker() {
                 aria-label="Close theme gallery">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
         </button>
+      </div>
+
+      <div class="theme-gradient-showcase" aria-hidden="true">
+        <div class="theme-gradient-copy">
+          <span>Premium iOS Liquid Glass</span>
+          <strong>Gradient Theme Studio</strong>
+        </div>
+        <div class="theme-gradient-rail">
+          ${showcaseHtml}
+        </div>
       </div>
 
       <div class="theme-grid">

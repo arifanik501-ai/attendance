@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.5.0';
+const APP_VERSION = '2.5.1';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1241,8 +1241,17 @@ function _performDashboardRender() {
       </div>
 
         <div class="clock-widget" id="clock-widget">
+        <div class="clock-premium-badge">Live Standard Time</div>
         <div class="analog-clock">
           <div class="clock-face">
+            <div class="clock-tick tick-1"></div>
+            <div class="clock-tick tick-2"></div>
+            <div class="clock-tick tick-4"></div>
+            <div class="clock-tick tick-5"></div>
+            <div class="clock-tick tick-7"></div>
+            <div class="clock-tick tick-8"></div>
+            <div class="clock-tick tick-10"></div>
+            <div class="clock-tick tick-11"></div>
             <div class="number number-12">12</div>
             <div class="number number-3">3</div>
             <div class="number number-6">6</div>
@@ -1254,6 +1263,7 @@ function _performDashboardRender() {
           </div>
         </div>
         <div class="digital-time" id="digital-time">--:--:-- --</div>
+        <div class="clock-timezone" id="clock-timezone">Asia/Dhaka · GMT+6</div>
         <div class="clock-location">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="#6366f1" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
           Barishal, Bangladesh
@@ -1340,6 +1350,7 @@ function updateClock() {
   const secondHand = document.getElementById('second-hand');
   const digitalTime = document.getElementById('digital-time');
   const clockDate = document.getElementById('clock-date');
+  const clockTimezone = document.getElementById('clock-timezone');
 
   if (!hourHand) return;
 
@@ -1361,6 +1372,11 @@ function updateClock() {
   let ampm = hour >= 12 ? 'PM' : 'AM';
   let m = mins.toString().padStart(2, '0');
   digitalTime.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-top: 0.3rem; margin-left: 6px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
+  if (clockTimezone) {
+    const timezoneName = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Dhaka';
+    const offsetText = now.toLocaleTimeString('en-GB', { timeZoneName: 'short' }).match(/(?:GMT|UTC)[+-]?\d+(?::\d+)?|[A-Z]{2,5}$/)?.[0] || 'GMT+6';
+    clockTimezone.textContent = `${timezoneName} · ${offsetText}`;
+  }
 
   const d = now.getDate();
   const getSuffix = (n) => {

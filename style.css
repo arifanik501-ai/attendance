@@ -344,25 +344,12 @@ h4 {
   align-items: center;
   justify-content: center;
   margin-bottom: 0.2rem;
-  position: relative;
-  width: 104px;
-  height: 104px;
-  border-radius: 32px;
-  background:
-    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.92), transparent 26%),
-    linear-gradient(135deg, rgba(255, 247, 204, 0.82), rgba(245, 158, 11, 0.28) 48%, rgba(15, 23, 42, 0.16));
-  box-shadow:
-    0 18px 42px rgba(120, 53, 15, 0.2),
-    0 8px 20px rgba(245, 158, 11, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .brand-icon img {
-  width: 96px;
-  height: 96px;
-  object-fit: contain;
-  border-radius: 30px;
-  filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.22));
+  width: 90px;
+  height: auto;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
 }
 
 .brand {
@@ -5295,16 +5282,8 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
     padding: 0.25rem 0 0.4rem;
   }
 
-  .brand-icon {
-    width: 86px;
-    height: 86px;
-    border-radius: 27px;
-  }
-
   .brand-icon img {
-    width: 80px;
-    height: 80px;
-    border-radius: 25px;
+    width: 74px;
   }
 
   .brand {

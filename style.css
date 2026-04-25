@@ -534,11 +534,18 @@ h4 {
   --nl-blob: rgba(56, 189, 248, 0.45);
 }
 .overtime-dashboard-link {
-  --nl-accent: #0f766e;
-  --nl-accent-strong: #134e4a;
-  --nl-tint: rgba(20, 184, 166, 0.13);
-  --nl-tint-strong: rgba(20, 184, 166, 0.28);
-  --nl-blob: rgba(45, 212, 191, 0.46);
+  --nl-accent: #dc2626;
+  --nl-accent-strong: #7f1d1d;
+  --nl-tint: rgba(239, 68, 68, 0.13);
+  --nl-tint-strong: rgba(239, 68, 68, 0.3);
+  --nl-blob: rgba(248, 113, 113, 0.46);
+}
+
+.overtime-dashboard-link > span {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.08;
 }
 
 .dashboard-top-export {

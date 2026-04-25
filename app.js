@@ -1704,6 +1704,13 @@ window.toggleThemeDropdown = toggleThemeDropdown;
 // 120fps-READY MOTION HELPERS
 // ═══════════════════════════════════════════════════
 
+function lockMobilePortraitOrientation() {
+  const isMobileView = window.matchMedia('(max-width: 480px), (pointer: coarse)').matches;
+  if (!isMobileView || !screen.orientation?.lock) return;
+
+  screen.orientation.lock('portrait').catch(() => {});
+}
+
 function initHighRefreshMotion() {
   document.documentElement.classList.add('high-refresh-motion');
   document.documentElement.style.setProperty('--motion-target-fps', '120');
@@ -1862,6 +1869,7 @@ function setupFirebaseListener() {
 // Auto-initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   initHighRefreshMotion();
+  lockMobilePortraitOrientation();
   initThemePicker();
 
   let retryCount = 0;
@@ -1888,6 +1896,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   setTimeout(initScrollReveal, 100);
+});
+
+window.addEventListener('orientationchange', () => {
+  setTimeout(lockMobilePortraitOrientation, 250);
 });
 
 window.addEventListener('beforeunload', () => {

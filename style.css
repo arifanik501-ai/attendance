@@ -1650,9 +1650,13 @@ input[type="number"]:focus {
 .analog-clock {
   width: 90px;
   height: 90px;
+  --clock-hour-hand: 25px;
+  --clock-min-hand: 32px;
+  --clock-second-hand: 35px;
   border-radius: 50%;
   border: none;
   position: relative;
+  overflow: hidden;
   background: #f1f5f9;
   margin: 0 auto 0.5rem auto;
   box-shadow:
@@ -1711,7 +1715,7 @@ input[type="number"]:focus {
 
 .hour-hand {
   width: 3px;
-  height: 35px;
+  height: var(--clock-hour-hand);
   background: #64748b;
   margin-left: -1.5px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -1719,7 +1723,7 @@ input[type="number"]:focus {
 
 .min-hand {
   width: 2px;
-  height: 50px;
+  height: var(--clock-min-hand);
   background: #64748b;
   margin-left: -1px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -1727,7 +1731,7 @@ input[type="number"]:focus {
 
 .second-hand {
   width: 1.5px;
-  height: 56px;
+  height: var(--clock-second-hand);
   background: #6366f1;
   margin-left: -0.75px;
   transition: none;
@@ -1794,6 +1798,9 @@ input[type="number"]:focus {
 .a4-report .analog-clock {
   width: 90px;
   height: 90px;
+  --clock-hour-hand: 22px;
+  --clock-min-hand: 34px;
+  --clock-second-hand: 36px;
   margin-bottom: 1rem;
   box-shadow: none;
   border: 2px solid #cbd5e1;
@@ -5385,6 +5392,9 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
   .analog-clock {
     width: 58px;
     height: 58px;
+    --clock-hour-hand: 15px;
+    --clock-min-hand: 20px;
+    --clock-second-hand: 22px;
     margin: 0 auto 0.3rem;
   }
 
@@ -5421,6 +5431,6 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
   }
 
   .digital-time {
-    font-size: 2rem;
+    font-size: 0.95rem;
   }
 }

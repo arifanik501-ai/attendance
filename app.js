@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.7';
+const APP_VERSION = '2.6.8';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -177,7 +177,12 @@ function setOvertimeDashboardPeriodOffset(offset) {
   sessionStorage.setItem('overtime_dashboard_period_offset', String(offset));
 }
 
+function resetOvertimeDashboardPeriodOffset() {
+  setOvertimeDashboardPeriodOffset(0);
+}
+
 window.getOvertimeDashboardPeriodOffset = getOvertimeDashboardPeriodOffset;
+window.resetOvertimeDashboardPeriodOffset = resetOvertimeDashboardPeriodOffset;
 
 function getBranchAttendanceStatsForPage(state, pageId, periodKey) {
   const periodState = getBranchAttendancePeriodState(state, pageId, periodKey, false) || {};
@@ -1479,6 +1484,18 @@ function bindOvertimeDashboardControls() {
       setOvertimeDashboardPeriodOffset(nextOffset);
       _performDashboardRender();
     });
+  });
+  scrollOvertimeDashboardToToday();
+}
+
+function scrollOvertimeDashboardToToday() {
+  const wrap = document.querySelector('.ot-dashboard-wrap');
+  const todayCell = wrap?.querySelector('.ot-dashboard-date.is-today');
+  if (!wrap || !todayCell) return;
+  const stickyWidth = wrap.querySelector('.ot-dashboard-name-head')?.offsetWidth || 0;
+  const targetLeft = Math.max(0, todayCell.offsetLeft - stickyWidth - 16);
+  requestAnimationFrame(() => {
+    wrap.scrollLeft = targetLeft;
   });
 }
 

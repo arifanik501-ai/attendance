@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.11';
+const APP_VERSION = '2.6.12';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1174,7 +1174,7 @@ function renderBranchAttendanceCard(pageId, state) {
       </div>
     </div>
     <div class="branch-att-summary">
-      <span>${groups.length} branches</span>
+      <span>${groups.length} sections</span>
       <span>${dates.length} days</span>
       <span>${checkedTotal} ticks selected</span>
     </div>
@@ -1182,7 +1182,7 @@ function renderBranchAttendanceCard(pageId, state) {
       <table class="branch-att-table">
         <thead>
           <tr>
-            <th class="branch-name-head">Branch Name</th>
+            <th class="branch-name-head">Section Name</th>
             ${headerCells}
           </tr>
         </thead>
@@ -1272,14 +1272,14 @@ function buildBranchAttendanceOverviewHtml(state, period) {
     </div>
     <div class="branch-att-summary">
       <span>${Object.keys(SECTIONS_CONFIG).length} entry sheets</span>
-      <span>${rows.length} branches</span>
+      <span>${rows.length} sections</span>
       <span>${dates.length} days</span>
     </div>
     <div class="table-container branch-table-wrap branch-overview-wrap">
       <table class="branch-att-table branch-overview-table">
         <thead>
           <tr>
-            <th class="branch-name-head">Branch Name</th>
+            <th class="branch-name-head">Section Name</th>
             ${headerCells}
           </tr>
         </thead>
@@ -1391,7 +1391,7 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
       </div>
       <div class="ot-export-meta">
         <span>${Object.keys(SECTIONS_CONFIG).length} Entry Sheets</span>
-        <span>${rows.length} Branches</span>
+        <span>${rows.length} Sections</span>
         <span>${dates.length} Days</span>
         <span>Future dates disabled</span>
       </div>
@@ -1457,7 +1457,7 @@ function buildOvertimeDashboardReportHtml(state, period) {
       </div>
       <div class="ot-dashboard-stats">
         <div><strong>${Object.keys(SECTIONS_CONFIG).length}</strong><span>Entry Sheets</span></div>
-        <div><strong>${rows.length}</strong><span>Branches</span></div>
+        <div><strong>${rows.length}</strong><span>Sections</span></div>
         <div><strong>${dates.length}</strong><span>Days</span></div>
         <div><strong>${totalTicks}</strong><span>Total Ticks</span></div>
       </div>

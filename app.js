@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.1';
+const APP_VERSION = '2.6.2';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -113,7 +113,8 @@ function getCustomPeriodDates(period) {
       weekday: cursor.toLocaleDateString('en-US', { weekday: 'short' }),
       shortLabel: cursor.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
       fullLabel: cursor.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
-      isToday: toIsoDate(cursor) === toIsoDate(new Date())
+      isToday: toIsoDate(cursor) === toIsoDate(new Date()),
+      isFuture: cursor > new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
     });
     cursor.setDate(cursor.getDate() + 1);
   }
@@ -1106,13 +1107,13 @@ function renderBranchAttendanceCard(pageId, state) {
     if (!periodState[groupName] || typeof periodState[groupName] !== 'object' || Array.isArray(periodState[groupName])) {
       periodState[groupName] = {};
     }
-    const checkedCount = dates.reduce((count, day) => count + (isTickValueChecked(periodState[groupName][day.key]) ? 1 : 0), 0);
+    const checkedCount = dates.reduce((count, day) => count + (!day.isFuture && isTickValueChecked(periodState[groupName][day.key]) ? 1 : 0), 0);
     const cells = dates.map(day => {
-      const checked = isTickValueChecked(periodState[groupName][day.key]);
+      const checked = !day.isFuture && isTickValueChecked(periodState[groupName][day.key]);
       return `
-        <td class="branch-att-cell ${day.isToday ? 'is-today' : ''}">
+        <td class="branch-att-cell ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
           <label class="branch-tick" aria-label="${groupName} ${day.fullLabel}">
-            <input type="checkbox" class="branch-att-input" data-branch="${groupName}" data-date="${day.key}" ${checked ? 'checked' : ''}>
+            <input type="checkbox" class="branch-att-input" data-branch="${groupName}" data-date="${day.key}" ${checked ? 'checked' : ''} ${day.isFuture ? 'disabled' : ''}>
             <span class="branch-tick-box"></span>
           </label>
         </td>`;
@@ -1129,7 +1130,7 @@ function renderBranchAttendanceCard(pageId, state) {
   }).join('');
 
   const headerCells = dates.map(day => `
-    <th class="branch-date-head ${day.isToday ? 'is-today' : ''}">
+    <th class="branch-date-head ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
       <span class="branch-day-no">${day.dayNumber}</span>
       <span class="branch-weekday">${day.weekday}</span>
     </th>
@@ -1137,7 +1138,7 @@ function renderBranchAttendanceCard(pageId, state) {
 
   const checkedTotal = groups.reduce((total, groupName) => {
     const dayMap = periodState[groupName] || {};
-    return total + dates.reduce((count, day) => count + (isTickValueChecked(dayMap[day.key]) ? 1 : 0), 0);
+    return total + dates.reduce((count, day) => count + (!day.isFuture && isTickValueChecked(dayMap[day.key]) ? 1 : 0), 0);
   }, 0);
 
   const card = document.createElement('div');
@@ -1216,10 +1217,10 @@ function buildBranchAttendanceOverviewHtml(state, period) {
   const bodyRows = rows.map(row => {
     const periodState = getBranchAttendancePeriodState(state, row.pageId, period.key, false) || {};
     const dayMap = periodState[row.groupName] || {};
-    const tickCount = dates.reduce((count, day) => count + (isTickValueChecked(dayMap[day.key]) ? 1 : 0), 0);
+    const tickCount = dates.reduce((count, day) => count + (!day.isFuture && isTickValueChecked(dayMap[day.key]) ? 1 : 0), 0);
     const cells = dates.map(day => {
-      const checked = isTickValueChecked(dayMap[day.key]);
-      return `<td class="branch-att-cell ${day.isToday ? 'is-today' : ''}"><span class="branch-overview-mark ${checked ? 'checked' : ''}">${checked ? '✓' : ''}</span></td>`;
+      const checked = !day.isFuture && isTickValueChecked(dayMap[day.key]);
+      return `<td class="branch-att-cell ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}"><span class="branch-overview-mark ${checked ? 'checked' : ''} ${day.isFuture ? 'future-mark' : ''}">${checked ? '✓' : ''}</span></td>`;
     }).join('');
     return `
       <tr>
@@ -1232,7 +1233,7 @@ function buildBranchAttendanceOverviewHtml(state, period) {
   }).join('');
 
   const headerCells = dates.map(day => `
-    <th class="branch-date-head ${day.isToday ? 'is-today' : ''}">
+    <th class="branch-date-head ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
       <span class="branch-day-no">${day.dayNumber}</span>
       <span class="branch-weekday">${day.weekday}</span>
     </th>
@@ -1346,7 +1347,7 @@ window.downloadBranchAttendanceData = function () {
   const rows = getAllBranchAttendanceRows().map(row => {
     const periodState = getBranchAttendancePeriodState(state, row.pageId, period.key, false) || {};
     const dayMap = periodState[row.groupName] || {};
-    const dateValues = dates.map(day => isTickValueChecked(dayMap[day.key]) ? '✓' : '');
+    const dateValues = dates.map(day => !day.isFuture && isTickValueChecked(dayMap[day.key]) ? '✓' : '');
     const totalTicks = dateValues.filter(Boolean).length;
     return [row.pageTitle, row.groupName, period.label, period.rangeLabel, ...dateValues, totalTicks];
   });

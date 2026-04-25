@@ -1,96 +1,85 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">MEP Fan Attendance premium logo</title>
+  <desc id="desc">A luxury black and gold fan emblem with an attendance checkmark badge.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#6366f1"/>
-      <stop offset="0.55" stop-color="#8b5cf6"/>
-      <stop offset="1" stop-color="#ec4899"/>
+    <linearGradient id="tile" x1="72" y1="34" x2="440" y2="478" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#172033"/>
+      <stop offset="0.46" stop-color="#090d18"/>
+      <stop offset="1" stop-color="#1f1307"/>
     </linearGradient>
-    <radialGradient id="glow" cx="0.5" cy="0.35" r="0.7">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    <radialGradient id="halo" cx="50%" cy="36%" r="62%">
+      <stop offset="0" stop-color="#fef3c7" stop-opacity="0.34"/>
+      <stop offset="0.52" stop-color="#f59e0b" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#020617" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="blade" x1="0" y1="0" x2="1" y2="0.6">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#e0e7ff"/>
+    <linearGradient id="gold" x1="130" y1="112" x2="386" y2="410" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff7cc"/>
+      <stop offset="0.2" stop-color="#fde68a"/>
+      <stop offset="0.48" stop-color="#d97706"/>
+      <stop offset="0.72" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#78350f"/>
     </linearGradient>
-    <linearGradient id="bladeShade" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
-      <stop offset="1" stop-color="#1e1b4b" stop-opacity="0.18"/>
+    <linearGradient id="blade" x1="142" y1="80" x2="375" y2="305" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff8dc"/>
+      <stop offset="0.45" stop-color="#fbbf24"/>
+      <stop offset="1" stop-color="#92400e"/>
     </linearGradient>
-    <linearGradient id="hub" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fbbf24"/>
-      <stop offset="1" stop-color="#f59e0b"/>
+    <linearGradient id="bladeEdge" x1="132" y1="64" x2="376" y2="282" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.76"/>
+      <stop offset="1" stop-color="#451a03" stop-opacity="0.28"/>
     </linearGradient>
-    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
-      <feOffset dx="0" dy="4"/>
-      <feComponentTransfer><feFuncA type="linear" slope="0.35"/></feComponentTransfer>
-      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    <linearGradient id="emerald" x1="350" y1="364" x2="442" y2="452" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6ee7b7"/>
+      <stop offset="1" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#020617" flood-opacity="0.45"/>
+    </filter>
+    <filter id="goldGlow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#f59e0b" flood-opacity="0.48"/>
     </filter>
   </defs>
-
-  <!-- Background tile -->
-  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
-  <rect width="512" height="512" rx="108" fill="url(#glow)"/>
-
-  <!-- Ambient outer ring (attendance dots) -->
-  <g opacity="0.35">
-    <circle cx="256" cy="72"  r="5" fill="#ffffff"/>
-    <circle cx="340" cy="92"  r="4" fill="#ffffff"/>
-    <circle cx="412" cy="148" r="4" fill="#ffffff"/>
-    <circle cx="448" cy="232" r="5" fill="#ffffff"/>
-    <circle cx="440" cy="320" r="4" fill="#ffffff"/>
-    <circle cx="388" cy="396" r="4" fill="#ffffff"/>
-    <circle cx="304" cy="440" r="5" fill="#ffffff"/>
-    <circle cx="208" cy="440" r="4" fill="#ffffff"/>
-    <circle cx="124" cy="396" r="4" fill="#ffffff"/>
-    <circle cx="72"  cy="320" r="5" fill="#ffffff"/>
-    <circle cx="64"  cy="232" r="4" fill="#ffffff"/>
-    <circle cx="100" cy="148" r="4" fill="#ffffff"/>
-    <circle cx="172" cy="92"  r="5" fill="#ffffff"/>
+  <rect width="512" height="512" rx="116" fill="url(#tile)"/>
+  <rect width="512" height="512" rx="116" fill="url(#halo)"/>
+  <path d="M88 116 C128 58 218 32 292 48 C379 67 440 132 456 216" fill="none" stroke="#fde68a" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+  <path d="M60 352 C90 428 170 475 256 475 C337 475 408 432 446 368" fill="none" stroke="#f59e0b" stroke-opacity="0.18" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="172" fill="none" stroke="url(#gold)" stroke-width="10" opacity="0.88"/>
+  <circle cx="256" cy="256" r="142" fill="none" stroke="#fde68a" stroke-width="1.5" opacity="0.42"/>
+  <g opacity="0.72">
+    <circle cx="256" cy="88" r="5" fill="#fde68a"/>
+    <circle cx="356" cy="122" r="4" fill="#fbbf24"/>
+    <circle cx="424" cy="220" r="5" fill="#fde68a"/>
+    <circle cx="398" cy="330" r="4" fill="#fbbf24"/>
+    <circle cx="294" cy="420" r="5" fill="#fde68a"/>
+    <circle cx="176" cy="400" r="4" fill="#fbbf24"/>
+    <circle cx="92" cy="310" r="5" fill="#fde68a"/>
+    <circle cx="106" cy="178" r="4" fill="#fbbf24"/>
   </g>
-
-  <!-- Ceiling fan: 3 blades -->
-  <g transform="translate(256 256)" filter="url(#softShadow)">
-    <!-- Blade template: long tear-drop sweeping clockwise -->
-    <g>
-      <path d="M -8 -22 C 40 -60 110 -80 170 -56 C 178 -40 170 -20 150 -10 C 90 8 30 6 -8 4 Z"
-            fill="url(#blade)"/>
-      <path d="M -8 -22 C 40 -60 110 -80 170 -56 C 178 -40 170 -20 150 -10 C 90 8 30 6 -8 4 Z"
-            fill="url(#bladeShade)"/>
+  <g transform="translate(256 254)" filter="url(#shadow)">
+    <g filter="url(#goldGlow)">
+      <g>
+        <path d="M-14 -30 C35 -86 126 -126 190 -96 C210 -74 204 -39 172 -20 C111 18 38 18 -14 8 Z" fill="url(#blade)"/>
+        <path d="M-6 -20 C44 -70 121 -98 176 -82" fill="none" stroke="url(#bladeEdge)" stroke-width="7" stroke-linecap="round" opacity="0.72"/>
+      </g>
+      <g transform="rotate(120)">
+        <path d="M-14 -30 C35 -86 126 -126 190 -96 C210 -74 204 -39 172 -20 C111 18 38 18 -14 8 Z" fill="url(#blade)"/>
+        <path d="M-6 -20 C44 -70 121 -98 176 -82" fill="none" stroke="url(#bladeEdge)" stroke-width="7" stroke-linecap="round" opacity="0.72"/>
+      </g>
+      <g transform="rotate(240)">
+        <path d="M-14 -30 C35 -86 126 -126 190 -96 C210 -74 204 -39 172 -20 C111 18 38 18 -14 8 Z" fill="url(#blade)"/>
+        <path d="M-6 -20 C44 -70 121 -98 176 -82" fill="none" stroke="url(#bladeEdge)" stroke-width="7" stroke-linecap="round" opacity="0.72"/>
+      </g>
     </g>
-    <g transform="rotate(120)">
-      <path d="M -8 -22 C 40 -60 110 -80 170 -56 C 178 -40 170 -20 150 -10 C 90 8 30 6 -8 4 Z"
-            fill="url(#blade)"/>
-      <path d="M -8 -22 C 40 -60 110 -80 170 -56 C 178 -40 170 -20 150 -10 C 90 8 30 6 -8 4 Z"
-            fill="url(#bladeShade)"/>
-    </g>
-    <g transform="rotate(240)">
-      <path d="M -8 -22 C 40 -60 110 -80 170 -56 C 178 -40 170 -20 150 -10 C 90 8 30 6 -8 4 Z"
-            fill="url(#blade)"/>
-      <path d="M -8 -22 C 40 -60 110 -80 170 -56 C 178 -40 170 -20 150 -10 C 90 8 30 6 -8 4 Z"
-            fill="url(#bladeShade)"/>
-    </g>
-
-    <!-- Central motor housing -->
-    <circle cx="0" cy="0" r="46" fill="#1e1b4b"/>
-    <circle cx="0" cy="0" r="46" fill="url(#glow)" opacity="0.6"/>
-    <circle cx="0" cy="0" r="30" fill="url(#hub)"/>
-    <circle cx="0" cy="0" r="8" fill="#1e1b4b"/>
+    <circle cx="0" cy="0" r="58" fill="#080b14" stroke="url(#gold)" stroke-width="9"/>
+    <circle cx="0" cy="0" r="36" fill="url(#gold)"/>
+    <circle cx="0" cy="0" r="14" fill="#111827"/>
+    <path d="M-18 -12 C-4 -24 18 -21 26 -5" fill="none" stroke="#fff7cc" stroke-width="5" stroke-linecap="round" opacity="0.58"/>
   </g>
-
-  <!-- Attendance check badge (bottom-right pill) -->
-  <g transform="translate(352 388)">
-    <circle cx="50" cy="50" r="54" fill="#ffffff" opacity="0.96"/>
-    <circle cx="50" cy="50" r="54" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.6"/>
-    <path d="M 28 52 L 44 68 L 74 34" stroke="#10b981" stroke-width="10"
-          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(348 365)" filter="url(#shadow)">
+    <circle cx="46" cy="46" r="54" fill="#fff7ed"/>
+    <circle cx="46" cy="46" r="47" fill="url(#emerald)"/>
+    <path d="M23 46 L39 63 L72 29" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-
-  <!-- Wordmark -->
-  <g>
-    <text x="256" y="86" font-family="'Plus Jakarta Sans', 'Inter', Arial, sans-serif"
-          font-size="28" font-weight="900" text-anchor="middle"
-          fill="#ffffff" letter-spacing="6" opacity="0.92">MEP FAN LTD.</text>
-  </g>
+  <text x="256" y="92" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="900" text-anchor="middle" fill="#fff7cc" letter-spacing="5">MEP FAN</text>
+  <text x="256" y="430" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" text-anchor="middle" fill="#fde68a" letter-spacing="4" opacity="0.9">ATTENDANCE</text>
 </svg>

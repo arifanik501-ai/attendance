@@ -583,6 +583,20 @@ h4 {
   white-space: nowrap;
 }
 
+.dashboard-top-export-icon {
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border-radius: 50%;
+  flex: 0 0 2.6rem;
+}
+
+.dashboard-top-export-icon svg {
+  width: 1.12rem;
+  height: 1.12rem;
+}
+
 /* Hover — lift, brighter glass, specular glint */
 .nav-link:hover {
   border-color: color-mix(in srgb, var(--nl-accent) 40%, rgba(255, 255, 255, 0.55));
@@ -2324,6 +2338,12 @@ input[type="number"]:focus {
     width: 100%;
     justify-content: center;
     margin: 0;
+  }
+
+  .dashboard-top-export-icon {
+    width: 2.6rem;
+    max-width: 2.6rem;
+    flex-basis: 2.6rem;
   }
 
   .branch-att-header {

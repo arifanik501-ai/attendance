@@ -774,6 +774,7 @@ function _renderEntryContent(pageId) {
 
 function exportEntryReport(pageId, title) {
   const content = document.getElementById('report-container');
+  const exportScale = Math.max(8, Math.min(10, Math.ceil((window.devicePixelRatio || 1) * 4)));
 
   const clone = content.cloneNode(true);
   clone.classList.add('a4-report');
@@ -924,8 +925,13 @@ function exportEntryReport(pageId, title) {
   }
 
   html2canvas(container, {
-    scale: 7,
+    scale: exportScale,
     backgroundColor: '#ffffff',
+    useCORS: true,
+    allowTaint: true,
+    imageTimeout: 0,
+    scrollX: 0,
+    scrollY: 0,
     windowWidth: 850
   }).then(canvas => {
     document.body.removeChild(container);
@@ -1372,6 +1378,7 @@ function updateClock() {
 function exportReport() {
   if (window.forceSaveHistory) window.forceSaveHistory(true);
   const content = document.getElementById('export-content');
+  const exportScale = Math.max(8, Math.min(10, Math.ceil((window.devicePixelRatio || 1) * 4)));
 
   // Clone the node to prevent screen jumping and layout breaking
   const clone = content.cloneNode(true);
@@ -1457,8 +1464,12 @@ function exportReport() {
 
   // Use configuration to ensure entire table renders
   html2canvas(clone, {
-    scale: 7,
+    scale: exportScale,
+    backgroundColor: '#ffffff',
     useCORS: true,
+    allowTaint: true,
+    imageTimeout: 0,
+    scrollX: 0,
     scrollY: 0,
     windowWidth: clone.scrollWidth,
     windowHeight: clone.scrollHeight

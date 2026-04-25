@@ -1682,18 +1682,34 @@ input[type="number"]:focus {
 }
 
 .branch-download-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  flex: 0 0 2.15rem;
   color: #fff;
   border-color: rgba(20, 184, 166, 0.45);
-  background: linear-gradient(135deg, #14b8a6, #0f766e);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.42), transparent 32%),
+    linear-gradient(135deg, #14b8a6, #0f766e);
   margin-left: -1.15rem;
-  padding: 0.2rem 0.42rem;
-  font-size: 0.64rem;
-  line-height: 1.05;
+  padding: 0;
+  line-height: 1;
   min-height: 0;
+  box-shadow: 0 12px 24px -16px rgba(15, 118, 110, 0.68), inset 0 1px 0 rgba(255,255,255,0.38);
 }
 
 .branch-download-btn:hover {
-  background: linear-gradient(135deg, #2dd4bf, #0d9488);
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.48), transparent 32%),
+    linear-gradient(135deg, #2dd4bf, #0d9488);
+}
+
+.branch-download-btn svg {
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
 .branch-att-summary {
@@ -2321,6 +2337,10 @@ input[type="number"]:focus {
   .branch-period-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .branch-download-btn {
+    margin-left: 0;
   }
 
   .ot-dashboard-actions {

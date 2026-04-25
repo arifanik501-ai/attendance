@@ -1267,7 +1267,9 @@ function buildBranchAttendanceOverviewHtml(state, period) {
         <button class="branch-period-btn" data-branch-modal-step="-1" type="button">‹ Previous</button>
         <button class="branch-period-btn" data-branch-modal-step="0" type="button">Current</button>
         <button class="branch-period-btn" data-branch-modal-step="1" type="button">Next ›</button>
-        <button class="branch-period-btn branch-download-btn" onclick="window.downloadOvertimeAttendanceJpg()" type="button">Download JPG</button>
+        <button class="branch-period-btn branch-download-btn" onclick="window.downloadOvertimeAttendanceJpg()" type="button" aria-label="Download JPG" data-tip-title="Download JPG" data-tip-desc="Download overtime attendance as JPG" data-tip-theme="success">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M8 10.5l4 4 4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </button>
       </div>
     </div>
     <div class="branch-att-summary">
@@ -1452,7 +1454,9 @@ function buildOvertimeDashboardReportHtml(state, period) {
           <button class="branch-period-btn" data-overtime-dashboard-step="-1" type="button">‹ Previous</button>
           <button class="branch-period-btn" data-overtime-dashboard-step="0" type="button">Current</button>
           <button class="branch-period-btn" data-overtime-dashboard-step="1" type="button">Next ›</button>
-          <button class="branch-period-btn branch-download-btn" onclick="window.downloadOvertimeAttendanceJpg()" type="button">Download JPG</button>
+          <button class="branch-period-btn branch-download-btn" onclick="window.downloadOvertimeAttendanceJpg()" type="button" aria-label="Download JPG" data-tip-title="Download JPG" data-tip-desc="Download overtime attendance as JPG" data-tip-theme="success">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M8 10.5l4 4 4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          </button>
         </div>
       </div>
       <div class="ot-dashboard-stats">

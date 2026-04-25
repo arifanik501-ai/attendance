@@ -2141,9 +2141,19 @@ function setTheme(themeId) {
   });
   // Update header "current theme" label
   const hdrLabel = document.getElementById('theme-hdr-current');
+  const previewName = document.getElementById('theme-preview-name');
+  const previewDesc = document.getElementById('theme-preview-desc');
+  const previewRail = document.getElementById('theme-preview-rail');
+  const livePreview = document.getElementById('theme-live-preview');
   if (hdrLabel) {
     const current = THEMES.find(t => t.id === themeId);
-    if (current) hdrLabel.textContent = current.name;
+    if (current) {
+      hdrLabel.textContent = current.name;
+      if (previewName) previewName.textContent = current.name;
+      if (previewDesc) previewDesc.textContent = current.desc;
+      if (livePreview) livePreview.style.setProperty('--preview-theme', current.swatch);
+      if (previewRail) previewRail.innerHTML = current.palette.map(c => `<span style="background:${c}"></span>`).join('');
+    }
   }
 
   if (!document.body.classList.contains('theme-init-done')) {
@@ -2189,6 +2199,7 @@ function initThemePicker() {
   if (document.querySelector('.theme-fab')) return;
 
   const savedTheme = localStorage.getItem('mep_theme') || 'rose';
+  const initialTheme = THEMES.find(t => t.id === savedTheme) || THEMES[0];
 
   const cardsHtml = THEMES.map((t, i) => {
     const dotsHtml = t.palette.map(c => `<i style="background:${c}"></i>`).join('');
@@ -2205,6 +2216,7 @@ function initThemePicker() {
               data-tip-shortcut="Click to apply"
               data-tip-html="true"
               data-tip-placement="auto"
+              aria-label="Apply ${t.name} theme"
               onclick="event.stopPropagation(); setTheme('${t.id}'); this.classList.add('just-selected'); setTimeout(()=>this.classList.remove('just-selected'), 900);">
         <span class="theme-swatch" style="background: ${t.swatch}">
           <span class="theme-swatch-sheen"></span>
@@ -2213,7 +2225,11 @@ function initThemePicker() {
           </span>
         </span>
         <span class="theme-meta">
-          <span class="theme-name">${t.name}</span>
+          <span class="theme-name-row">
+            <span class="theme-name">${t.name}</span>
+            <span class="theme-active-pill">Active</span>
+          </span>
+          <span class="theme-desc">${t.desc}</span>
           <span class="theme-dots">${dotsHtml}</span>
         </span>
         <span class="theme-ripple"></span>
@@ -2234,7 +2250,8 @@ function initThemePicker() {
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
           </div>
           <div class="theme-hdr-text">
-            <span class="theme-hdr-title">Theme Gallery</span>
+            <span class="theme-hdr-kicker">Personalize workspace</span>
+            <span class="theme-hdr-title">Theme Studio</span>
             <span class="theme-hdr-sub"><span id="theme-hdr-current">${(THEMES.find(x=>x.id===savedTheme)||{name:''}).name}</span> · ${THEMES.length} themes</span>
           </div>
         </div>
@@ -2247,13 +2264,27 @@ function initThemePicker() {
         </button>
       </div>
 
-      <div class="theme-gradient-showcase" aria-hidden="true">
-        <div class="theme-gradient-copy">
-          <span>Premium iOS Liquid Glass</span>
-          <strong>Gradient Theme Studio</strong>
+      <div class="theme-studio-hero" id="theme-live-preview" style="--preview-theme:${initialTheme.swatch};">
+        <div class="theme-studio-copy">
+          <span>Live liquid preview</span>
+          <strong id="theme-preview-name">${initialTheme.name}</strong>
+          <p id="theme-preview-desc">${initialTheme.desc}</p>
+          <div class="theme-preview-rail" id="theme-preview-rail">
+            ${initialTheme.palette.map(c => `<span style="background:${c}"></span>`).join('')}
+          </div>
         </div>
-        <div class="theme-gradient-rail">
-          ${showcaseHtml}
+        <div class="theme-preview-device" aria-hidden="true">
+          <div class="theme-preview-window">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="theme-preview-card">
+            <i></i>
+            <b></b>
+            <em></em>
+          </div>
+          <div class="theme-preview-bars">
+            ${showcaseHtml}
+          </div>
         </div>
       </div>
 

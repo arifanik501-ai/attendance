@@ -1685,8 +1685,18 @@ window.closeThemeDropdown = closeThemeDropdown;
 
 
 // ═══════════════════════════════════════════════════
-// 60fps SCROLL REVEAL ANIMATIONS
+// 120fps-READY MOTION HELPERS
 // ═══════════════════════════════════════════════════
+
+function initHighRefreshMotion() {
+  document.documentElement.classList.add('high-refresh-motion');
+  document.documentElement.style.setProperty('--motion-target-fps', '120');
+  document.documentElement.style.setProperty('--motion-frame', `${(1000 / 120).toFixed(3)}ms`);
+}
+
+function nextMotionFrame(callback) {
+  requestAnimationFrame(() => requestAnimationFrame(callback));
+}
 
 function initScrollReveal() {
   const observer = new IntersectionObserver((entries) => {
@@ -1709,7 +1719,7 @@ function initScrollReveal() {
     if (row.getBoundingClientRect().top > window.innerHeight) {
       row.style.opacity = '0';
       row.style.transform = 'translate3d(0, 20px, 0)';
-      row.style.transition = `opacity 0.1s cubic-bezier(0.16, 1, 0.3, 1), transform 0.1s cubic-bezier(0.16, 1, 0.3, 1)`;
+      row.style.transition = 'opacity var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease)';
 
       const rowObserver = new IntersectionObserver((entries) => {
         entries.forEach(e => {
@@ -1835,6 +1845,7 @@ function setupFirebaseListener() {
 
 // Auto-initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+  initHighRefreshMotion();
   initThemePicker();
 
   let retryCount = 0;
@@ -2181,7 +2192,7 @@ const MEP_NOTIFICATION = {
     toast.textContent = message;
     document.body.appendChild(toast);
 
-    requestAnimationFrame(() => {
+    nextMotionFrame(() => {
       toast.style.transform = 'translateX(-50%) translateY(0)';
     });
 
@@ -2418,7 +2429,7 @@ function showInstallBanner() {
   document.body.appendChild(banner);
 
   // Slide in animation
-  requestAnimationFrame(() => {
+  nextMotionFrame(() => {
     setTimeout(() => {
       banner.style.transform = 'translateX(-50%) translateY(0)';
     }, 100);
@@ -2628,7 +2639,7 @@ window.openHistoryModal = function() {
   window._iosHmKey = function(e) { if (e.key === 'Escape') window.closeHistoryModal(); };
   document.addEventListener('keydown', window._iosHmKey);
 
-  requestAnimationFrame(() => modal.classList.add('is-open'));
+  nextMotionFrame(() => modal.classList.add('is-open'));
 
   window.historyCurrentDate = new Date();
   window._fetchSavedHistoryDates(() => {

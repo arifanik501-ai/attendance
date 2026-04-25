@@ -3,12 +3,12 @@
 // Daily 8:00 AM & 1:00 PM Attendance Notifications
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-fan-v42';
+const CACHE_NAME = 'mep-fan-v43';
 const NOTIFICATION_HOUR_AM = 8; // 8:00 AM
 const NOTIFICATION_HOUR_PM = 13; // 1:00 PM
 const NOTIFICATION_MINUTE = 0;
 
-const ASSET_VERSION = 'v=37';
+const ASSET_VERSION = 'v=38';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

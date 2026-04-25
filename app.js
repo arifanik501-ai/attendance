@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.5';
+const APP_VERSION = '2.6.6';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1346,25 +1346,19 @@ function bindBranchAttendanceModalControls() {
 function buildOvertimeAttendanceJpgHtml(state, period) {
   const dates = getCustomPeriodDates(period);
   const rows = getAllBranchAttendanceRows();
-  let totalTicks = 0;
   const bodyRows = rows.map(row => {
     const periodState = getBranchAttendancePeriodState(state, row.pageId, period.key, false) || {};
     const dayMap = periodState[row.groupName] || {};
-    let rowTicks = 0;
     const dateCells = dates.map(day => {
       const checked = !day.isFuture && isTickValueChecked(dayMap[day.key]);
-      if (checked) rowTicks += 1;
       return `<td class="${day.isFuture ? 'future' : ''}">${checked ? '✓' : ''}</td>`;
     }).join('');
-    totalTicks += rowTicks;
     return `
       <tr>
         <td class="ot-export-branch">
           <strong>${row.groupName}</strong>
-          <span>${row.pageTitle}</span>
         </td>
         ${dateCells}
-        <td class="ot-export-total">${rowTicks}</td>
       </tr>`;
   }).join('');
 
@@ -1386,8 +1380,8 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
         </div>
         <div class="ot-export-badge">
           <span>${period.monthName}</span>
-          <strong>${totalTicks}</strong>
-          <em>Total Ticks</em>
+          <strong>${dates.length}</strong>
+          <em>Days</em>
         </div>
       </div>
       <div class="ot-export-meta">
@@ -1401,7 +1395,6 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
           <tr>
             <th class="ot-export-name-head">Branch Name</th>
             ${headerCells}
-            <th class="ot-export-total-head">Total</th>
           </tr>
         </thead>
         <tbody>${bodyRows}</tbody>
@@ -1428,7 +1421,6 @@ function buildOvertimeDashboardReportHtml(state, period) {
       <tr>
         <td class="ot-dashboard-branch">
           <strong>${row.groupName}</strong>
-          <em>${row.pageTitle}</em>
         </td>
         ${cells}
         <td class="ot-dashboard-total">${rowTicks}</td>

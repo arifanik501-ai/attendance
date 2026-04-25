@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.10';
+const APP_VERSION = '2.6.11';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1176,7 +1176,7 @@ function renderBranchAttendanceCard(pageId, state) {
     <div class="branch-att-summary">
       <span>${groups.length} branches</span>
       <span>${dates.length} days</span>
-      <span>${checkedTotal} ticks saved</span>
+      <span>${checkedTotal} ticks selected</span>
     </div>
     <div class="table-container branch-table-wrap">
       <table class="branch-att-table">
@@ -1222,9 +1222,8 @@ function bindBranchAttendanceControls(pageId, state) {
       }
       const summary = document.querySelector('.branch-att-summary span:last-child');
       if (summary) {
-        summary.textContent = `${document.querySelectorAll('.branch-att-input:checked').length} ticks saved`;
+        summary.textContent = `${document.querySelectorAll('.branch-att-input:checked').length} ticks selected`;
       }
-      saveAppState(state, `🔄 Overtime Attendance (${SECTIONS_CONFIG[pageId].title}) has been updated`);
     });
   });
 }

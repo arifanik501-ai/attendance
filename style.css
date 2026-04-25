@@ -1344,7 +1344,7 @@ body.page-leaving {
 .main-content {
   flex: 1;
   margin-left: 220px;
-  padding: 1rem 1.5rem;
+  padding: 1rem 1.5rem 0;
   max-width: 950px;
   margin-right: auto;
 }
@@ -1400,7 +1400,7 @@ body.page-leaving {
   border-radius: 8px;
   box-shadow: var(--glass-shadow);
   padding: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
 }
 
 .table-container {
@@ -1607,7 +1607,7 @@ input[type="number"]:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 0.75rem;
   background:
     radial-gradient(circle at 96% 8%, rgba(16, 185, 129, 0.16) 0%, transparent 36%),
     linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 251, 235, 0.58) 100%);
@@ -1616,7 +1616,7 @@ input[type="number"]:focus {
   border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 24px;
   box-shadow: 0 14px 42px rgba(180, 83, 9, 0.12), 0 8px 24px rgba(16, 185, 129, 0.08);
-  padding: 1.5rem 2.5rem;
+  padding: 0.75rem 1rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -1634,7 +1634,7 @@ input[type="number"]:focus {
 .clock-widget {
   background: #f1f5f9;
   border-radius: 24px;
-  padding: 1.5rem 2rem;
+  padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1648,13 +1648,13 @@ input[type="number"]:focus {
 }
 
 .analog-clock {
-  width: 140px;
-  height: 140px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   border: none;
   position: relative;
   background: #f1f5f9;
-  margin: 0 auto 1.5rem auto;
+  margin: 0 auto 0.5rem auto;
   box-shadow:
     15px 15px 30px rgba(148, 163, 184, 0.7),
     -15px -15px 30px rgba(255, 255, 255, 1),
@@ -1748,7 +1748,7 @@ input[type="number"]:focus {
 
 .digital-time {
   font-weight: 600;
-  font-size: 2.2rem;
+  font-size: 1.45rem;
   color: #1e293b;
   letter-spacing: -0.01em;
   font-family: 'Inter', sans-serif;
@@ -1764,7 +1764,7 @@ input[type="number"]:focus {
 
 .clock-date {
   font-weight: 500;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: #64748b;
   background: transparent;
 }
@@ -5316,7 +5316,7 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
     width: 100%;
     max-width: none;
     margin-left: 0;
-    padding: 1rem 0.875rem calc(1rem + env(safe-area-inset-bottom));
+    padding: 1rem 0.875rem 0;
   }
 
   .page-header {
@@ -5348,46 +5348,52 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
   }
 
   .report-header-flex {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1.2rem;
-    margin-bottom: 1rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
   }
 
   .report-title-container {
-    width: 100%;
+    width: auto;
+    flex: 1 1 auto;
     padding-left: 0;
   }
 
   .report-title-container img {
-    max-width: 150px;
+    max-width: 88px;
     height: auto;
   }
 
   .report-title-container h2 {
-    font-size: 1.7rem !important;
+    font-size: 1rem !important;
   }
 
   .report-title-container p {
-    letter-spacing: 0.12em !important;
-    font-size: 0.9rem !important;
+    letter-spacing: 0.08em !important;
+    font-size: 0.58rem !important;
   }
 
   .clock-widget {
-    width: 100%;
+    width: auto;
+    flex: 0 0 auto;
     min-width: 0;
-    padding: 1rem 1.2rem;
+    padding: 0.55rem 0.7rem;
   }
 
   .analog-clock {
-    width: 112px;
-    height: 112px;
-    margin: 0 auto 1rem;
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 0.3rem;
   }
 
   .digital-time {
-    font-size: 2.25rem;
+    font-size: 0.95rem;
+  }
+
+  .clock-date {
+    font-size: 0.62rem;
   }
 
   .table-container {
@@ -5403,6 +5409,7 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
   .main-content {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
+    padding-bottom: 0;
   }
 
   .report-title-container h2 {

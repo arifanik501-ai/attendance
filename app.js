@@ -1198,7 +1198,7 @@ function _performDashboardRender() {
             position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(250,204,21,0.3), 0 0 0 4px rgba(250,204,21,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
-            onclick="event.stopPropagation(); var dd=document.getElementById('theme-dropdown'); var bd=document.getElementById('theme-backdrop'); if(dd) dd.classList.toggle('open'); if(bd) bd.classList.toggle('show');">
+            onclick="event.stopPropagation(); toggleThemeDropdown();">
             <svg class="pfab pfab-theme" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(234,179,8,0.45));"><defs><linearGradient id="g-theme-brush" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fde047"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient><linearGradient id="g-theme-handle" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#d97706"/></linearGradient><linearGradient id="g-theme-tip1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f472b6"/><stop offset="100%" stop-color="#db2777"/></linearGradient><linearGradient id="g-theme-tip2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#2563eb"/></linearGradient></defs><g class="pf-palette"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4z" fill="url(#g-theme-handle)" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/><path d="M7 21h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343" fill="url(#g-theme-handle)" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/><rect x="4.5" y="4.5" width="3" height="13" rx="1" fill="rgba(255,255,255,0.4)"/><g class="pf-brush"><path d="M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485" fill="url(#g-theme-brush)" stroke="#78350f" stroke-width="1.2" stroke-linejoin="round"/><circle cx="14" cy="8.5" r="1.1" fill="url(#g-theme-tip1)"/><circle cx="16.3" cy="10.8" r="1.1" fill="url(#g-theme-tip2)"/></g><circle cx="7.2" cy="18" r="0.9" fill="#78350f"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">THEME</span>
           </button>
@@ -1575,7 +1575,22 @@ function pickRandomTheme() {
 
 function closeThemeDropdown() {
   document.getElementById('theme-dropdown')?.classList.remove('open');
-  document.getElementById('theme-backdrop')?.classList.remove('show');
+  const backdrop = document.getElementById('theme-backdrop');
+  if (backdrop) {
+    backdrop.classList.remove('show');
+    backdrop.hidden = true;
+  }
+}
+
+function toggleThemeDropdown() {
+  const dropdown = document.getElementById('theme-dropdown');
+  const backdrop = document.getElementById('theme-backdrop');
+  if (!dropdown || !backdrop) return;
+
+  const shouldOpen = !dropdown.classList.contains('open');
+  dropdown.classList.toggle('open', shouldOpen);
+  backdrop.hidden = !shouldOpen;
+  backdrop.classList.toggle('show', shouldOpen);
 }
 
 function initThemePicker() {
@@ -1615,7 +1630,7 @@ function initThemePicker() {
   const fab = document.createElement('div');
   fab.className = 'theme-fab no-print';
   fab.innerHTML = `
-    <div class="theme-backdrop" id="theme-backdrop" onclick="closeThemeDropdown()"></div>
+    <div class="theme-backdrop" id="theme-backdrop" onclick="closeThemeDropdown()" hidden></div>
     <div class="theme-dropdown" id="theme-dropdown" role="dialog" aria-label="Theme Gallery">
       <div class="theme-hdr">
         <div class="theme-hdr-left">
@@ -1682,6 +1697,7 @@ function initThemePicker() {
 // Expose helpers for inline onclick
 window.pickRandomTheme = pickRandomTheme;
 window.closeThemeDropdown = closeThemeDropdown;
+window.toggleThemeDropdown = toggleThemeDropdown;
 
 
 // ═══════════════════════════════════════════════════

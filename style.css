@@ -3600,7 +3600,7 @@ input[type="number"]:focus {
   }
   .theme-dropdown {
     position: fixed;
-    left: 0;
+    left: 1rem;
     right: auto;
     bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 64px);
     width: min(calc(100vw - 2rem - env(safe-area-inset-right, 0px)), 420px);

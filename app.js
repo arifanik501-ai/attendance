@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.8';
+const APP_VERSION = '2.6.9';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1398,7 +1398,7 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
       <table class="ot-export-table">
         <thead>
           <tr>
-            <th class="ot-export-name-head">Branch Name</th>
+            <th class="ot-export-name-head">Section Name</th>
             ${headerCells}
           </tr>
         </thead>
@@ -1465,7 +1465,7 @@ function buildOvertimeDashboardReportHtml(state, period) {
         <table class="branch-att-table ot-dashboard-table">
           <thead>
             <tr>
-              <th class="ot-dashboard-name-head">Branch Name</th>
+              <th class="ot-dashboard-name-head">Section Name</th>
               ${headerCells}
               <th class="ot-dashboard-total-head">Total</th>
             </tr>

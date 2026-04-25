@@ -1900,7 +1900,27 @@ input[type="number"]:focus {
 }
 
 .clock-location {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+  margin-bottom: 0.22rem;
+  padding: 0.18rem 0.56rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  color: #065f46;
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.clock-location svg {
+  width: 11px;
+  height: 11px;
+  flex: 0 0 auto;
+  fill: #10b981;
 }
 
 .clock-date {
@@ -2032,6 +2052,7 @@ input[type="number"]:focus {
 }
 
 .a4-report .clock-premium-badge,
+.a4-report .clock-location,
 .a4-report .clock-timezone,
 .a4-report .clock-tick {
   display: none;
@@ -5578,6 +5599,12 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
 
   .clock-date {
     font-size: 0.62rem;
+  }
+
+  .clock-location {
+    padding: 0.14rem 0.44rem;
+    font-size: 0.56rem;
+    letter-spacing: 0.05em;
   }
 
   .table-container {

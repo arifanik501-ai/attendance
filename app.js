@@ -1819,9 +1819,8 @@ function _performDashboardRender() {
         <p style="font-weight:600; font-size: 1.05rem; color:#475569; letter-spacing: 0.15em; font-family: 'Inter', sans-serif; text-transform: uppercase;">ATTENDANCE REPORT</p>
       </div>
 
-      <button class="dashboard-top-export no-print" type="button" onclick="exportReport()" data-tip-title="Download JPG" data-tip-desc="Download dashboard report as JPG" data-tip-theme="warning" data-tip-placement="bottom">
+      <button class="dashboard-top-export dashboard-top-export-icon no-print" type="button" onclick="exportReport()" aria-label="Download JPG" data-tip-title="Download JPG" data-tip-desc="Download dashboard report as JPG" data-tip-theme="warning" data-tip-placement="bottom">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="18" width="16" height="3" rx="1.5" fill="currentColor"/></svg>
-        <span>Download JPG</span>
       </button>
 
         <div class="clock-widget" id="clock-widget">

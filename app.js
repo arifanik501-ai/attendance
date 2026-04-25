@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.6';
+const APP_VERSION = '2.6.7';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -566,7 +566,7 @@ function generateSidebar(activePage) {
     if (p.id === 'overtime-dashboard') specialClass = 'overtime-dashboard-link';
 
     html += `<a href="${p.url}" class="nav-link ${specialClass} ${activePage === p.id ? 'active' : ''}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-      ${p.icon} <span style="white-space:nowrap;">${p.title}</span>
+      ${p.icon} <span>${p.title}</span>
     </a>`;
   });
   html += `</nav>`;

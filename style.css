@@ -5,9 +5,15 @@
   --text-dark: #333333;
   --text-light: #555555;
   --theme-color: #f59e0b;
-  /* Rose */
+  /* Amber */
   --total-bg: rgba(16, 185, 129, 0.18);
   --total-text: #065f46;
+  --motion-target-fps: 120;
+  --motion-frame: 8.333ms;
+  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-fast: 0.15s;
+  --motion-standard: 0.24s;
+  --motion-slow: 0.32s;
 }
 
 html {
@@ -31,7 +37,7 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* ── 60fps GPU-Accelerated Animations ── */
+/* ── 120fps-ready GPU-Accelerated Animations ── */
 @keyframes fadeSlideUp {
   from {
     opacity: 0;
@@ -85,8 +91,8 @@ body {
   opacity: 0;
   transform: translate3d(0, 30px, 0);
   will-change: opacity, transform;
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity var(--motion-standard) var(--motion-ease),
+    transform var(--motion-standard) var(--motion-ease);
 }
 
 .scroll-reveal.visible {
@@ -96,16 +102,16 @@ body {
 
 /* Entrance animations on page load */
 .glass-card {
-  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: scaleIn var(--motion-standard) var(--motion-ease) both;
 }
 
 .report-header-flex {
-  animation: fadeSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+  animation: fadeSlideUp var(--motion-standard) var(--motion-ease) 0.05s both;
 }
 
 /* Staggered row entrance */
 tbody tr {
-  animation: fadeSlideUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeSlideUp var(--motion-fast) var(--motion-ease) both;
 }
 
 tbody tr:nth-child(1) {
@@ -194,11 +200,33 @@ tbody tr:nth-child(n+21) {
 
 /* Sidebar entrance */
 .sidebar {
-  animation: fadeSlideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeSlideLeft var(--motion-standard) var(--motion-ease) both;
 }
 
 .nav-link {
-  animation: fadeSlideLeft 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeSlideLeft var(--motion-fast) var(--motion-ease) both;
+}
+
+.high-refresh-motion .glass-card,
+.high-refresh-motion .report-header-flex,
+.high-refresh-motion .sidebar,
+.high-refresh-motion .nav-link,
+.high-refresh-motion .btn,
+.high-refresh-motion .theme-fab,
+.high-refresh-motion .fab-child,
+.high-refresh-motion tbody tr,
+.high-refresh-motion .scroll-reveal {
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.high-refresh-motion .glass-card,
+.high-refresh-motion .report-header-flex,
+.high-refresh-motion .sidebar,
+.high-refresh-motion .nav-link,
+.high-refresh-motion .btn,
+.high-refresh-motion .fab-child {
+  will-change: transform, opacity;
 }
 
 .nav-link:nth-child(1) {

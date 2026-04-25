@@ -12,11 +12,11 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <title>Fan Attendance</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=21">
+  <link rel="stylesheet" href="style.css?v=22">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
 
-<body style="opacity:0; transform: translate3d(14px, 0, 0); transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);">
+<body style="opacity:0; transform: translate3d(14px, 0, 0); transition: opacity var(--motion-slow, 0.32s) cubic-bezier(0.2, 0.8, 0.2, 1), transform var(--motion-slow, 0.32s) cubic-bezier(0.2, 0.8, 0.2, 1);">
   <div id="sidebar" class="sidebar"></div>
 
   <main class="main-content">
@@ -29,15 +29,16 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <!-- Firebase Realtime Database -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="app.js?v=21"></script>
-  <script src="tooltip.js?v=21" defer></script>
+  <script src="app.js?v=22"></script>
+  <script src="tooltip.js?v=22" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       renderDashboard();
-      requestAnimationFrame(() => {
+      const reveal = () => {
         document.body.style.opacity = '1';
         document.body.style.transform = 'translate3d(0, 0, 0)';
-      });
+      };
+      requestAnimationFrame(() => requestAnimationFrame(reveal));
     });
   </script>
 </body>

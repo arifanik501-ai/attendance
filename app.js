@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.0';
+const APP_VERSION = '2.6.1';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -871,11 +871,11 @@ function _renderEntryContent(pageId) {
     // Re-init reveal to catch the new tables
     initScrollReveal();
 
-    document.getElementById('btn-export').addEventListener('click', () => {
+    document.getElementById('btn-export').onclick = () => {
       exportEntryReport(pageId, config.title);
-    });
+    };
 
-    document.getElementById('btn-save').addEventListener('click', () => {
+    document.getElementById('btn-save').onclick = () => {
       // Add history notification
       const now = new Date();
       if (!state.history) state.history = [];
@@ -899,7 +899,7 @@ function _renderEntryContent(pageId) {
 
       alert('Entry Updated & Saved to Dashboard Successfully!');
       window.location.href = 'index.html';
-    });
+    };
 
   }, 10); // End setTimeout macro task
 }
@@ -1506,13 +1506,13 @@ function _performDashboardRender() {
 
         <!-- Notification Bell -->
         <div class="fab-child notification-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="noti-btn" class="no-print" data-tip-title="Notifications" data-tip-desc="History & alerts feed" data-tip-theme="info" data-tip-placement="left"
-            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+          <button id="noti-btn" class="no-print solid-fab-btn" data-tip-title="Notifications" data-tip-desc="History & alerts feed" data-tip-theme="info" data-tip-placement="left"
+            style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
             position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(239,68,68,0.3), 0 0 0 4px rgba(239,68,68,0.1)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(239,68,68,0.3), 0 0 0 4px rgba(239,68,68,0.1)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); const d = document.getElementById('noti-dropdown'); const r = document.getElementById('reminder-dropdown'); if(r) r.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; document.getElementById('noti-badge').style.display='none'; localStorage.removeItem('has_new_notifications');">
             <svg class="pfab pfab-feed" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(239,68,68,0.45));"><defs><linearGradient id="g-feed-bell" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fca5a5"/><stop offset="45%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient><radialGradient id="g-feed-badge" cx="30%" cy="30%" r="80%"><stop offset="0%" stop-color="#fca5a5"/><stop offset="100%" stop-color="#dc2626"/></radialGradient></defs><g class="pf-bell"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="url(#g-feed-bell)"/><path d="M7 8.2c.6-1.9 2.5-3.3 5-3.3" stroke="rgba(255,255,255,0.55)" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" fill="none"/></g><g class="pf-badge"><circle cx="18" cy="5.8" r="3.4" fill="#ffffff"/><circle cx="18" cy="5.8" r="2.2" fill="url(#g-feed-badge)"/><circle cx="17.3" cy="5.1" r="0.55" fill="#ffffff" opacity="0.85"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#ef4444; letter-spacing:0.04em; font-family:'Inter',sans-serif;">FEED</span>
@@ -1535,13 +1535,13 @@ function _performDashboardRender() {
 
         <!-- Reminder Button -->
         <div class="fab-child reminder-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="reminder-btn" class="no-print" data-tip-title="Reminders" data-tip-desc="Schedule recurring tasks" data-tip-theme="warning" data-tip-placement="left"
-            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+          <button id="reminder-btn" class="no-print solid-fab-btn" data-tip-title="Reminders" data-tip-desc="Schedule recurring tasks" data-tip-theme="warning" data-tip-placement="left"
+            style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
             position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(234,179,8,0.35), 0 0 0 4px rgba(234,179,8,0.12)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(234,179,8,0.35), 0 0 0 4px rgba(234,179,8,0.12)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
             <svg class="pfab pfab-plan" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(234,179,8,0.45));"><defs><linearGradient id="g-plan-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef9c3"/><stop offset="100%" stop-color="#fde68a"/></linearGradient><linearGradient id="g-plan-ribbon" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fcd34d"/><stop offset="100%" stop-color="#d97706"/></linearGradient><radialGradient id="g-plan-today" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#fcd34d"/><stop offset="100%" stop-color="#ca8a04"/></radialGradient></defs><g class="pf-book"><rect x="3.2" y="5.5" width="17.6" height="15" rx="2.6" fill="url(#g-plan-body)" stroke="#ca8a04" stroke-width="1.4"/><rect x="3.2" y="5.5" width="17.6" height="4.8" fill="url(#g-plan-ribbon)"/><rect x="3.2" y="9.4" width="17.6" height="0.9" fill="#7c2d12" opacity="0.25"/><rect x="6.6" y="2.6" width="2.6" height="5.2" rx="1.3" fill="#78350f"/><rect x="14.8" y="2.6" width="2.6" height="5.2" rx="1.3" fill="#78350f"/><rect x="6.6" y="3.4" width="2.6" height="1.3" rx="0.6" fill="#fef3c7" opacity="0.7"/><rect x="14.8" y="3.4" width="2.6" height="1.3" rx="0.6" fill="#fef3c7" opacity="0.7"/><circle class="pf-dot pf-d1" cx="8.2" cy="13.8" r="1.4" fill="#d97706"/><circle class="pf-dot" cx="12" cy="13.8" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot" cx="15.8" cy="13.8" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot" cx="8.2" cy="17.4" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot pf-today" cx="12" cy="17.4" r="1.6" fill="url(#g-plan-today)"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">PLAN</span>
@@ -1560,13 +1560,13 @@ function _performDashboardRender() {
 
         <!-- Force Save Button -->
         <div class="fab-child save-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="force-save-btn" class="no-print" data-tip-title="Force Save" data-tip-desc="Write a history snapshot now" data-tip-shortcut="Ctrl+S" data-tip-theme="success" data-tip-placement="left"
-            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+          <button id="force-save-btn" class="no-print solid-fab-btn" data-tip-title="Force Save" data-tip-desc="Write a history snapshot now" data-tip-shortcut="Ctrl+S" data-tip-theme="success" data-tip-placement="left"
+            style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
             position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(16,185,129,0.3), 0 0 0 4px rgba(16,185,129,0.1)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(16,185,129,0.3), 0 0 0 4px rgba(16,185,129,0.1)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="window.forceSaveHistory()">
             <svg class="pfab pfab-save" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(16,185,129,0.45));"><defs><linearGradient id="g-save-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6ee7b7"/><stop offset="55%" stop-color="#10b981"/><stop offset="100%" stop-color="#047857"/></linearGradient><linearGradient id="g-save-shutter" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1f2937"/><stop offset="100%" stop-color="#111827"/></linearGradient><linearGradient id="g-save-label" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d1fae5"/></linearGradient></defs><g class="pf-disk"><path d="M4.8 3.5h11.4l4.3 4.3V19a2.2 2.2 0 0 1-2.2 2.2H4.8A2.2 2.2 0 0 1 2.6 19V5.7A2.2 2.2 0 0 1 4.8 3.5z" fill="url(#g-save-body)" stroke="#047857" stroke-width="1.1"/><path d="M4.8 3.5h11.4l4.3 4.3H4.8z" fill="rgba(255,255,255,0.18)"/><rect x="6.5" y="3.5" width="9" height="4.8" rx="0.7" fill="url(#g-save-shutter)"/><rect x="12.8" y="4.4" width="1.6" height="2.9" rx="0.2" fill="#f3f4f6"/><rect x="5.6" y="12.6" width="12.8" height="8.6" rx="1.4" fill="url(#g-save-label)" stroke="#047857" stroke-width="1.1"/><path class="pf-check" d="M8.5 17l2.2 2.2 4.6-4.6" stroke="#10b981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#10b981; letter-spacing:0.04em; font-family:'Inter',sans-serif;">SAVE</span>
@@ -1575,13 +1575,13 @@ function _performDashboardRender() {
 
         <!-- Branch Attendance Button -->
         <div class="fab-child branch-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="branch-att-btn" class="no-print" data-tip-title="Branch Sheet" data-tip-desc="View and download branch tick data" data-tip-theme="success" data-tip-placement="left"
-            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+          <button id="branch-att-btn" class="no-print solid-fab-btn" data-tip-title="Branch Sheet" data-tip-desc="View and download branch tick data" data-tip-theme="success" data-tip-placement="left"
+            style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
             position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(20,184,166,0.3), 0 0 0 4px rgba(20,184,166,0.1)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(20,184,166,0.3), 0 0 0 4px rgba(20,184,166,0.1)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="window.openBranchAttendanceModal()">
             <svg class="pfab pfab-branch" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(20,184,166,0.45));"><defs><linearGradient id="g-branch-board" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#99f6e4"/><stop offset="100%" stop-color="#0d9488"/></linearGradient><linearGradient id="g-branch-check" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#ccfbf1"/></linearGradient></defs><rect x="3" y="4" width="18" height="16" rx="3" fill="url(#g-branch-board)" stroke="#0f766e" stroke-width="1.2"/><path d="M7 8h10M7 12h10M7 16h10" stroke="rgba(255,255,255,0.72)" stroke-width="1.1" stroke-linecap="round"/><path d="M7.2 12.1l2 2 4.2-4.4" stroke="url(#g-branch-check)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#14b8a6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">BRANCH</span>
@@ -1590,13 +1590,13 @@ function _performDashboardRender() {
 
         <!-- History Button -->
         <div class="fab-child history-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="history-btn" class="no-print" data-tip-title="Attendance History" data-tip-desc="View past snapshots" data-tip-shortcut="Ctrl+H" data-tip-placement="left"
-            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+          <button id="history-btn" class="no-print solid-fab-btn" data-tip-title="Attendance History" data-tip-desc="View past snapshots" data-tip-shortcut="Ctrl+H" data-tip-placement="left"
+            style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
             position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(139,92,246,0.3), 0 0 0 4px rgba(139,92,246,0.1)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(139,92,246,0.3), 0 0 0 4px rgba(139,92,246,0.1)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="window.openHistoryModal()">
             <svg class="pfab pfab-hist" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(139,92,246,0.45));" aria-hidden="true"><defs><linearGradient id="g-hist-glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(237,233,254,0.95)"/><stop offset="50%" stop-color="rgba(196,181,253,0.6)"/><stop offset="100%" stop-color="rgba(167,139,250,0.35)"/></linearGradient><linearGradient id="g-hist-cap" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c4b5fd"/><stop offset="100%" stop-color="#6d28d9"/></linearGradient><linearGradient id="g-hist-sand" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fde68a"/><stop offset="60%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#b45309"/></linearGradient><clipPath id="g-hist-top-clip"><path d="M5 3.2 L19 3.2 Q19 9, 12 12 Q5 9, 5 3.2 Z"/></clipPath><clipPath id="g-hist-bottom-clip"><path d="M5 20.8 L19 20.8 Q19 15, 12 12 Q5 15, 5 20.8 Z"/></clipPath></defs><g class="pf-hourglass"><rect class="pf-cap pf-cap-top" x="3.2" y="1.8" width="17.6" height="1.8" rx="0.8" fill="url(#g-hist-cap)"/><rect class="pf-cap pf-cap-bottom" x="3.2" y="20.4" width="17.6" height="1.8" rx="0.8" fill="url(#g-hist-cap)"/><path class="pf-glass" d="M5 3.2 L19 3.2 Q19 9, 12 12 Q5 9, 5 3.2 Z M5 20.8 L19 20.8 Q19 15, 12 12 Q5 15, 5 20.8 Z" fill="url(#g-hist-glass)" stroke="#7c3aed" stroke-width="1.05" stroke-linejoin="round"/><g clip-path="url(#g-hist-top-clip)"><path class="pf-sand-top" d="M5 3.2 L19 3.2 L19 7.8 L5 7.8 Z" fill="url(#g-hist-sand)"/></g><g clip-path="url(#g-hist-bottom-clip)"><path class="pf-sand-bottom" d="M6.5 20.8 L17.5 20.8 L14.5 17.5 L9.5 17.5 Z" fill="url(#g-hist-sand)"/></g><circle class="pf-grain g1" cx="12" cy="9" r="0.5" fill="#f59e0b"/><circle class="pf-grain g2" cx="12" cy="9" r="0.5" fill="#f59e0b"/><circle class="pf-grain g3" cx="12" cy="9" r="0.45" fill="#fbbf24"/><path class="pf-glass-highlight" d="M6.5 3.6 L7.4 7.5" stroke="rgba(255,255,255,0.85)" stroke-width="0.8" stroke-linecap="round" fill="none"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#8b5cf6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">HIST</span>
@@ -1610,13 +1610,13 @@ function _performDashboardRender() {
 
         <!-- Theme Button -->
         <div class="fab-child" style="opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button class="no-print" data-tip-title="Change Theme" data-tip-desc="Cycle color palette" data-tip-placement="left"
-            style="background:var(--glass-bg); border:1.5px solid var(--glass-border); border-radius:16px; width:56px; height:56px;
+          <button class="no-print solid-fab-btn" data-tip-title="Change Theme" data-tip-desc="Cycle color palette" data-tip-placement="left"
+            style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
             position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.85)'; this.style.boxShadow='0 8px 32px rgba(250,204,21,0.3), 0 0 0 4px rgba(250,204,21,0.1)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='var(--glass-bg)'; this.style.boxShadow='var(--glass-shadow)';"
+            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(250,204,21,0.3), 0 0 0 4px rgba(250,204,21,0.1)';"
+            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); toggleThemeDropdown();">
             <svg class="pfab pfab-theme" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(234,179,8,0.45));"><defs><linearGradient id="g-theme-brush" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fde047"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient><linearGradient id="g-theme-handle" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#d97706"/></linearGradient><linearGradient id="g-theme-tip1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f472b6"/><stop offset="100%" stop-color="#db2777"/></linearGradient><linearGradient id="g-theme-tip2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#2563eb"/></linearGradient></defs><g class="pf-palette"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4z" fill="url(#g-theme-handle)" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/><path d="M7 21h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343" fill="url(#g-theme-handle)" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/><rect x="4.5" y="4.5" width="3" height="13" rx="1" fill="rgba(255,255,255,0.4)"/><g class="pf-brush"><path d="M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485" fill="url(#g-theme-brush)" stroke="#78350f" stroke-width="1.2" stroke-linejoin="round"/><circle cx="14" cy="8.5" r="1.1" fill="url(#g-theme-tip1)"/><circle cx="16.3" cy="10.8" r="1.1" fill="url(#g-theme-tip2)"/></g><circle cx="7.2" cy="18" r="0.9" fill="#78350f"/></g></svg>
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">THEME</span>

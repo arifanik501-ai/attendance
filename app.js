@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.2';
+const APP_VERSION = '2.6.3';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1146,8 +1146,8 @@ function renderBranchAttendanceCard(pageId, state) {
   card.innerHTML = `
     <div class="branch-att-header">
       <div>
-        <div class="branch-att-eyebrow">Branch Monthly Tick Sheet</div>
-        <h3 class="branch-att-title">Branch Attendance — ${period.monthName}</h3>
+        <div class="branch-att-eyebrow">Overtime Monthly Tick Sheet</div>
+        <h3 class="branch-att-title">Overtime Attendance — ${period.monthName}</h3>
         <p class="branch-att-range">${period.rangeLabel} · ${period.label}</p>
       </div>
       <div class="branch-period-actions no-print">
@@ -1243,14 +1243,14 @@ function buildBranchAttendanceOverviewHtml(state, period) {
     <div class="branch-att-header">
       <div>
         <div class="branch-att-eyebrow">All Entry Sheets</div>
-        <h3 class="branch-att-title">Branch Attendance — ${period.monthName}</h3>
+        <h3 class="branch-att-title">Overtime Attendance — ${period.monthName}</h3>
         <p class="branch-att-range">${period.rangeLabel} · ${period.label}</p>
       </div>
       <div class="branch-period-actions no-print">
         <button class="branch-period-btn" data-branch-modal-step="-1" type="button">‹ Previous</button>
         <button class="branch-period-btn" data-branch-modal-step="0" type="button">Current</button>
         <button class="branch-period-btn" data-branch-modal-step="1" type="button">Next ›</button>
-        <button class="branch-period-btn branch-download-btn" onclick="window.downloadBranchAttendanceData()" type="button">Download CSV</button>
+        <button class="branch-period-btn branch-download-btn" onclick="window.downloadOvertimeAttendanceJpg()" type="button">Download JPG</button>
       </div>
     </div>
     <div class="branch-att-summary">
@@ -1289,8 +1289,8 @@ window.openBranchAttendanceModal = function () {
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="4" fill="rgba(20,184,166,0.88)" stroke="#fff" stroke-width="1.2"/><path d="M7 9h10M7 13h10M7 17h6" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><path d="M8 13l2 2 4-5" stroke="#ecfeff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div>
-            <h2 id="branch-modal-title" class="ios-hm-title">Branch Attendance Sheet</h2>
-            <div class="ios-hm-sub">26-to-25 monthly branch tick records</div>
+            <h2 id="branch-modal-title" class="ios-hm-title">Overtime Attendance Sheet</h2>
+            <div class="ios-hm-sub">26-to-25 monthly overtime tick records</div>
           </div>
         </div>
         <button class="ios-hm-close" onclick="window.closeBranchAttendanceModal()" aria-label="Close">
@@ -1331,35 +1331,102 @@ function bindBranchAttendanceModalControls() {
   });
 }
 
-function csvEscape(value) {
-  const text = String(value ?? '');
-  if (/[",\n]/.test(text)) {
-    return `"${text.replace(/"/g, '""')}"`;
-  }
-  return text;
-}
-
-window.downloadBranchAttendanceData = function () {
-  const state = getAppState();
-  const period = getCustomPeriodByOffset(window.branchAttendanceModalOffset || 0);
+function buildOvertimeAttendanceJpgHtml(state, period) {
   const dates = getCustomPeriodDates(period);
-  const header = ['Entry Sheet', 'Branch Name', 'Month', 'Range', ...dates.map(day => `${day.shortLabel} ${day.weekday}`), 'Total Ticks'];
-  const rows = getAllBranchAttendanceRows().map(row => {
+  const rows = getAllBranchAttendanceRows();
+  let totalTicks = 0;
+  const bodyRows = rows.map(row => {
     const periodState = getBranchAttendancePeriodState(state, row.pageId, period.key, false) || {};
     const dayMap = periodState[row.groupName] || {};
-    const dateValues = dates.map(day => !day.isFuture && isTickValueChecked(dayMap[day.key]) ? '✓' : '');
-    const totalTicks = dateValues.filter(Boolean).length;
-    return [row.pageTitle, row.groupName, period.label, period.rangeLabel, ...dateValues, totalTicks];
+    let rowTicks = 0;
+    const dateCells = dates.map(day => {
+      const checked = !day.isFuture && isTickValueChecked(dayMap[day.key]);
+      if (checked) rowTicks += 1;
+      return `<td class="${day.isFuture ? 'future' : ''}">${checked ? '✓' : ''}</td>`;
+    }).join('');
+    totalTicks += rowTicks;
+    return `
+      <tr>
+        <td class="ot-export-branch">
+          <strong>${row.groupName}</strong>
+          <span>${row.pageTitle}</span>
+        </td>
+        ${dateCells}
+        <td class="ot-export-total">${rowTicks}</td>
+      </tr>`;
+  }).join('');
+
+  const headerCells = dates.map(day => `
+    <th class="${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}">
+      <b>${day.dayNumber}</b>
+      <span>${day.weekday}</span>
+    </th>
+  `).join('');
+
+  return `
+    <div class="ot-export-sheet">
+      <div class="ot-export-watermark"></div>
+      <div class="ot-export-head">
+        <div>
+          <div class="ot-export-company">MEP FAN LTD.</div>
+          <h1>Overtime Attendance</h1>
+          <p>${period.rangeLabel} · ${period.label}</p>
+        </div>
+        <div class="ot-export-badge">
+          <span>${period.monthName}</span>
+          <strong>${totalTicks}</strong>
+          <em>Total Ticks</em>
+        </div>
+      </div>
+      <div class="ot-export-meta">
+        <span>${Object.keys(SECTIONS_CONFIG).length} Entry Sheets</span>
+        <span>${rows.length} Branches</span>
+        <span>${dates.length} Days</span>
+        <span>Future dates disabled</span>
+      </div>
+      <table class="ot-export-table">
+        <thead>
+          <tr>
+            <th class="ot-export-name-head">Branch Name</th>
+            ${headerCells}
+            <th class="ot-export-total-head">Total</th>
+          </tr>
+        </thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>`;
+}
+
+window.downloadOvertimeAttendanceJpg = function () {
+  const period = getCustomPeriodByOffset(window.branchAttendanceModalOffset || 0);
+  const exportNode = document.createElement('div');
+  exportNode.className = 'ot-export-canvas';
+  exportNode.innerHTML = buildOvertimeAttendanceJpgHtml(getAppState(), period);
+  document.body.appendChild(exportNode);
+
+  if (typeof html2canvas === 'undefined') {
+    alert("Missing html2canvas script! Please ensure html2canvas is loaded.");
+    exportNode.remove();
+    return;
+  }
+
+  html2canvas(exportNode.querySelector('.ot-export-sheet'), {
+    scale: Math.max(2, Math.min(3, window.devicePixelRatio || 2)),
+    backgroundColor: '#f8fafc',
+    useCORS: true,
+    scrollX: 0,
+    scrollY: 0
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `overtime-attendance-${period.monthName.toLowerCase()}-${period.start.getFullYear()}.jpg`;
+    link.href = canvas.toDataURL('image/jpeg', 0.98);
+    link.click();
+    exportNode.remove();
+  }).catch(err => {
+    console.error('Overtime attendance JPG export failed:', err);
+    exportNode.remove();
+    alert('Export failed. Please try again.');
   });
-  const csv = [header, ...rows].map(cols => cols.map(csvEscape).join(',')).join('\n');
-  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `branch-attendance-${period.monthName.toLowerCase()}-${period.start.getFullYear()}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  URL.revokeObjectURL(link.href);
-  link.remove();
 };
 
 // Exactly mapping the structure of Excel rows
@@ -1574,9 +1641,9 @@ function _performDashboardRender() {
           </button>
         </div>
 
-        <!-- Branch Attendance Button -->
+        <!-- Overtime Attendance Button -->
         <div class="fab-child branch-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="branch-att-btn" class="no-print solid-fab-btn" data-tip-title="Branch Sheet" data-tip-desc="View and download branch tick data" data-tip-theme="success" data-tip-placement="left"
+          <button id="branch-att-btn" class="no-print solid-fab-btn" data-tip-title="Overtime Sheet" data-tip-desc="View and download overtime tick data" data-tip-theme="success" data-tip-placement="left"
             style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
@@ -1585,7 +1652,7 @@ function _performDashboardRender() {
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="window.openBranchAttendanceModal()">
             <svg class="pfab pfab-branch" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(20,184,166,0.45));"><defs><linearGradient id="g-branch-board" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#99f6e4"/><stop offset="100%" stop-color="#0d9488"/></linearGradient><linearGradient id="g-branch-check" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#ccfbf1"/></linearGradient></defs><rect x="3" y="4" width="18" height="16" rx="3" fill="url(#g-branch-board)" stroke="#0f766e" stroke-width="1.2"/><path d="M7 8h10M7 12h10M7 16h10" stroke="rgba(255,255,255,0.72)" stroke-width="1.1" stroke-linecap="round"/><path d="M7.2 12.1l2 2 4.2-4.4" stroke="url(#g-branch-check)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span style="font-size:0.52rem; font-weight:800; color:#14b8a6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">BRANCH</span>
+            <span style="font-size:0.52rem; font-weight:800; color:#14b8a6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">OT</span>
           </button>
         </div>
 

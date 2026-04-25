@@ -1837,6 +1837,209 @@ input[type="number"]:focus {
   min-width: 1280px;
 }
 
+.ot-export-canvas {
+  position: fixed;
+  left: -99999px;
+  top: 0;
+  width: 1600px;
+  background: #f8fafc;
+  z-index: -1;
+}
+
+.ot-export-sheet {
+  position: relative;
+  width: 1600px;
+  min-height: 980px;
+  padding: 42px;
+  overflow: hidden;
+  box-sizing: border-box;
+  color: #0f172a;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(20, 184, 166, 0.18), transparent 28%),
+    radial-gradient(circle at 95% 10%, rgba(59, 130, 246, 0.16), transparent 26%),
+    linear-gradient(135deg, #f8fafc 0%, #ecfeff 52%, #f0fdf4 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.ot-export-watermark {
+  position: absolute;
+  right: -90px;
+  bottom: -130px;
+  width: 430px;
+  height: 430px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.12), transparent 68%);
+}
+
+.ot-export-head {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 28px;
+  padding: 28px 32px;
+  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 34px;
+  background: rgba(255,255,255,0.74);
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.ot-export-company {
+  display: inline-flex;
+  margin-bottom: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: #0f766e;
+  background: rgba(20, 184, 166, 0.12);
+  font-size: 16px;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+}
+
+.ot-export-head h1 {
+  margin: 0;
+  color: #134e4a;
+  font-size: 52px;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.ot-export-head p {
+  margin: 12px 0 0;
+  color: #475569;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ot-export-badge {
+  min-width: 188px;
+  padding: 18px;
+  border-radius: 28px;
+  text-align: center;
+  background: linear-gradient(135deg, #14b8a6, #0f766e);
+  color: #fff;
+  box-shadow: 0 18px 44px rgba(15, 118, 110, 0.28), inset 0 1px 0 rgba(255,255,255,0.35);
+}
+
+.ot-export-badge span,
+.ot-export-badge em {
+  display: block;
+  font-style: normal;
+  font-size: 15px;
+  font-weight: 900;
+  opacity: 0.9;
+}
+
+.ot-export-badge strong {
+  display: block;
+  margin: 4px 0;
+  font-size: 48px;
+  line-height: 1;
+}
+
+.ot-export-meta {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.ot-export-meta span {
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.78);
+  color: #155e75;
+  font-size: 15px;
+  font-weight: 950;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.ot-export-table {
+  position: relative;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 24px;
+  background: rgba(255,255,255,0.86);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+}
+
+.ot-export-table th,
+.ot-export-table td {
+  border-right: 1px solid rgba(15, 118, 110, 0.12);
+  border-bottom: 1px solid rgba(15, 118, 110, 0.11);
+  padding: 7px 4px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.ot-export-table th {
+  color: #0f766e;
+  background: rgba(204, 251, 241, 0.78);
+}
+
+.ot-export-table th b,
+.ot-export-table th span {
+  display: block;
+}
+
+.ot-export-table th span {
+  margin-top: 2px;
+  font-size: 10px;
+  color: #475569;
+}
+
+.ot-export-name-head,
+.ot-export-branch {
+  width: 260px;
+  min-width: 260px;
+  text-align: left !important;
+  padding-left: 16px !important;
+}
+
+.ot-export-branch strong,
+.ot-export-branch span {
+  display: block;
+}
+
+.ot-export-branch strong {
+  color: #0f172a;
+  font-size: 15px;
+}
+
+.ot-export-branch span {
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.ot-export-total-head,
+.ot-export-total {
+  width: 62px;
+  color: #0f766e;
+  background: rgba(240, 253, 250, 0.9);
+}
+
+.ot-export-table td:not(.ot-export-branch):not(.ot-export-total) {
+  color: #fff;
+}
+
+.ot-export-table td:not(.ot-export-branch):not(.ot-export-total):not(:empty) {
+  background: linear-gradient(135deg, #2dd4bf, #0f766e);
+}
+
+.ot-export-table .future {
+  color: rgba(100, 116, 139, 0.34) !important;
+  background: rgba(226, 232, 240, 0.36) !important;
+}
+
+.ot-export-table .today {
+  box-shadow: inset 0 0 0 2px rgba(20, 184, 166, 0.38);
+}
+
 .a4-report .branch-period-actions {
   display: none !important;
 }

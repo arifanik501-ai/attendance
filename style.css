@@ -1541,6 +1541,15 @@ input[type="number"]:focus {
   box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.4);
 }
 
+.solid-fab-btn {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(255, 255, 255, 0.88) !important;
+  box-shadow:
+    0 18px 42px rgba(15, 23, 42, 0.18),
+    0 8px 18px rgba(245, 158, 11, 0.12),
+    inset 0 1px 0 rgba(255,255,255,0.92) !important;
+}
+
 .branch-att-card {
   position: relative;
   overflow: hidden;

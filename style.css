@@ -1632,19 +1632,39 @@ input[type="number"]:focus {
 }
 
 .clock-widget {
-  background: #f1f5f9;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.95) 0%, transparent 34%),
+    radial-gradient(circle at 95% 12%, rgba(251, 191, 36, 0.32) 0%, transparent 42%),
+    linear-gradient(145deg, rgba(255, 251, 235, 0.94) 0%, rgba(255, 255, 255, 0.72) 47%, rgba(240, 253, 244, 0.88) 100%);
   border-radius: 24px;
   padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   box-shadow:
-    12px 12px 24px rgba(148, 163, 184, 0.4),
-    -12px -12px 24px rgba(255, 255, 255, 0.9),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.4),
-    inset -1px -1px 2px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+    0 22px 44px rgba(146, 64, 14, 0.16),
+    0 10px 24px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(251, 191, 36, 0.42);
   min-width: 200px;
+}
+
+.clock-widget::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  z-index: 0;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+
+.clock-widget > * {
+  position: relative;
+  z-index: 1;
 }
 
 .analog-clock {
@@ -1654,30 +1674,56 @@ input[type="number"]:focus {
   --clock-min-hand: 32px;
   --clock-second-hand: 35px;
   border-radius: 50%;
-  border: none;
+  border: 1px solid rgba(245, 158, 11, 0.48);
   position: relative;
   overflow: hidden;
-  background: #f1f5f9;
+  background:
+    radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.62) 18%, transparent 34%),
+    radial-gradient(circle, #fffdf5 0%, #fff7df 52%, #f4e4b7 100%);
   margin: 0 auto 0.5rem auto;
   box-shadow:
-    15px 15px 30px rgba(148, 163, 184, 0.7),
-    -15px -15px 30px rgba(255, 255, 255, 1),
-    inset 2px 2px 5px rgba(255, 255, 255, 0.6),
-    inset -2px -2px 5px rgba(0, 0, 0, 0.12);
+    0 14px 30px rgba(146, 64, 14, 0.2),
+    0 4px 10px rgba(15, 23, 42, 0.08),
+    inset 0 2px 4px rgba(255, 255, 255, 0.86),
+    inset 0 -10px 18px rgba(146, 64, 14, 0.12);
+}
+
+.analog-clock::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(from 0deg, rgba(146, 64, 14, 0.48) 0deg 2deg, transparent 2deg 30deg);
+  mask: radial-gradient(circle, transparent 0 70%, #000 72% 100%);
+  -webkit-mask: radial-gradient(circle, transparent 0 70%, #000 72% 100%);
+  opacity: 0.72;
+}
+
+.analog-clock::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  box-shadow: inset 0 0 0 2px rgba(251, 191, 36, 0.18);
+  pointer-events: none;
 }
 
 .clock-face {
   position: relative;
   width: 100%;
   height: 100%;
+  z-index: 1;
 }
 
 .clock-face .number {
   position: absolute;
-  font-weight: 500;
+  font-weight: 800;
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: #8a4f08;
   letter-spacing: 0;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
 .number-12 {
@@ -1711,55 +1757,59 @@ input[type="number"]:focus {
   transform-origin: bottom;
   border-radius: 6px;
   transition: transform 0.1s cubic-bezier(0.4, 2.08, 0.55, 0.44);
+  z-index: 2;
 }
 
 .hour-hand {
   width: 3px;
   height: var(--clock-hour-hand);
-  background: #64748b;
+  background: linear-gradient(180deg, #0f172a 0%, #475569 100%);
   margin-left: -1.5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.22);
 }
 
 .min-hand {
   width: 2px;
   height: var(--clock-min-hand);
-  background: #64748b;
+  background: linear-gradient(180deg, #1e293b 0%, #64748b 100%);
   margin-left: -1px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
 }
 
 .second-hand {
   width: 1.5px;
   height: var(--clock-second-hand);
-  background: #6366f1;
+  background: linear-gradient(180deg, #fbbf24 0%, #f97316 100%);
   margin-left: -0.75px;
   transition: none;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.46);
 }
 
 .clock-center {
-  width: 8px;
-  height: 8px;
-  background: #6366f1;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(135deg, #fbbf24, #92400e);
   border-radius: 50%;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 2;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 3;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 3px 8px rgba(146, 64, 14, 0.24);
 }
 
 .digital-time {
-  font-weight: 600;
+  font-weight: 800;
   font-size: 1.45rem;
-  color: #1e293b;
+  color: #8a4f08;
   letter-spacing: -0.01em;
   font-family: 'Inter', sans-serif;
   margin-bottom: 0.2rem;
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .clock-location {
@@ -1769,7 +1819,7 @@ input[type="number"]:focus {
 .clock-date {
   font-weight: 500;
   font-size: 0.72rem;
-  color: #64748b;
+  color: #9a640e;
   background: transparent;
 }
 
@@ -1793,6 +1843,12 @@ input[type="number"]:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.a4-report .clock-widget::before,
+.a4-report .analog-clock::before,
+.a4-report .analog-clock::after {
+  display: none;
 }
 
 .a4-report .analog-clock {
@@ -1838,6 +1894,7 @@ input[type="number"]:focus {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+  border: none;
 }
 
 .a4-report .number {

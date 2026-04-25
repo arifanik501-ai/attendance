@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.4';
+const APP_VERSION = '2.6.5';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1774,25 +1774,21 @@ function _performDashboardRender() {
           </button>
         </div>
 
-        <!-- Download JPG Button (Gold Premium) -->
-        <div class="fab-child" style="opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button class="no-print" data-tip-title="Export JPG" data-tip-desc="Download report as an image" data-tip-shortcut="Ctrl+E" data-tip-theme="warning" data-tip-placement="left"
-            style="background:linear-gradient(135deg,#fbbf24,#f59e0b); border:1.5px solid rgba(245,158,11,0.4); border-radius:16px; width:56px; height:56px;
-            display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
-            cursor:pointer; box-shadow:0 8px 20px rgba(245,158,11,0.35); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-            position:relative;"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.boxShadow='0 12px 30px rgba(245,158,11,0.5), 0 0 0 4px rgba(245,158,11,0.15)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.boxShadow='0 8px 20px rgba(245,158,11,0.35)';"
-            onclick="exportReport()">
-            <svg class="pfab pfab-jpg" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(0,0,0,0.3));"><defs><linearGradient id="g-jpg-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#fbbf24"/></linearGradient><radialGradient id="g-jpg-sun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fef08a"/><stop offset="100%" stop-color="#f59e0b"/></radialGradient><linearGradient id="g-jpg-mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#b45309"/></linearGradient><linearGradient id="g-jpg-arrow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#fef3c7"/></linearGradient></defs><g class="pf-photo"><rect x="2.4" y="2.8" width="13.4" height="10.4" rx="1.8" fill="url(#g-jpg-sky)" stroke="#ffffff" stroke-width="1.5"/><circle cx="6.6" cy="6.4" r="1.5" fill="url(#g-jpg-sun)"/><path d="M2.8 12.4l3.4-3.4 2.6 2.6 2.8-2.8 3.8 3.8" fill="url(#g-jpg-mtn)" stroke="#ffffff" stroke-width="1.3" stroke-linejoin="round"/></g><g class="pf-download"><path d="M12 12v8.2" stroke="url(#g-jpg-arrow)" stroke-width="2.6" stroke-linecap="round"/><path d="M9 17l3 3 3-3" stroke="url(#g-jpg-arrow)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M5.5 21.6h13" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"/></g></svg>
-            <span style="font-size:0.52rem; font-weight:800; color:white; letter-spacing:0.04em; font-family:'Inter',sans-serif; text-shadow:0 1px 2px rgba(0,0,0,0.2);">JPG</span>
-          </button>
-        </div>
-
       </div>
     </div>
 
   `;
+
+      if (activeDashboardPage === 'overtime-dashboard') {
+        const overtimeCard = document.createElement('div');
+        overtimeCard.className = 'glass-card';
+        overtimeCard.id = 'export-content';
+        overtimeCard.innerHTML = buildOvertimeDashboardReportHtml(state, getCustomPeriodByOffset(getOvertimeDashboardPeriodOffset()));
+        container.appendChild(overtimeCard);
+        bindOvertimeDashboardControls();
+        updateReminderList(true);
+        return;
+      }
 
       const mainCard = document.createElement('div');
       mainCard.className = 'glass-card';
@@ -1809,6 +1805,11 @@ function _performDashboardRender() {
         <div class="theme-accent-line"></div>
         <p style="font-weight:600; font-size: 1.05rem; color:#475569; letter-spacing: 0.15em; font-family: 'Inter', sans-serif; text-transform: uppercase;">ATTENDANCE REPORT</p>
       </div>
+
+      <button class="dashboard-top-export no-print" type="button" onclick="exportReport()" data-tip-title="Download JPG" data-tip-desc="Download dashboard report as JPG" data-tip-theme="warning" data-tip-placement="bottom">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="18" width="16" height="3" rx="1.5" fill="currentColor"/></svg>
+        <span>Download JPG</span>
+      </button>
 
         <div class="clock-widget" id="clock-widget">
         <div class="clock-premium-badge">Live Standard Time</div>
@@ -1889,11 +1890,8 @@ function _performDashboardRender() {
 
       html += `</tbody></table></div>`;
 
-      mainCard.innerHTML = activeDashboardPage === 'overtime-dashboard'
-        ? html.replace('ATTENDANCE REPORT', 'ATTENDANCE DASHBOARD') + buildOvertimeDashboardReportHtml(state, getCustomPeriodByOffset(getOvertimeDashboardPeriodOffset()))
-        : html;
+      mainCard.innerHTML = html;
       container.appendChild(mainCard);
-      if (activeDashboardPage === 'overtime-dashboard') bindOvertimeDashboardControls();
 
       if (window.clockInterval) clearInterval(window.clockInterval);
       window.clockInterval = setInterval(updateClock, 1000);
@@ -2369,7 +2367,7 @@ function setupFirebaseListener() {
       }
 
       // Re-trigger visual rendering without reload
-      if (currentActivePageId === 'index') {
+      if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard') {
         _performDashboardRender();
       } else if (currentActivePageId) {
         const authed = sessionStorage.getItem('auth_' + currentActivePageId);
@@ -2456,7 +2454,7 @@ function setupFirebaseListener() {
   } else {
     // Fallback if SDK failed to load
     globalAppState = getAppState();
-    if (currentActivePageId === 'index') {
+    if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard') {
       _performDashboardRender();
     }
   }

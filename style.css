@@ -1542,12 +1542,12 @@ input[type="number"]:focus {
 }
 
 .solid-fab-btn {
-  background: rgba(255, 255, 255, 0.94) !important;
-  border-color: rgba(255, 255, 255, 0.88) !important;
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(255, 255, 255, 0.88);
   box-shadow:
     0 18px 42px rgba(15, 23, 42, 0.18),
     0 8px 18px rgba(245, 158, 11, 0.12),
-    inset 0 1px 0 rgba(255,255,255,0.92) !important;
+    inset 0 1px 0 rgba(255,255,255,0.92);
 }
 
 .branch-att-card {
@@ -1717,6 +1717,12 @@ input[type="number"]:focus {
   background: rgba(20, 184, 166, 0.18);
 }
 
+.branch-date-head.is-future,
+.branch-att-cell.is-future {
+  background: rgba(148, 163, 184, 0.08);
+  color: rgba(100, 116, 139, 0.48);
+}
+
 .branch-day-no,
 .branch-weekday {
   display: block;
@@ -1784,6 +1790,24 @@ input[type="number"]:focus {
 .branch-tick:hover .branch-tick-box {
   transform: scale(1.08);
   border-color: rgba(20, 184, 166, 0.62);
+}
+
+.branch-tick input:disabled + .branch-tick-box,
+.branch-overview-mark.future-mark {
+  cursor: not-allowed;
+  background: rgba(226, 232, 240, 0.78);
+  border-color: rgba(148, 163, 184, 0.32);
+  box-shadow: none;
+}
+
+.branch-tick:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.branch-tick:has(input:disabled):hover .branch-tick-box {
+  transform: none;
+  border-color: rgba(148, 163, 184, 0.32);
 }
 
 .branch-modal-overlay {

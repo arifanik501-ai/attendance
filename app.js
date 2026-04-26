@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.24';
+const APP_VERSION = '2.6.25';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -104,6 +104,76 @@ function getClockSnapshot(date = new Date()) {
     shortDate: date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: '2-digit' }),
     longDate: `${day}${getOrdinalSuffix(day)} ${date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`
   };
+}
+
+function buildExportAnalogClockSvg(snapshot = getClockSnapshot(), theme = getActiveTheme()) {
+  const [themeSoft, themeMain, themeDeep] = theme.palette;
+  const ticks = Array.from({ length: 60 }, (_, index) => {
+    const angle = index * 6;
+    const isMajor = index % 5 === 0;
+    const y1 = isMajor ? 12 : 8;
+    const y2 = isMajor ? 22 : 15;
+    const stroke = isMajor ? themeDeep : '#94a3b8';
+    const width = isMajor ? 2.8 : 1.2;
+    return `<line x1="70" y1="${y1}" x2="70" y2="${y2}" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" transform="rotate(${angle} 70 70)"/>`;
+  }).join('');
+  const numbers = [
+    { value: '12', x: 70, y: 23 },
+    { value: '3', x: 117, y: 75 },
+    { value: '6', x: 70, y: 126 },
+    { value: '9', x: 23, y: 75 }
+  ].map(item => `<text x="${item.x}" y="${item.y}" text-anchor="middle" fill="${themeDeep}" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="900">${item.value}</text>`).join('');
+  const hourAngle = snapshot.hourDegrees;
+  const minuteAngle = snapshot.minDegrees;
+  const secondAngle = snapshot.secondDegrees;
+
+  return `
+    <svg class="export-analog-clock-svg" viewBox="0 0 140 140" width="108" height="108" aria-label="Export clock ${snapshot.displayTime} ${snapshot.ampm}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="exportClockRim" x1="18" y1="10" x2="122" y2="132" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="${themeSoft}"/>
+          <stop offset="0.52" stop-color="${themeMain}"/>
+          <stop offset="1" stop-color="${themeDeep}"/>
+        </linearGradient>
+        <radialGradient id="exportClockFace" cx="42" cy="28" r="104" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#ffffff"/>
+          <stop offset="0.72" stop-color="#f8fafc"/>
+          <stop offset="1" stop-color="${themeSoft}"/>
+        </radialGradient>
+      </defs>
+      <circle cx="70" cy="70" r="65" fill="url(#exportClockRim)"/>
+      <circle cx="70" cy="70" r="58" fill="url(#exportClockFace)" stroke="#ffffff" stroke-width="3"/>
+      ${ticks}
+      ${numbers}
+      <line x1="70" y1="74" x2="70" y2="38" stroke="${themeDeep}" stroke-width="5.4" stroke-linecap="round" transform="rotate(${hourAngle} 70 70)"/>
+      <line x1="70" y1="76" x2="70" y2="26" stroke="#1e293b" stroke-width="3.8" stroke-linecap="round" transform="rotate(${minuteAngle} 70 70)"/>
+      <line x1="70" y1="82" x2="70" y2="18" stroke="#dc2626" stroke-width="2" stroke-linecap="round" transform="rotate(${secondAngle} 70 70)"/>
+      <circle cx="70" cy="70" r="7.2" fill="${themeMain}" stroke="#ffffff" stroke-width="2.6"/>
+      <circle cx="70" cy="70" r="2.4" fill="#ffffff"/>
+    </svg>`;
+}
+
+function buildExportClockMarkup(snapshot = getClockSnapshot(), theme = getActiveTheme(), options = {}) {
+  const [themeSoft, themeMain, themeDeep] = theme.palette;
+  const analogSize = options.analogSize || 108;
+  const widgetPadding = options.widgetPadding || '0.9rem 1.25rem';
+  const minWidth = options.minWidth || '168px';
+  const digitalSize = options.digitalSize || '1.65rem';
+  const dateText = options.dateText || snapshot.shortDate;
+  const dateSize = options.dateSize || '0.82rem';
+  const clockSvg = buildExportAnalogClockSvg(snapshot, theme).replace('width="108" height="108"', `width="${analogSize}" height="${analogSize}"`);
+
+  return `
+    <div class="clock-widget export-clock-widget" style="padding:${widgetPadding}; min-width:${minWidth}; background:#ffffff; border-radius:18px; border:2px solid ${themeSoft}; margin:0; box-shadow:none; text-align:center;">
+      <div class="export-analog-clock" style="width:${analogSize}px; height:${analogSize}px; margin:0 auto 0.56rem auto; line-height:0;">
+        ${clockSvg}
+      </div>
+      <div class="digital-time export-digital-time" style="font-weight:800; font-size:${digitalSize}; color:#0f172a; letter-spacing:-0.035em; font-family:'Inter', sans-serif; margin-bottom:0.22rem; display:flex; align-items:flex-start; justify-content:center; line-height:1;">
+        ${snapshot.displayTime}<span style="font-size:0.74rem; font-weight:800; margin-left:6px; margin-bottom:2px; color:${themeDeep}; letter-spacing:0;">${snapshot.ampm}</span>
+      </div>
+      <div class="clock-date export-clock-date" style="font-weight:700; font-size:${dateSize}; color:#475569; background:transparent;">${dateText}</div>
+      <div class="export-clock-accent" style="width:58px; height:3px; margin:0.48rem auto 0; border-radius:999px; background:${themeMain};"></div>
+    </div>`;
 }
 
 function applyClockSnapshot(root, snapshot = getClockSnapshot(), ids = {}) {
@@ -970,6 +1040,7 @@ function exportEntryReport(pageId, title) {
   const exportScale = Math.max(8, Math.min(10, Math.ceil((window.devicePixelRatio || 1) * 4)));
   const exportTheme = getActiveTheme();
   const [themeSoft, themeMain, themeDeep] = exportTheme.palette;
+  const exportClock = getClockSnapshot();
 
   const clone = content.cloneNode(true);
   clone.classList.add('a4-report');
@@ -990,38 +1061,11 @@ function exportEntryReport(pageId, title) {
       <p style="font-weight:700; font-size:1.1rem; color:${themeDeep}; text-transform:uppercase; margin:0;">${title} Manpower Report</p>
     </div>
     <div style="text-align:right; flex-shrink:0;">
-      <div class="clock-widget" id="export-clock-widget" style="padding:0.8rem 1.5rem; min-width:150px; background:#ffffff; border-radius:12px; border:2px solid ${themeSoft}; margin:0; box-shadow:none;">
-        <div class="analog-clock" style="width:90px; height:90px; margin:0 auto 0.5rem auto; border:3px solid ${themeMain}; background:#ffffff; box-shadow:none; position:relative; border-radius:50%;">
-          <div class="clock-face" style="position:relative; width:100%; height:100%;">
-            <div class="number number-12" style="position:absolute; font-weight:700; font-size:0.65rem; color:#64748b; top:8%; left:50%; transform:translateX(-50%);">12</div>
-            <div class="number number-3" style="position:absolute; font-weight:700; font-size:0.65rem; color:#64748b; right:10%; top:50%; transform:translateY(-50%);">3</div>
-            <div class="number number-6" style="position:absolute; font-weight:700; font-size:0.65rem; color:#64748b; bottom:8%; left:50%; transform:translateX(-50%);">6</div>
-            <div class="number number-9" style="position:absolute; font-weight:700; font-size:0.65rem; color:#64748b; left:10%; top:50%; transform:translateY(-50%);">9</div>
-            <div class="hand hour-hand" id="export-hour-hand" style="position:absolute; bottom:50%; left:50%; transform-origin:bottom; border-radius:6px; width:3px; height:25px; background:#334155; margin-left:-1.5px; box-shadow:none;"></div>
-            <div class="hand min-hand" id="export-min-hand" style="position:absolute; bottom:50%; left:50%; transform-origin:bottom; border-radius:6px; width:2px; height:35px; background:#334155; margin-left:-1px; box-shadow:none;"></div>
-            <div class="hand second-hand" id="export-second-hand" style="position:absolute; bottom:50%; left:50%; transform-origin:bottom; border-radius:6px; width:2px; height:40px; background:#dc2626; margin-left:-1px; box-shadow:none;"></div>
-            <div class="clock-center" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:6px; height:6px; background:#334155; border-radius:50%; z-index:2; box-shadow:none;"></div>
-          </div>
-        </div>
-        <div class="digital-time" id="export-digital-time" style="font-weight:600; font-size:1.5rem; color:#0f172a; letter-spacing:-0.02em; font-family:'Inter', sans-serif; margin-bottom:0.2rem; display:flex; align-items:flex-start; justify-content:center;">--:--:-- --</div>
-        <div class="clock-date" id="export-clock-date" style="font-weight:600; font-size:0.8rem; color:#475569; background:transparent;">--</div>
-      </div>
+      ${buildExportClockMarkup(exportClock, exportTheme)}
     </div>
   `;
 
   clone.insertBefore(header, clone.firstChild);
-
-  const exportClock = getClockSnapshot();
-  applyClockSnapshot(clone, exportClock, {
-    hourHand: '#export-hour-hand',
-    minHand: '#export-min-hand',
-    secondHand: '#export-second-hand',
-    digitalTime: '#export-digital-time',
-    clockDate: '#export-clock-date',
-    ampmStyle: 'font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #64748b; letter-spacing: 0;'
-  });
-  const exportClockDate = clone.querySelector('#export-clock-date');
-  if (exportClockDate) exportClockDate.textContent = exportClock.shortDate;
 
   // Setup off-screen rendering
   const container = document.createElement('div');
@@ -1434,10 +1478,14 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
           <h1>Overtime Attendance</h1>
           <p>${period.rangeLabel} · ${period.label}</p>
         </div>
-        <div class="ot-export-badge ot-export-clock">
-          <span>${clock.shortDate}</span>
-          <strong>${clock.displayTime}</strong>
-          <em>${clock.ampm}</em>
+        <div class="ot-export-clock-shell">
+          ${buildExportClockMarkup(clock, getActiveTheme(), {
+            analogSize: 112,
+            widgetPadding: '0.92rem 1.28rem',
+            minWidth: '224px',
+            digitalSize: '1.72rem',
+            dateSize: '0.9rem'
+          })}
         </div>
       </div>
       <div class="ot-export-meta">
@@ -2001,14 +2049,24 @@ function exportReport() {
   const exportScale = Math.max(8, Math.min(10, Math.ceil((window.devicePixelRatio || 1) * 4)));
   const exportTheme = getActiveTheme();
   const [themeSoft, themeMain, themeDeep] = exportTheme.palette;
+  const exportClock = getClockSnapshot();
 
   // Clone the node to prevent screen jumping and layout breaking
   const clone = content.cloneNode(true);
   clone.classList.add('a4-report');
   clone.setAttribute('data-theme', exportTheme.id);
 
-  applyClockSnapshot(clone, getClockSnapshot(), {
+  applyClockSnapshot(clone, exportClock, {
     ampmStyle: 'font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #64748b; letter-spacing: 0;'
+  });
+  clone.querySelectorAll('.clock-widget').forEach(clockWidget => {
+    clockWidget.outerHTML = buildExportClockMarkup(exportClock, exportTheme, {
+      analogSize: 118,
+      widgetPadding: '1rem 1.38rem',
+      minWidth: '184px',
+      digitalSize: '1.78rem',
+      dateSize: '0.86rem'
+    });
   });
 
   // Create an off-screen container

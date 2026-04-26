@@ -79,6 +79,48 @@ function toIsoDate(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
+function getOrdinalSuffix(n) {
+  if (n >= 11 && n <= 13) return 'th';
+  switch (n % 10) {
+    case 1: return 'st';
+    case 2: return 'nd';
+    case 3: return 'rd';
+    default: return 'th';
+  }
+}
+
+function getClockSnapshot(date = new Date()) {
+  const seconds = date.getSeconds();
+  const mins = date.getMinutes();
+  const hour = date.getHours();
+  const day = date.getDate();
+
+  return {
+    hourDegrees: ((hour / 12) * 360) + ((mins / 60) * 30),
+    minDegrees: ((mins / 60) * 360) + ((seconds / 60) * 6),
+    secondDegrees: (seconds / 60) * 360,
+    displayTime: `${String(hour % 12 || 12).padStart(2, '0')}:${String(mins).padStart(2, '0')}`,
+    ampm: hour >= 12 ? 'PM' : 'AM',
+    shortDate: date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: '2-digit' }),
+    longDate: `${day}${getOrdinalSuffix(day)} ${date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`
+  };
+}
+
+function applyClockSnapshot(root, snapshot = getClockSnapshot(), ids = {}) {
+  const hourHand = root.querySelector(ids.hourHand || '#hour-hand');
+  const minHand = root.querySelector(ids.minHand || '#min-hand');
+  const secondHand = root.querySelector(ids.secondHand || '#second-hand');
+  const digitalTime = root.querySelector(ids.digitalTime || '#digital-time');
+  const clockDate = root.querySelector(ids.clockDate || '#clock-date');
+  const ampmStyle = ids.ampmStyle || 'font-size: 0.85rem; font-weight: 700; margin-top: 0.3rem; margin-left: 6px; color: #64748b; letter-spacing: 0;';
+
+  if (hourHand) hourHand.style.transform = `rotate(${snapshot.hourDegrees}deg)`;
+  if (minHand) minHand.style.transform = `rotate(${snapshot.minDegrees}deg)`;
+  if (secondHand) secondHand.style.transform = `rotate(${snapshot.secondDegrees}deg)`;
+  if (digitalTime) digitalTime.innerHTML = `${snapshot.displayTime}<span style="${ampmStyle}">${snapshot.ampm}</span>`;
+  if (clockDate) clockDate.textContent = snapshot.longDate;
+}
+
 function buildCustomPeriodFromStart(startDate) {
   const start = new Date(startDate.getFullYear(), startDate.getMonth(), CUSTOM_PERIOD_CUTOFF_DAY);
   const end = new Date(start.getFullYear(), start.getMonth() + 1, CUSTOM_PERIOD_CUTOFF_DAY - 1);
@@ -969,27 +1011,17 @@ function exportEntryReport(pageId, title) {
 
   clone.insertBefore(header, clone.firstChild);
 
-  // Directly initialize the export clock immediately before html2canvas processes it
-  const now = new Date();
-  const seconds = now.getSeconds();
-  const mins = now.getMinutes();
-  const hour = now.getHours();
-
-  const eHourHand = clone.querySelector('#export-hour-hand');
-  const eMinHand = clone.querySelector('#export-min-hand');
-  const eSecondHand = clone.querySelector('#export-second-hand');
-  const eDigital = clone.querySelector('#export-digital-time');
-  const eDate = clone.querySelector('#export-clock-date');
-
-  if (eHourHand) eHourHand.style.transform = `rotate(${((hour / 12) * 360) + ((mins / 60) * 30)}deg)`;
-  if (eMinHand) eMinHand.style.transform = `rotate(${((mins / 60) * 360) + ((seconds / 60) * 6)}deg)`;
-  if (eSecondHand) eSecondHand.style.transform = `rotate(${((seconds / 60) * 360)}deg)`;
-
-  let h = String(hour % 12 || 12).padStart(2, '0');
-  let ampm = hour >= 12 ? 'PM' : 'AM';
-  let m = mins.toString().padStart(2, '0');
-  if (eDigital) eDigital.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
-  if (eDate) eDate.textContent = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
+  const exportClock = getClockSnapshot();
+  applyClockSnapshot(clone, exportClock, {
+    hourHand: '#export-hour-hand',
+    minHand: '#export-min-hand',
+    secondHand: '#export-second-hand',
+    digitalTime: '#export-digital-time',
+    clockDate: '#export-clock-date',
+    ampmStyle: 'font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #64748b; letter-spacing: 0;'
+  });
+  const exportClockDate = clone.querySelector('#export-clock-date');
+  if (exportClockDate) exportClockDate.textContent = exportClock.shortDate;
 
   // Setup off-screen rendering
   const container = document.createElement('div');
@@ -1369,6 +1401,7 @@ function bindBranchAttendanceModalControls() {
 function buildOvertimeAttendanceJpgHtml(state, period) {
   const dates = getCustomPeriodDates(period);
   const rows = getAllBranchAttendanceRows();
+  const clock = getClockSnapshot();
   const bodyRows = rows.map(row => {
     const periodState = getBranchAttendancePeriodState(state, row.pageId, period.key, false) || {};
     const dayMap = periodState[row.groupName] || {};
@@ -1401,10 +1434,10 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
           <h1>Overtime Attendance</h1>
           <p>${period.rangeLabel} · ${period.label}</p>
         </div>
-        <div class="ot-export-badge">
-          <span>${period.monthName}</span>
-          <strong>${dates.length}</strong>
-          <em>Days</em>
+        <div class="ot-export-badge ot-export-clock">
+          <span>${clock.shortDate}</span>
+          <strong>${clock.displayTime}</strong>
+          <em>${clock.ampm}</em>
         </div>
       </div>
       <div class="ot-export-meta">
@@ -1946,42 +1979,8 @@ function _performDashboardRender() {
 
 function updateClock() {
   const hourHand = document.getElementById('hour-hand');
-  const minHand = document.getElementById('min-hand');
-  const secondHand = document.getElementById('second-hand');
-  const digitalTime = document.getElementById('digital-time');
-  const clockDate = document.getElementById('clock-date');
-
   if (!hourHand) return;
-
-  const now = new Date();
-
-  const seconds = now.getSeconds();
-  const secondsDegrees = ((seconds / 60) * 360);
-  secondHand.style.transform = `rotate(${secondsDegrees}deg)`;
-
-  const mins = now.getMinutes();
-  const minsDegrees = ((mins / 60) * 360) + ((seconds / 60) * 6);
-  minHand.style.transform = `rotate(${minsDegrees}deg)`;
-
-  const hour = now.getHours();
-  const hourDegrees = ((hour / 12) * 360) + ((mins / 60) * 30);
-  hourHand.style.transform = `rotate(${hourDegrees}deg)`;
-
-  let h = String(hour % 12 || 12).padStart(2, '0');
-  let ampm = hour >= 12 ? 'PM' : 'AM';
-  let m = mins.toString().padStart(2, '0');
-  digitalTime.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-top: 0.3rem; margin-left: 6px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
-  const d = now.getDate();
-  const getSuffix = (n) => {
-    if (n >= 11 && n <= 13) return 'th';
-    switch (n % 10) {
-      case 1: return 'st';
-      case 2: return 'nd';
-      case 3: return 'rd';
-      default: return 'th';
-    }
-  };
-  clockDate.textContent = `${d}${getSuffix(d)} ${now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`;
+  applyClockSnapshot(document, getClockSnapshot());
 }
 
 function exportReport() {
@@ -1996,37 +1995,9 @@ function exportReport() {
   clone.classList.add('a4-report');
   clone.setAttribute('data-theme', exportTheme.id);
 
-  // Synchronously update the clock on the cloned node before html2canvas processes it
-  const now = new Date();
-  const seconds = now.getSeconds();
-  const mins = now.getMinutes();
-  const hour = now.getHours();
-
-  const eHourHand = clone.querySelector('#hour-hand');
-  const eMinHand = clone.querySelector('#min-hand');
-  const eSecondHand = clone.querySelector('#second-hand');
-  const eDigital = clone.querySelector('#digital-time');
-  const eDate = clone.querySelector('#clock-date');
-
-  if (eHourHand) eHourHand.style.transform = `rotate(${((hour / 12) * 360) + ((mins / 60) * 30)}deg)`;
-  if (eMinHand) eMinHand.style.transform = `rotate(${((mins / 60) * 360) + ((seconds / 60) * 6)}deg)`;
-  if (eSecondHand) eSecondHand.style.transform = `rotate(${((seconds / 60) * 360)}deg)`;
-
-  let h = String(hour % 12 || 12).padStart(2, '0');
-  let ampm = hour >= 12 ? 'PM' : 'AM';
-  let m = mins.toString().padStart(2, '0');
-  if (eDigital) eDigital.innerHTML = `${h}:${m}<span style="font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #64748b; letter-spacing: 0;">${ampm}</span>`;
-  const d = now.getDate();
-  const getSuffix = (n) => {
-    if (n >= 11 && n <= 13) return 'th';
-    switch (n % 10) {
-      case 1: return 'st';
-      case 2: return 'nd';
-      case 3: return 'rd';
-      default: return 'th';
-    }
-  };
-  if (eDate) eDate.textContent = `${d}${getSuffix(d)} ${now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`;
+  applyClockSnapshot(clone, getClockSnapshot(), {
+    ampmStyle: 'font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #64748b; letter-spacing: 0;'
+  });
 
   // Create an off-screen container
   const container = document.createElement('div');

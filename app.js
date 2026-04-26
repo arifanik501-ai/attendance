@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.18';
+const APP_VERSION = '2.6.19';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -113,6 +113,7 @@ function getCustomPeriodDates(period) {
       weekday: cursor.toLocaleDateString('en-US', { weekday: 'short' }),
       shortLabel: cursor.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
       fullLabel: cursor.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+      isFriday: cursor.getDay() === 5,
       isToday: toIsoDate(cursor) === toIsoDate(new Date()),
       isFuture: cursor > new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
     });
@@ -1129,7 +1130,7 @@ function renderBranchAttendanceCard(pageId, state) {
     const cells = dates.map(day => {
       const checked = !day.isFuture && isTickValueChecked(periodState[groupName][day.key]);
       return `
-        <td class="branch-att-cell ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
+        <td class="branch-att-cell ${day.isFriday ? 'is-friday' : ''} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
           <label class="branch-tick" aria-label="${groupName} ${day.fullLabel}">
             <input type="checkbox" class="branch-att-input" data-branch="${groupName}" data-date="${day.key}" ${checked ? 'checked' : ''} ${day.isFuture ? 'disabled' : ''}>
             <span class="branch-tick-box"></span>
@@ -1148,7 +1149,7 @@ function renderBranchAttendanceCard(pageId, state) {
   }).join('');
 
   const headerCells = dates.map(day => `
-    <th class="branch-date-head ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
+    <th class="branch-date-head ${day.isFriday ? 'is-friday' : ''} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
       <span class="branch-day-no">${day.dayNumber}</span>
       <span class="branch-weekday">${day.weekday}</span>
     </th>
@@ -1251,7 +1252,7 @@ function buildBranchAttendanceOverviewHtml(state, period) {
     const tickCount = dates.reduce((count, day) => count + (!day.isFuture && isTickValueChecked(dayMap[day.key]) ? 1 : 0), 0);
     const cells = dates.map(day => {
       const checked = !day.isFuture && isTickValueChecked(dayMap[day.key]);
-      return `<td class="branch-att-cell ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}"><span class="branch-overview-mark ${checked ? 'checked' : ''} ${day.isFuture ? 'future-mark' : ''}">${checked ? '✓' : ''}</span></td>`;
+      return `<td class="branch-att-cell ${day.isFriday ? 'is-friday' : ''} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}"><span class="branch-overview-mark ${checked ? 'checked' : ''} ${day.isFuture ? 'future-mark' : ''}">${checked ? '✓' : ''}</span></td>`;
     }).join('');
     return `
       <tr>
@@ -1264,7 +1265,7 @@ function buildBranchAttendanceOverviewHtml(state, period) {
   }).join('');
 
   const headerCells = dates.map(day => `
-    <th class="branch-date-head ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
+    <th class="branch-date-head ${day.isFriday ? 'is-friday' : ''} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
       <span class="branch-day-no">${day.dayNumber}</span>
       <span class="branch-weekday">${day.weekday}</span>
     </th>
@@ -1373,7 +1374,7 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
     const dayMap = periodState[row.groupName] || {};
     const dateCells = dates.map(day => {
       const checked = !day.isFuture && isTickValueChecked(dayMap[day.key]);
-      return `<td class="${day.isFuture ? 'future' : ''}">${checked ? '✓' : ''}</td>`;
+      return `<td class="${day.isFriday ? 'friday' : ''} ${day.isFuture ? 'future' : ''}">${checked ? '✓' : ''}</td>`;
     }).join('');
     return `
       <tr>
@@ -1385,7 +1386,7 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
   }).join('');
 
   const headerCells = dates.map(day => `
-    <th class="${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}">
+    <th class="${day.isFriday ? 'friday' : ''} ${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}">
       <b>${day.dayNumber}</b>
       <span>${day.weekday}</span>
     </th>
@@ -1436,7 +1437,7 @@ function buildOvertimeDashboardReportHtml(state, period) {
     const cells = dates.map(day => {
       const checked = !day.isFuture && isTickValueChecked(dayMap[day.key]);
       if (checked) rowTicks += 1;
-      return `<td class="ot-dashboard-cell ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">${checked ? '<span>✓</span>' : ''}</td>`;
+      return `<td class="ot-dashboard-cell ${day.isFriday ? 'is-friday' : ''} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">${checked ? '<span>✓</span>' : ''}</td>`;
     }).join('');
     totalTicks += rowTicks;
     return `
@@ -1450,7 +1451,7 @@ function buildOvertimeDashboardReportHtml(state, period) {
   }).join('');
 
   const headerCells = dates.map(day => `
-    <th class="ot-dashboard-date ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
+    <th class="ot-dashboard-date ${day.isFriday ? 'is-friday' : ''} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
       <b>${day.dayNumber}</b>
       <span>${day.weekday}</span>
     </th>
@@ -2196,6 +2197,15 @@ function applyThemeToOvertimeExport(sheet, theme) {
   });
   sheet.querySelectorAll('.ot-export-table .today').forEach(el => {
     el.style.boxShadow = `inset 0 0 0 2px ${rgbaFromHex(main, 0.48)}`;
+  });
+  sheet.querySelectorAll('.ot-export-table .friday').forEach(el => {
+    el.style.color = '#7f1d1d';
+    el.style.background = 'linear-gradient(135deg, rgba(254, 226, 226, 0.96), rgba(254, 202, 202, 0.82))';
+    el.style.boxShadow = 'inset 0 0 0 2px rgba(220, 38, 38, 0.32)';
+  });
+  sheet.querySelectorAll('.ot-export-table td.friday:not(.ot-export-branch):not(:empty)').forEach(td => {
+    td.style.color = '#ffffff';
+    td.style.background = 'linear-gradient(135deg, #f97316, #dc2626)';
   });
 }
 

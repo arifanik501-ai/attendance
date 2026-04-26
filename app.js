@@ -2141,6 +2141,7 @@ function applyThemeSurface(theme) {
     radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.62) 0%, transparent 40%),
     radial-gradient(circle at 85% 85%, ${rgbaFromHex(main, 0.34)} 0%, transparent 40%),
     linear-gradient(135deg, ${theme.bg[0]} 0%, ${theme.bg[1]} 50%, ${theme.bg[2]} 100%)`;
+  document.body.style.backgroundAttachment = 'fixed';
 }
 
 function setTheme(themeId) {

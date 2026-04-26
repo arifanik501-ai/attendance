@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.19';
+const APP_VERSION = '2.6.21';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1732,7 +1732,7 @@ function _performDashboardRender() {
 
         <!-- Reminder Button -->
         <div class="fab-child reminder-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="reminder-btn" class="no-print solid-fab-btn" data-tip-title="Reminders" data-tip-desc="Schedule recurring tasks" data-tip-theme="warning" data-tip-placement="left"
+          <button id="reminder-btn" class="no-print solid-fab-btn" data-tip-title="Pending" data-tip-desc="Schedule recurring tasks" data-tip-theme="warning" data-tip-placement="left"
             style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
@@ -1741,7 +1741,7 @@ function _performDashboardRender() {
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
             <svg class="pfab pfab-plan" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(234,179,8,0.45));"><defs><linearGradient id="g-plan-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef9c3"/><stop offset="100%" stop-color="#fde68a"/></linearGradient><linearGradient id="g-plan-ribbon" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fcd34d"/><stop offset="100%" stop-color="#d97706"/></linearGradient><radialGradient id="g-plan-today" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#fcd34d"/><stop offset="100%" stop-color="#ca8a04"/></radialGradient></defs><g class="pf-book"><rect x="3.2" y="5.5" width="17.6" height="15" rx="2.6" fill="url(#g-plan-body)" stroke="#ca8a04" stroke-width="1.4"/><rect x="3.2" y="5.5" width="17.6" height="4.8" fill="url(#g-plan-ribbon)"/><rect x="3.2" y="9.4" width="17.6" height="0.9" fill="#7c2d12" opacity="0.25"/><rect x="6.6" y="2.6" width="2.6" height="5.2" rx="1.3" fill="#78350f"/><rect x="14.8" y="2.6" width="2.6" height="5.2" rx="1.3" fill="#78350f"/><rect x="6.6" y="3.4" width="2.6" height="1.3" rx="0.6" fill="#fef3c7" opacity="0.7"/><rect x="14.8" y="3.4" width="2.6" height="1.3" rx="0.6" fill="#fef3c7" opacity="0.7"/><circle class="pf-dot pf-d1" cx="8.2" cy="13.8" r="1.4" fill="#d97706"/><circle class="pf-dot" cx="12" cy="13.8" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot" cx="15.8" cy="13.8" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot" cx="8.2" cy="17.4" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot pf-today" cx="12" cy="17.4" r="1.6" fill="url(#g-plan-today)"/></g></svg>
-            <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">PLAN</span>
+            <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">PENDING</span>
             <span id="reminder-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#eab308; border-radius:50%; border:2px solid white; display:none; box-shadow:0 0 10px rgba(234,179,8,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
           </button>
           

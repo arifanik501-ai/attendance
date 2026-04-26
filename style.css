@@ -958,6 +958,11 @@ h4 {
   100% { background-position: 0% 50%;   }
 }
 
+@keyframes pageTitleLetterFoil {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
 /* One-shot specular glint sweeping over the whole name on load */
 .page-title-name::before {
   content: attr(data-text);

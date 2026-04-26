@@ -1592,7 +1592,7 @@ window.downloadOvertimeAttendanceJpg = function () {
 // Exactly mapping the structure of Excel rows
 const EXACT_DASHBOARD_ROWS = [
   // id, section (if defined, otherwise spans from above if blank, or empty), designation, how to calc
-  { id: 'R4', section: 'Section', designation: 'Manager', rowspan: 7, type: 'filter', filters: { designation: 'Manager' } },
+  { id: 'R4', section: 'Production Section', designation: 'Manager', rowspan: 7, type: 'filter', filters: { designation: 'Manager' } },
   { id: 'R5', designation: 'Incharge Production', type: 'filter', filters: { designation: 'In-charge' } },
   { id: 'R6', designation: 'Engineer Production', type: 'filter', filters: { designation: 'Engineer' } },
   { id: 'R7', designation: 'Senior Supervisor', type: 'filter', filters: { designation: 'Sr. Supervisor' } },
@@ -1928,13 +1928,15 @@ function _performDashboardRender() {
 
         if (row.section !== undefined) {
           if (row.rowspan) {
-            html += `<td rowspan="${row.rowspan}" style="font-weight:700; vertical-align:middle; text-align:center; background:rgba(255,255,255,0.35); border-right:1px solid rgba(255,255,255,0.6); padding: 0.5rem;">
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
-              <span style="color:#32cd32; font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em;">${row.section}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="44" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="2" x2="12" y2="22"></line>
-                <polyline points="19 15 12 22 5 15"></polyline>
-              </svg>
+            html += `<td rowspan="${row.rowspan}" class="dashboard-section-cell">
+            <div class="dashboard-section-marker">
+              <span class="dashboard-section-label">${row.section}</span>
+              <span class="dashboard-section-arrow-wrap" aria-hidden="true">
+                <svg class="dashboard-section-arrow" width="34" height="54" viewBox="0 0 34 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17 5V42" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+                  <path d="M7 32L17 44L27 32" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+              </span>
             </div>
           </td>`;
           } else {

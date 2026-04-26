@@ -1583,6 +1583,47 @@ tr:hover {
   font-size: inherit;
 }
 
+.dashboard-section-cell {
+  padding: 0.7rem !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  background: linear-gradient(180deg, rgba(240, 253, 244, 0.68), rgba(255, 255, 255, 0.34)) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.68) !important;
+}
+
+.dashboard-section-marker {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.dashboard-section-label {
+  color: #16a34a;
+  font-size: 1.22rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 1.05;
+}
+
+.dashboard-section-arrow-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 62px;
+  border-radius: 999px;
+  color: #ef4444;
+  background: linear-gradient(180deg, rgba(254, 226, 226, 0.78), rgba(255, 255, 255, 0.58));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 10px 22px -16px rgba(239, 68, 68, 0.75);
+}
+
+.dashboard-section-arrow {
+  filter: drop-shadow(0 4px 8px rgba(239, 68, 68, 0.24));
+}
+
 input[type="number"] {
   display: block;
   margin: 0 auto;

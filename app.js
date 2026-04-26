@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.19';
+const APP_VERSION = '2.6.18';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1070,7 +1070,6 @@ function exportEntryReport(pageId, title) {
     gc.style.padding = '0';
     gc.style.marginBottom = '20px';
   });
-  applyEnhancedJpgUi(clone, exportTheme, `${title} Manpower Report`, 'Entry Sheet JPG');
 
   container.appendChild(clone);
   document.body.appendChild(container);
@@ -1369,7 +1368,6 @@ function bindBranchAttendanceModalControls() {
 function buildOvertimeAttendanceJpgHtml(state, period) {
   const dates = getCustomPeriodDates(period);
   const rows = getAllBranchAttendanceRows();
-  const generatedAt = new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const bodyRows = rows.map(row => {
     const periodState = getBranchAttendancePeriodState(state, row.pageId, period.key, false) || {};
     const dayMap = periodState[row.groupName] || {};
@@ -1423,10 +1421,6 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
         </thead>
         <tbody>${bodyRows}</tbody>
       </table>
-      <div class="ot-export-footer">
-        <span>MEP FAN LTD.</span>
-        <strong>Generated ${generatedAt}</strong>
-      </div>
     </div>`;
 }
 
@@ -2088,7 +2082,6 @@ function exportReport() {
       lastCell.style.setProperty('font-weight', '900', 'important');
     }
   });
-  applyEnhancedJpgUi(clone, exportTheme, 'MEP Fan Attendance Report', 'Dashboard JPG');
 
   // Use configuration to ensure entire table renders
   html2canvas(clone, {
@@ -2176,72 +2169,11 @@ function applyThemeToExportRoot(root, theme) {
   root.style.setProperty('--glass-shadow', `0 15px 45px 0 ${rgbaFromHex(main, 0.24)}`);
 }
 
-function applyEnhancedJpgUi(clone, theme, title, label) {
-  if (!clone || !theme) return;
-  const [soft, main, deep] = theme.palette;
-  const generated = new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  clone.style.position = 'relative';
-  clone.style.overflow = 'hidden';
-  clone.style.padding = '12mm';
-  clone.style.borderRadius = '22px';
-  clone.style.background = getThemeBackground(theme, 0.18);
-  clone.style.boxShadow = `inset 0 0 0 2px ${rgbaFromHex(main, 0.18)}`;
-
-  const frame = document.createElement('div');
-  frame.className = 'jpg-export-frame';
-  frame.style.cssText = `
-    position:absolute; inset:5mm; pointer-events:none; border-radius:20px;
-    border:2px solid ${rgbaFromHex(main, 0.24)};
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.82);
-  `;
-  clone.prepend(frame);
-
-  const ribbon = document.createElement('div');
-  ribbon.className = 'jpg-export-ribbon';
-  ribbon.style.cssText = `
-    display:flex; align-items:center; justify-content:space-between; gap:16px;
-    margin:0 0 18px; padding:14px 18px; border-radius:18px;
-    background:linear-gradient(135deg, ${rgbaFromHex(main, 0.96)}, ${rgbaFromHex(deep, 0.94)});
-    color:${theme.contrast || '#fff'}; box-shadow:0 18px 44px ${rgbaFromHex(main, 0.24)};
-    font-family:'Inter', sans-serif;
-  `;
-  ribbon.innerHTML = `
-    <div>
-      <div style="font-size:11px; font-weight:950; letter-spacing:.18em; text-transform:uppercase; opacity:.82;">${label}</div>
-      <div style="font-size:22px; font-weight:950; letter-spacing:-.04em; line-height:1.08;">${title}</div>
-    </div>
-    <div style="text-align:right;">
-      <div style="font-size:11px; font-weight:900; letter-spacing:.14em; text-transform:uppercase; opacity:.76;">Generated</div>
-      <div style="font-size:14px; font-weight:900;">${generated}</div>
-    </div>`;
-  clone.insertBefore(ribbon, clone.firstChild.nextSibling);
-
-  clone.querySelectorAll('.report-header-flex').forEach(el => {
-    el.style.borderRadius = '22px';
-    el.style.border = `1px solid ${rgbaFromHex(main, 0.22)}`;
-    el.style.background = `linear-gradient(135deg, rgba(255,255,255,0.92), ${rgbaFromHex(soft, 0.46)})`;
-  });
-  clone.querySelectorAll('table').forEach(table => {
-    table.style.borderRadius = '14px';
-    table.style.overflow = 'hidden';
-    table.style.boxShadow = `0 16px 36px ${rgbaFromHex(deep, 0.12)}`;
-  });
-  clone.querySelectorAll('th').forEach(th => {
-    th.style.background = `linear-gradient(135deg, ${rgbaFromHex(soft, 0.94)}, ${rgbaFromHex(main, 0.26)})`;
-    th.style.color = deep;
-  });
-  clone.querySelectorAll('h2, h3').forEach(h => {
-    h.style.color = deep;
-  });
-}
-
 function applyThemeToOvertimeExport(sheet, theme) {
   if (!sheet || !theme) return;
   const [soft, main, deep] = theme.palette;
   applyThemeToExportRoot(sheet, theme);
   sheet.style.background = getThemeBackground(theme, 0.24);
-  sheet.style.border = `2px solid ${rgbaFromHex(main, 0.24)}`;
-  sheet.style.boxShadow = `inset 0 0 0 1px rgba(255,255,255,0.82), 0 26px 80px ${rgbaFromHex(deep, 0.16)}`;
   sheet.querySelector('.ot-export-watermark')?.style.setProperty('background', `radial-gradient(circle, ${rgbaFromHex(main, 0.14)}, transparent 68%)`);
   sheet.querySelector('.ot-export-company')?.style.setProperty('color', deep);
   sheet.querySelector('.ot-export-company')?.style.setProperty('background', rgbaFromHex(soft, 0.42));

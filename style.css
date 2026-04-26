@@ -1446,13 +1446,14 @@ body.page-leaving {
 }
 
 .btn-primary {
-  background: #facc15;
-  border-color: #eab308;
-  color: #422006;
+  background: var(--theme-color, #facc15);
+  border-color: var(--theme-color, #eab308);
+  color: var(--theme-contrast, #422006);
 }
 
 .btn-primary:hover {
-  background: #eab308;
+  background: var(--theme-color, #eab308);
+  filter: brightness(0.94) saturate(1.08);
 }
 
 .glass-card {
@@ -4259,6 +4260,22 @@ body[data-theme="parrot"] {
 
 [data-theme="parrot"] .btn-primary:hover {
   background: #84cc16;
+}
+
+body[data-theme] .sidebar .brand,
+body[data-theme] .btn {
+  color: var(--total-text) !important;
+}
+
+body[data-theme] .btn-primary {
+  background: var(--theme-color) !important;
+  border-color: var(--theme-color) !important;
+  color: var(--theme-contrast, #fff) !important;
+}
+
+body[data-theme] .btn-primary:hover {
+  background: var(--theme-color) !important;
+  filter: brightness(0.94) saturate(1.08);
 }
 
 /* ═══════════════════════════════════════════════════

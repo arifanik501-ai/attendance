@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.14';
+const APP_VERSION = '2.6.15';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1226,6 +1226,19 @@ function bindBranchAttendanceControls(pageId, state) {
       }
     });
   });
+  scrollBranchAttendanceToToday();
+}
+
+function scrollBranchAttendanceToToday(root = document) {
+  root.querySelectorAll('.branch-table-wrap').forEach(wrap => {
+    const todayCell = wrap.querySelector('.branch-date-head.is-today');
+    if (!todayCell) return;
+    const stickyWidth = wrap.querySelector('.branch-name-head')?.offsetWidth || 0;
+    const targetLeft = Math.max(0, todayCell.offsetLeft - stickyWidth - 16);
+    requestAnimationFrame(() => {
+      wrap.scrollLeft = targetLeft;
+    });
+  });
 }
 
 function buildBranchAttendanceOverviewHtml(state, period) {
@@ -1348,6 +1361,7 @@ function bindBranchAttendanceModalControls() {
       renderBranchAttendanceModalContent();
     });
   });
+  scrollBranchAttendanceToToday(document.getElementById('branch-att-modal') || document);
 }
 
 function buildOvertimeAttendanceJpgHtml(state, period) {

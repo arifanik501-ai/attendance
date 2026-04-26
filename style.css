@@ -2406,6 +2406,10 @@ input[type="number"]:focus {
   min-width: 244px;
 }
 
+.ot-export-clock-shell {
+  flex: 0 0 auto;
+}
+
 .ot-export-clock strong {
   font-size: 42px;
   letter-spacing: -0.06em;
@@ -3007,7 +3011,7 @@ input[type="number"]:focus {
 }
 
 .a4-report .clock-widget {
-  padding: 1.2rem 1.8rem;
+  padding: 1rem 1.38rem;
   min-width: 160px;
   background: #ffffff;
   border-radius: 16px;
@@ -3016,6 +3020,20 @@ input[type="number"]:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.a4-report .export-clock-widget,
+.ot-export-sheet .export-clock-widget {
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.export-analog-clock-svg {
+  display: block;
+}
+
+.export-digital-time {
+  font-variant-numeric: tabular-nums;
 }
 
 .a4-report .clock-widget::before,

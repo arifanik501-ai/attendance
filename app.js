@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.25';
+const APP_VERSION = '2.6.26';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -118,11 +118,11 @@ function buildExportAnalogClockSvg(snapshot = getClockSnapshot(), theme = getAct
     return `<line x1="70" y1="${y1}" x2="70" y2="${y2}" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" transform="rotate(${angle} 70 70)"/>`;
   }).join('');
   const numbers = [
-    { value: '12', x: 70, y: 23 },
-    { value: '3', x: 117, y: 75 },
-    { value: '6', x: 70, y: 126 },
-    { value: '9', x: 23, y: 75 }
-  ].map(item => `<text x="${item.x}" y="${item.y}" text-anchor="middle" fill="${themeDeep}" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="900">${item.value}</text>`).join('');
+    { value: '12', x: 70, y: 32 },
+    { value: '3', x: 108, y: 75 },
+    { value: '6', x: 70, y: 116 },
+    { value: '9', x: 32, y: 75 }
+  ].map(item => `<text x="${item.x}" y="${item.y}" text-anchor="middle" fill="${themeDeep}" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="900">${item.value}</text>`).join('');
   const hourAngle = snapshot.hourDegrees;
   const minuteAngle = snapshot.minDegrees;
   const secondAngle = snapshot.secondDegrees;
@@ -155,24 +155,25 @@ function buildExportAnalogClockSvg(snapshot = getClockSnapshot(), theme = getAct
 
 function buildExportClockMarkup(snapshot = getClockSnapshot(), theme = getActiveTheme(), options = {}) {
   const [themeSoft, themeMain, themeDeep] = theme.palette;
-  const analogSize = options.analogSize || 108;
-  const widgetPadding = options.widgetPadding || '0.9rem 1.25rem';
-  const minWidth = options.minWidth || '168px';
-  const digitalSize = options.digitalSize || '1.65rem';
+  const analogSize = options.analogSize || 54;
+  const widgetPadding = options.widgetPadding || '0.4rem 0.55rem';
+  const clockWidth = options.width || options.minWidth || '112px';
+  const digitalSize = options.digitalSize || '0.96rem';
   const dateText = options.dateText || snapshot.shortDate;
-  const dateSize = options.dateSize || '0.82rem';
+  const dateSize = options.dateSize || '0.58rem';
+  const ampmSize = options.ampmSize || '0.5rem';
   const clockSvg = buildExportAnalogClockSvg(snapshot, theme).replace('width="108" height="108"', `width="${analogSize}" height="${analogSize}"`);
 
   return `
-    <div class="clock-widget export-clock-widget" style="padding:${widgetPadding}; min-width:${minWidth}; background:#ffffff; border-radius:18px; border:2px solid ${themeSoft}; margin:0; box-shadow:none; text-align:center;">
-      <div class="export-analog-clock" style="width:${analogSize}px; height:${analogSize}px; margin:0 auto 0.56rem auto; line-height:0;">
+    <div class="export-clock-widget" style="padding:${widgetPadding}; width:${clockWidth}; min-width:${clockWidth}; max-width:${clockWidth}; background:#ffffff; border-radius:14px; border:1.5px solid ${themeSoft}; margin:0; box-shadow:none; text-align:center; box-sizing:border-box; flex:0 0 auto;">
+      <div class="export-analog-clock" style="width:${analogSize}px; height:${analogSize}px; margin:0 auto 0.28rem auto; line-height:0;">
         ${clockSvg}
       </div>
-      <div class="digital-time export-digital-time" style="font-weight:800; font-size:${digitalSize}; color:#0f172a; letter-spacing:-0.035em; font-family:'Inter', sans-serif; margin-bottom:0.22rem; display:flex; align-items:flex-start; justify-content:center; line-height:1;">
-        ${snapshot.displayTime}<span style="font-size:0.74rem; font-weight:800; margin-left:6px; margin-bottom:2px; color:${themeDeep}; letter-spacing:0;">${snapshot.ampm}</span>
+      <div class="export-digital-time" style="font-weight:850; font-size:${digitalSize}; color:#0f172a; letter-spacing:-0.035em; font-family:'Inter', sans-serif; margin:0 0 0.14rem; padding:0; background:transparent; border:0; box-shadow:none; display:flex; align-items:flex-start; justify-content:center; line-height:1;">
+        ${snapshot.displayTime}<span style="font-size:${ampmSize}; font-weight:850; margin-left:4px; color:${themeDeep}; letter-spacing:0;">${snapshot.ampm}</span>
       </div>
-      <div class="clock-date export-clock-date" style="font-weight:700; font-size:${dateSize}; color:#475569; background:transparent;">${dateText}</div>
-      <div class="export-clock-accent" style="width:58px; height:3px; margin:0.48rem auto 0; border-radius:999px; background:${themeMain};"></div>
+      <div class="export-clock-date" style="font-weight:750; font-size:${dateSize}; color:#475569; background:transparent; line-height:1.1;">${dateText}</div>
+      <div class="export-clock-accent" style="width:34px; height:2px; margin:0.22rem auto 0; border-radius:999px; background:${themeMain};"></div>
     </div>`;
 }
 
@@ -1480,11 +1481,12 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
         </div>
         <div class="ot-export-clock-shell">
           ${buildExportClockMarkup(clock, getActiveTheme(), {
-            analogSize: 112,
-            widgetPadding: '0.92rem 1.28rem',
-            minWidth: '224px',
-            digitalSize: '1.72rem',
-            dateSize: '0.9rem'
+            analogSize: 66,
+            widgetPadding: '0.48rem 0.64rem',
+            width: '148px',
+            digitalSize: '1.12rem',
+            dateSize: '0.66rem',
+            ampmSize: '0.58rem'
           })}
         </div>
       </div>
@@ -2061,11 +2063,12 @@ function exportReport() {
   });
   clone.querySelectorAll('.clock-widget').forEach(clockWidget => {
     clockWidget.outerHTML = buildExportClockMarkup(exportClock, exportTheme, {
-      analogSize: 118,
-      widgetPadding: '1rem 1.38rem',
-      minWidth: '184px',
-      digitalSize: '1.78rem',
-      dateSize: '0.86rem'
+      analogSize: 58,
+      widgetPadding: '0.44rem 0.6rem',
+      width: '124px',
+      digitalSize: '1.02rem',
+      dateSize: '0.6rem',
+      ampmSize: '0.52rem'
     });
   });
 

@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.16';
+const APP_VERSION = '2.6.17';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -2094,28 +2094,58 @@ function exportReport() {
 // ═══════════════════════════════════════════════════
 
 const THEMES = [
-  { id: 'amber',        name: 'Golden Amber',    desc: 'Warm sunlit gold',         swatch: 'linear-gradient(135deg, #facc15, #eab308)',    palette: ['#fde68a','#facc15','#ca8a04'] },
-  { id: 'ocean',        name: 'Ocean Blue',      desc: 'Deep tidal serenity',      swatch: 'linear-gradient(135deg, #38bdf8, #0ea5e9)',    palette: ['#7dd3fc','#0ea5e9','#0369a1'] },
-  { id: 'rose',         name: 'Rose Garden',     desc: 'Soft blushing petals',     swatch: 'linear-gradient(135deg, #fb7185, #f43f5e)',    palette: ['#fecdd3','#fb7185','#be123c'] },
-  { id: 'emerald',      name: 'Emerald Forest',  desc: 'Cool mossy green',         swatch: 'linear-gradient(135deg, #34d399, #10b981)',    palette: ['#a7f3d0','#10b981','#065f46'] },
-  { id: 'purple',       name: 'Purple Haze',     desc: 'Dreamy violet mist',       swatch: 'linear-gradient(135deg, #a78bfa, #8b5cf6)',    palette: ['#ddd6fe','#8b5cf6','#5b21b6'] },
-  { id: 'mint',         name: 'Mint Fresh',      desc: 'Crisp cool mint',          swatch: 'linear-gradient(135deg, #6ee7b7, #34d399)',    palette: ['#d1fae5','#6ee7b7','#047857'] },
-  { id: 'sunset',       name: 'Sunset Orange',   desc: 'Dusk fire glow',           swatch: 'linear-gradient(135deg, #fb923c, #f97316)',    palette: ['#fed7aa','#fb923c','#c2410c'] },
-  { id: 'arctic',       name: 'Arctic Ice',      desc: 'Frosted cyan chill',       swatch: 'linear-gradient(135deg, #22d3ee, #06b6d4)',    palette: ['#cffafe','#22d3ee','#0891b2'] },
-  { id: 'lavender',     name: 'Lavender Dream',  desc: 'Soft purple haze',         swatch: 'linear-gradient(135deg, #c084fc, #a855f7)',    palette: ['#e9d5ff','#c084fc','#7e22ce'] },
-  { id: 'peach',        name: 'Peach Blossom',   desc: 'Ripe summer fruit',        swatch: 'linear-gradient(135deg, #fdba74, #fb923c)',    palette: ['#fed7aa','#fdba74','#ea580c'] },
-  { id: 'silver-mist',  name: 'Silver Mist',     desc: 'Calm cloud gray',          swatch: 'linear-gradient(135deg, #e2e8f0, #94a3b8)',    palette: ['#f1f5f9','#cbd5e1','#64748b'] },
-  { id: 'sky-azure',    name: 'Sky Azure',       desc: 'Open horizon blue',        swatch: 'linear-gradient(135deg, #bae6fd, #38bdf8)',    palette: ['#e0f2fe','#7dd3fc','#0284c7'] },
-  { id: 'honey-glow',   name: 'Honey Glow',      desc: 'Liquid amber honey',       swatch: 'linear-gradient(135deg, #fef08a, #facc15)',    palette: ['#fef9c3','#fde047','#a16207'] },
-  { id: 'mint-sorbet',  name: 'Mint Sorbet',     desc: 'Cool dessert green',       swatch: 'linear-gradient(135deg, #a7f3d0, #34d399)',    palette: ['#d1fae5','#6ee7b7','#059669'] },
-  { id: 'light-maroon', name: 'Light Maroon',    desc: 'Faded rose wine',          swatch: 'linear-gradient(135deg, #fda4af, #fb7185)',    palette: ['#fecdd3','#fda4af','#9f1239'] },
-  { id: 'chocolate',    name: 'Chocolate',       desc: 'Rich cocoa warmth',        swatch: 'linear-gradient(135deg, #fcd34d, #d97706)',    palette: ['#fde68a','#fbbf24','#92400e'] },
-  { id: 'watermelon',   name: 'Watermelon',      desc: 'Juicy pink crush',         swatch: 'linear-gradient(135deg, #fb7185, #f43f5e)',    palette: ['#fecaca','#fb7185','#9f1239'] },
-  { id: 'parrot',       name: 'Parrot',          desc: 'Vivid tropical lime',      swatch: 'linear-gradient(135deg, #d9f99d, #a3e635)',    palette: ['#ecfccb','#a3e635','#4d7c0f'] }
+  { id: 'amber',        name: 'Golden Amber',    desc: 'Sunlit gold plate',        swatch: 'linear-gradient(135deg, #fde68a, #f59e0b)',    palette: ['#fde68a','#f59e0b','#92400e'], bg: ['#fffbeb','#fef3c7','#fcd34d'], contrast: '#422006' },
+  { id: 'ocean',        name: 'Deep Ocean',      desc: 'Blue sea plate',           swatch: 'linear-gradient(135deg, #bae6fd, #0284c7)',    palette: ['#bae6fd','#0284c7','#075985'], bg: ['#f0f9ff','#bae6fd','#38bdf8'], contrast: '#f0f9ff' },
+  { id: 'rose',         name: 'Rose Garden',     desc: 'Pink flower plate',        swatch: 'linear-gradient(135deg, #ffe4e6, #fb7185)',    palette: ['#ffe4e6','#fb7185','#9f1239'], bg: ['#fff1f2','#ffe4e6','#fda4af'], contrast: '#4c0519' },
+  { id: 'emerald',      name: 'Emerald Forest',  desc: 'Forest green plate',       swatch: 'linear-gradient(135deg, #bbf7d0, #22c55e)',    palette: ['#bbf7d0','#22c55e','#14532d'], bg: ['#f0fdf4','#dcfce7','#86efac'], contrast: '#052e16' },
+  { id: 'purple',       name: 'Imperial Violet', desc: 'Royal violet plate',       swatch: 'linear-gradient(135deg, #ede9fe, #7c3aed)',    palette: ['#ede9fe','#7c3aed','#4c1d95'], bg: ['#faf5ff','#ede9fe','#c4b5fd'], contrast: '#ffffff' },
+  { id: 'mint',         name: 'Mint Fresh',      desc: 'Teal mint plate',          swatch: 'linear-gradient(135deg, #ccfbf1, #14b8a6)',    palette: ['#ccfbf1','#14b8a6','#134e4a'], bg: ['#f0fdfa','#ccfbf1','#5eead4'], contrast: '#042f2e' },
+  { id: 'sunset',       name: 'Sunset Flame',    desc: 'Burnt orange plate',       swatch: 'linear-gradient(135deg, #fed7aa, #ea580c)',    palette: ['#fed7aa','#ea580c','#7c2d12'], bg: ['#fff7ed','#fed7aa','#fdba74'], contrast: '#431407' },
+  { id: 'arctic',       name: 'Arctic Ice',      desc: 'Cyan frost plate',         swatch: 'linear-gradient(135deg, #ecfeff, #06b6d4)',    palette: ['#ecfeff','#06b6d4','#164e63'], bg: ['#ecfeff','#cffafe','#67e8f9'], contrast: '#083344' },
+  { id: 'lavender',     name: 'Lilac Bloom',     desc: 'Magenta lilac plate',      swatch: 'linear-gradient(135deg, #f5d0fe, #d946ef)',    palette: ['#f5d0fe','#d946ef','#701a75'], bg: ['#fdf4ff','#fae8ff','#f0abfc'], contrast: '#4a044e' },
+  { id: 'peach',        name: 'Coral Sand',      desc: 'Coral beach plate',        swatch: 'linear-gradient(135deg, #ffe4d6, #ff6b6b)',    palette: ['#ffe4d6','#ff6b6b','#7f1d1d'], bg: ['#fff7ed','#ffe4d6','#fca5a5'], contrast: '#450a0a' },
+  { id: 'silver-mist',  name: 'Silver Mist',     desc: 'Neutral silver plate',     swatch: 'linear-gradient(135deg, #f8fafc, #94a3b8)',    palette: ['#f8fafc','#94a3b8','#334155'], bg: ['#ffffff','#f1f5f9','#cbd5e1'], contrast: '#0f172a' },
+  { id: 'sky-azure',    name: 'Cobalt Sky',      desc: 'Clear blue plate',         swatch: 'linear-gradient(135deg, #dbeafe, #3b82f6)',    palette: ['#dbeafe','#3b82f6','#1e3a8a'], bg: ['#eff6ff','#dbeafe','#93c5fd'], contrast: '#ffffff' },
+  { id: 'honey-glow',   name: 'Honey Bronze',    desc: 'Bronze honey plate',       swatch: 'linear-gradient(135deg, #fef3c7, #d97706)',    palette: ['#fef3c7','#d97706','#78350f'], bg: ['#fffbeb','#fef3c7','#fbbf24'], contrast: '#422006' },
+  { id: 'mint-sorbet',  name: 'Pistachio Lime',  desc: 'Fresh lime plate',         swatch: 'linear-gradient(135deg, #ecfccb, #84cc16)',    palette: ['#ecfccb','#84cc16','#365314'], bg: ['#f7fee7','#ecfccb','#bef264'], contrast: '#1a2e05' },
+  { id: 'light-maroon', name: 'Burgundy Velvet', desc: 'Wine velvet plate',        swatch: 'linear-gradient(135deg, #fce7f3, #be185d)',    palette: ['#fce7f3','#be185d','#831843'], bg: ['#fdf2f8','#fce7f3','#f9a8d4'], contrast: '#ffffff' },
+  { id: 'chocolate',    name: 'Cocoa Mocha',     desc: 'Coffee cocoa plate',       swatch: 'linear-gradient(135deg, #fef3c7, #a16207)',    palette: ['#fef3c7','#a16207','#451a03'], bg: ['#fffbeb','#fde68a','#d97706'], contrast: '#ffffff' },
+  { id: 'watermelon',   name: 'Watermelon Pop',  desc: 'Red green plate',          swatch: 'linear-gradient(135deg, #dcfce7, #ef4444)',    palette: ['#dcfce7','#ef4444','#14532d'], bg: ['#f0fdf4','#fee2e2','#f87171'], contrast: '#ffffff' },
+  { id: 'parrot',       name: 'Neon Parrot',     desc: 'Electric lime plate',      swatch: 'linear-gradient(135deg, #f0fdf4, #bef264)',    palette: ['#f0fdf4','#bef264','#166534'], bg: ['#f0fdf4','#d9f99d','#86efac'], contrast: '#14532d' },
+  { id: 'indigo-night', name: 'Indigo Night',    desc: 'Deep indigo plate',        swatch: 'linear-gradient(135deg, #c7d2fe, #4f46e5)',    palette: ['#c7d2fe','#4f46e5','#312e81'], bg: ['#eef2ff','#c7d2fe','#818cf8'], contrast: '#ffffff' },
+  { id: 'teal-lagoon',  name: 'Teal Lagoon',     desc: 'Lagoon teal plate',        swatch: 'linear-gradient(135deg, #ccfbf1, #0f766e)',    palette: ['#ccfbf1','#0f766e','#042f2e'], bg: ['#f0fdfa','#99f6e4','#2dd4bf'], contrast: '#ffffff' },
+  { id: 'crimson',      name: 'Crimson Ruby',    desc: 'Ruby red plate',           swatch: 'linear-gradient(135deg, #fee2e2, #dc2626)',    palette: ['#fee2e2','#dc2626','#7f1d1d'], bg: ['#fef2f2','#fee2e2','#fca5a5'], contrast: '#ffffff' },
+  { id: 'copper',       name: 'Copper Clay',     desc: 'Clay copper plate',        swatch: 'linear-gradient(135deg, #ffedd5, #c2410c)',    palette: ['#ffedd5','#c2410c','#431407'], bg: ['#fff7ed','#ffedd5','#fb923c'], contrast: '#ffffff' },
+  { id: 'sapphire',     name: 'Sapphire Royal',  desc: 'Royal sapphire plate',     swatch: 'linear-gradient(135deg, #dbeafe, #2563eb)',    palette: ['#dbeafe','#2563eb','#172554'], bg: ['#eff6ff','#bfdbfe','#60a5fa'], contrast: '#ffffff' },
+  { id: 'olive',        name: 'Olive Grove',     desc: 'Earth olive plate',        swatch: 'linear-gradient(135deg, #fef9c3, #65a30d)',    palette: ['#fef9c3','#65a30d','#3f6212'], bg: ['#fefce8','#fef9c3','#bef264'], contrast: '#1a2e05' }
 ];
+
+function rgbaFromHex(hex, alpha) {
+  const clean = hex.replace('#', '');
+  const value = parseInt(clean.length === 3 ? clean.split('').map(ch => ch + ch).join('') : clean, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function applyThemeSurface(theme) {
+  if (!theme) return;
+  const [soft, main, deep] = theme.palette;
+  document.body.style.setProperty('--theme-color', main);
+  document.body.style.setProperty('--total-bg', rgbaFromHex(soft, 0.72));
+  document.body.style.setProperty('--total-text', deep);
+  document.body.style.setProperty('--theme-contrast', theme.contrast || '#fff');
+  document.body.style.setProperty('--glass-shadow', `0 15px 45px 0 ${rgbaFromHex(main, 0.24)}`);
+  document.body.style.background = `
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.62) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, ${rgbaFromHex(main, 0.34)} 0%, transparent 40%),
+    linear-gradient(135deg, ${theme.bg[0]} 0%, ${theme.bg[1]} 50%, ${theme.bg[2]} 100%)`;
+}
 
 function setTheme(themeId) {
   const currentTheme = document.body.getAttribute('data-theme') || 'rose';
+  const selectedTheme = THEMES.find(t => t.id === themeId) || THEMES.find(t => t.id === 'rose');
 
   // Smooth crossfade animation for gradients
   if (currentTheme !== themeId && document.body.classList.contains('theme-init-done')) {
@@ -2141,6 +2171,7 @@ function setTheme(themeId) {
       setTimeout(() => fader.remove(), 1600);
     }, 50);
   }
+  applyThemeSurface(selectedTheme);
 
   if (themeId === 'rose') {
     document.body.removeAttribute('data-theme');
@@ -2160,7 +2191,7 @@ function setTheme(themeId) {
   const previewRail = document.getElementById('theme-preview-rail');
   const livePreview = document.getElementById('theme-live-preview');
   if (hdrLabel) {
-    const current = THEMES.find(t => t.id === themeId);
+    const current = selectedTheme;
     if (current) {
       hdrLabel.textContent = current.name;
       if (previewName) previewName.textContent = current.name;

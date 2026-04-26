@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.22';
+const APP_VERSION = '2.6.23';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1592,7 +1592,7 @@ window.downloadOvertimeAttendanceJpg = function () {
 // Exactly mapping the structure of Excel rows
 const EXACT_DASHBOARD_ROWS = [
   // id, section (if defined, otherwise spans from above if blank, or empty), designation, how to calc
-  { id: 'R4', section: 'Production Section', designation: 'Manager', rowspan: 7, type: 'filter', filters: { designation: 'Manager' } },
+  { id: 'R4', section: 'Section', designation: 'Manager', rowspan: 7, type: 'filter', filters: { designation: 'Manager' } },
   { id: 'R5', designation: 'Incharge Production', type: 'filter', filters: { designation: 'In-charge' } },
   { id: 'R6', designation: 'Engineer Production', type: 'filter', filters: { designation: 'Engineer' } },
   { id: 'R7', designation: 'Senior Supervisor', type: 'filter', filters: { designation: 'Sr. Supervisor' } },
@@ -1932,9 +1932,19 @@ function _performDashboardRender() {
             <div class="dashboard-section-marker">
               <span class="dashboard-section-label">${row.section}</span>
               <span class="dashboard-section-arrow-wrap" aria-hidden="true">
-                <svg class="dashboard-section-arrow" width="34" height="54" viewBox="0 0 34 54" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M17 5V42" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-                  <path d="M7 32L17 44L27 32" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+                <svg class="dashboard-section-arrow" width="38" height="58" viewBox="0 0 38 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path class="dashboard-section-arrow-glow" d="M19 6V43" stroke="currentColor" stroke-width="7" stroke-linecap="round"></path>
+                  <path class="dashboard-section-arrow-glow" d="M7 33L19 47L31 33" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path d="M19 6V43" stroke="url(#dashboard-section-arrow-gold)" stroke-width="3.2" stroke-linecap="round"></path>
+                  <path d="M7 33L19 47L31 33" stroke="url(#dashboard-section-arrow-gold)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <defs>
+                    <linearGradient id="dashboard-section-arrow-gold" x1="19" y1="4" x2="19" y2="50" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#fff7d6"></stop>
+                      <stop offset="0.34" stop-color="#facc15"></stop>
+                      <stop offset="0.68" stop-color="#b45309"></stop>
+                      <stop offset="1" stop-color="#7c2d12"></stop>
+                    </linearGradient>
+                  </defs>
                 </svg>
               </span>
             </div>

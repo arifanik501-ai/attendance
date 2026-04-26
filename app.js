@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.19';
+const APP_VERSION = '2.6.20';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -2206,6 +2206,9 @@ function applyThemeToOvertimeExport(sheet, theme) {
   sheet.querySelectorAll('.ot-export-table td.friday:not(.ot-export-branch):not(:empty)').forEach(td => {
     td.style.color = '#ffffff';
     td.style.background = 'linear-gradient(135deg, #f97316, #dc2626)';
+  });
+  sheet.querySelectorAll('.ot-export-table .friday.today').forEach(el => {
+    el.style.boxShadow = `inset 0 0 0 2px rgba(220, 38, 38, 0.34), inset 0 0 0 5px ${rgbaFromHex(main, 0.58)}`;
   });
 }
 

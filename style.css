@@ -2992,6 +2992,12 @@ input[type="number"]:focus {
   pointer-events: auto;
 }
 
+html.theme-picker-open,
+body.theme-picker-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* ═══════════════════════════════════════════════════
    THEME GALLERY — PREMIUM REDESIGN
    ═══════════════════════════════════════════════════ */
@@ -3020,6 +3026,8 @@ input[type="number"]:focus {
   width: 640px;
   max-height: 78vh;
   overflow: hidden;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   isolation: isolate;
   transform-origin: bottom left;
   animation: themeDropIn 0.55s cubic-bezier(0.22, 1, 0.36, 1);
@@ -3296,11 +3304,15 @@ input[type="number"]:focus {
 
 /* ── Grid ── */
 .theme-grid {
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 11px;
   padding: 4px 18px 16px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: rgba(99,102,241,0.35) transparent;
 }

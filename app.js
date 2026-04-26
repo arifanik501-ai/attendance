@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.15';
+const APP_VERSION = '2.6.16';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -2190,6 +2190,8 @@ function pickRandomTheme() {
 
 function closeThemeDropdown() {
   document.getElementById('theme-dropdown')?.classList.remove('open');
+  document.documentElement.classList.remove('theme-picker-open');
+  document.body.classList.remove('theme-picker-open');
   const backdrop = document.getElementById('theme-backdrop');
   if (backdrop) {
     backdrop.classList.remove('show');
@@ -2204,6 +2206,8 @@ function toggleThemeDropdown() {
 
   const shouldOpen = !dropdown.classList.contains('open');
   dropdown.classList.toggle('open', shouldOpen);
+  document.documentElement.classList.toggle('theme-picker-open', shouldOpen);
+  document.body.classList.toggle('theme-picker-open', shouldOpen);
   backdrop.hidden = !shouldOpen;
   backdrop.classList.toggle('show', shouldOpen);
 }

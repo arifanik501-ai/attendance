@@ -3023,13 +3023,21 @@ input[type="number"]:focus {
 }
 
 .a4-report .export-clock-widget,
-.ot-export-sheet .export-clock-widget {
+.ot-export-sheet .export-clock-widget,
+.export-clock-widget {
+  position: static !important;
+  isolation: auto !important;
+  overflow: visible !important;
+  display: block !important;
+  flex: 0 0 auto !important;
   background: #ffffff !important;
   box-shadow: none !important;
 }
 
 .export-analog-clock-svg {
   display: block;
+  max-width: none !important;
+  overflow: visible !important;
 }
 
 .export-digital-time {

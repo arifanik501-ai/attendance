@@ -5222,3 +5222,180 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
     transform: translateY(-12px) rotate(-18deg);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SMOOTH MODE TOGGLE
+   Bottom-right floating pill. The wrapper is a small invisible
+   hover-zone; the actual button stays hidden (opacity 0) until
+   the cursor enters that zone. State persists via localStorage.
+   ═══════════════════════════════════════════════════════════════ */
+.smooth-mode-zone {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  /* Generous 160×160 corner zone so it's easy to find on touch + cursor. */
+  width: 160px;
+  height: 160px;
+  z-index: 9999;
+  pointer-events: none;        /* zone itself is non-interactive padding */
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 0 16px 16px 0;
+}
+.smooth-mode-btn {
+  pointer-events: auto;        /* button is interactive */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px 9px 11px;
+  border: none;
+  border-radius: 999px;
+  font: 600 12px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  color: #1c1134;
+  background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(248,244,255,0.92));
+  box-shadow:
+    0 8px 22px -8px rgba(15, 5, 40, 0.4),
+    0 2px 6px -2px rgba(15, 5, 40, 0.25),
+    inset 0 1px 0 rgba(255,255,255,0.95),
+    inset 0 0 0 1px rgba(167, 139, 250, 0.25);
+  cursor: pointer;
+  /* Hidden by default — fully invisible & not focus-trappable visually. */
+  opacity: 0;
+  transform: translate3d(8px, 8px, 0) scale(0.92);
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              background 0.2s ease, box-shadow 0.2s ease;
+  will-change: opacity, transform;
+}
+/* Reveal on cursor proximity (JS adds .is-near when the pointer enters
+   the bottom-right corner) or when the button itself receives focus
+   (keyboard tab access). */
+.smooth-mode-zone.is-near .smooth-mode-btn,
+.smooth-mode-btn:focus-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+.smooth-mode-btn:hover {
+  background: linear-gradient(135deg, #ffffff, #f3eeff);
+  box-shadow:
+    0 12px 28px -8px rgba(124, 58, 237, 0.45),
+    0 3px 8px -2px rgba(15, 5, 40, 0.3),
+    inset 0 1px 0 rgba(255,255,255,0.98),
+    inset 0 0 0 1px rgba(167, 139, 250, 0.45);
+}
+.smooth-mode-btn:active { transform: translate3d(0, 0, 0) scale(0.96); }
+.smooth-mode-btn .smooth-mode-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #a78bfa, #6d28d9 70%);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 0 0 1px rgba(255,255,255,0.6);
+}
+.smooth-mode-btn.is-on {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  box-shadow:
+    0 12px 28px -8px rgba(16, 185, 129, 0.55),
+    0 3px 8px -2px rgba(6, 78, 59, 0.4),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+}
+.smooth-mode-btn.is-on .smooth-mode-ico {
+  background: rgba(255,255,255,0.95);
+  color: #047857;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,1), 0 0 0 1px rgba(255,255,255,0.8);
+}
+.smooth-mode-btn.is-tap {
+  animation: smooth-mode-tap 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes smooth-mode-tap {
+  0%   { transform: scale(0.92); }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@media print { .smooth-mode-zone { display: none !important; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   SMOOTH MODE OVERRIDES
+   When body.smooth-mode is set, we kill GPU-heavy filters and
+   most idle animations so the UI stays smooth on slow devices.
+   The visual look is preserved — soft glows still come from
+   gradients, only the expensive blurs / continuous animations
+   are dropped.
+   ═══════════════════════════════════════════════════════════════ */
+body.smooth-mode .ios-hm-overlay {
+  -webkit-backdrop-filter: blur(4px) !important;
+          backdrop-filter: blur(4px) !important;
+}
+body.smooth-mode .ios-hm-card {
+  -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+          backdrop-filter: blur(12px) saturate(140%) !important;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.88)) !important;
+}
+body.smooth-mode .ios-hm-aurora { filter: none !important; opacity: 0.55 !important; animation: none !important; }
+body.smooth-mode .ios-hm-icon::after { animation: none !important; filter: none !important; opacity: 0.4 !important; }
+body.smooth-mode .ios-hm-icon-hand-hour,
+body.smooth-mode .ios-hm-icon-hand-min,
+body.smooth-mode .ios-hm-count-dot,
+body.smooth-mode .ios-hm-day-dot,
+body.smooth-mode .ios-hm-day--today::after,
+body.smooth-mode .ios-hm-empty-ico,
+body.smooth-mode .ios-hm-empty-ring,
+body.smooth-mode .ios-hm-sidebar-eyebrow,
+body.smooth-mode .ios-hm-card,
+body.smooth-mode .ios-hm-header,
+body.smooth-mode .ios-hm-body { animation: none !important; }
+body.smooth-mode .ios-hm-card,
+body.smooth-mode .ios-hm-header,
+body.smooth-mode .ios-hm-body { opacity: 1 !important; transform: none !important; }
+body.smooth-mode .ios-hm-stat,
+body.smooth-mode .ios-hm-table-wrap {
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+  background: rgba(255,255,255,0.92) !important;
+}
+
+/* Sidebar pill liquid blob & shimmer — drop the continuous animations. */
+body.smooth-mode .nav-link::before,
+body.smooth-mode .nav-link::after,
+body.smooth-mode .nav-link .liquid-blob,
+body.smooth-mode .nav-link .nav-shimmer { animation: none !important; }
+
+/* Glass header buttons — keep static look, drop the orbiting blob + glint. */
+body.smooth-mode .glass-btn .liquid-blob,
+body.smooth-mode .glass-btn::before,
+body.smooth-mode .glass-btn::after { animation: none !important; }
+
+/* Premium page title — keep gold-foil but drop continuous shimmer/halo. */
+body.smooth-mode .page-title-cascade .cascade-letter,
+body.smooth-mode .page-title-cascade .title-glint,
+body.smooth-mode .page-title-cascade .title-halo,
+body.smooth-mode .page-title-cascade .title-underline,
+body.smooth-mode .page-title-cascade .star { animation: none !important; }
+body.smooth-mode .page-title-cascade .cascade-letter { opacity: 1 !important; transform: none !important; }
+body.smooth-mode .page-title-cascade .title-underline { transform: scaleX(1) !important; opacity: 1 !important; }
+
+/* Glass lock — keep static frosted look, drop float/halo/glint/sparkles. */
+body.smooth-mode .glass-lock-body,
+body.smooth-mode .glass-lock-shackle,
+body.smooth-mode .glass-lock-ring,
+body.smooth-mode .glass-lock-glint,
+body.smooth-mode .glass-lock-spark { animation: none !important; }
+
+/* Hourglass HIST icon — drop the constant sand trickle. */
+body.smooth-mode .hist-hourglass-sand,
+body.smooth-mode .hist-hourglass-stream,
+body.smooth-mode .hist-hourglass-pile,
+body.smooth-mode .hist-hourglass { animation: none !important; }
+
+/* Page transitions — drop slide, just instant fade. */
+body.smooth-mode .page-transition,
+body.smooth-mode .ripple-burst { animation: none !important; }
+
+/* Reduce hover scale to a simpler color change. */
+body.smooth-mode .ios-hm-day:hover,
+body.smooth-mode .nav-link:hover { transform: none !important; }

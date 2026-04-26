@@ -2334,6 +2334,110 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ═══════════════════════════════════════════════════
+// SMOOTH MODE TOGGLE
+// Per-device, localStorage-persisted preference that disables expensive
+// animations / blurs when the user wants maximum smoothness on a slow
+// device. NOT synced to Firebase — purely a local UI preference.
+// The toggle button lives in the bottom-right corner, hidden until the
+// cursor enters its proximity zone.
+// ═══════════════════════════════════════════════════
+const SMOOTH_MODE_KEY = 'mep_smooth_mode';
+
+function applySmoothMode(on) {
+  document.body.classList.toggle('smooth-mode', !!on);
+}
+
+function readSmoothMode() {
+  try { return localStorage.getItem(SMOOTH_MODE_KEY) === '1'; }
+  catch (e) { return false; }
+}
+
+function writeSmoothMode(on) {
+  try { localStorage.setItem(SMOOTH_MODE_KEY, on ? '1' : '0'); }
+  catch (e) { /* private mode / quota — ignore, still apply in-session */ }
+}
+
+function installSmoothModeToggle() {
+  if (document.getElementById('smooth-mode-zone')) return;
+
+  // Apply persisted state ASAP so the page renders correctly on first paint.
+  applySmoothMode(readSmoothMode());
+
+  const zone = document.createElement('div');
+  zone.id = 'smooth-mode-zone';
+  zone.className = 'smooth-mode-zone no-print';
+  zone.setAttribute('aria-hidden', 'false');
+
+  zone.innerHTML = `
+    <button id="smooth-mode-btn" class="smooth-mode-btn" type="button" aria-pressed="false" aria-label="Toggle smooth mode">
+      <span class="smooth-mode-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+      </span>
+      <span class="smooth-mode-lbl">Smooth Mode</span>
+    </button>
+  `;
+
+  document.body.appendChild(zone);
+
+  const btn = zone.querySelector('#smooth-mode-btn');
+
+  function syncBtn() {
+    const on = document.body.classList.contains('smooth-mode');
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.classList.toggle('is-on', on);
+    const lbl = btn.querySelector('.smooth-mode-lbl');
+    if (lbl) lbl.textContent = on ? 'Smooth Mode · ON' : 'Smooth Mode';
+  }
+  syncBtn();
+
+  btn.addEventListener('click', () => {
+    const next = !document.body.classList.contains('smooth-mode');
+    applySmoothMode(next);
+    writeSmoothMode(next);
+    syncBtn();
+    // Tiny tactile feedback
+    btn.classList.remove('is-tap');
+    void btn.offsetWidth;
+    btn.classList.add('is-tap');
+  });
+
+  // Cursor-proximity reveal — button stays invisible until the pointer
+  // gets close to the bottom-right corner. We reveal it within 180 px of
+  // the corner, hide otherwise. Touch users get a short reveal whenever
+  // they tap anywhere (so it's discoverable) and on first load.
+  const REVEAL_RADIUS = 180;
+  const TOUCH_REVEAL_MS = 1800;
+  let hideTimer = null;
+  function reveal(persistent) {
+    zone.classList.add('is-near');
+    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+    if (!persistent) {
+      hideTimer = setTimeout(() => zone.classList.remove('is-near'),
+                              TOUCH_REVEAL_MS);
+    }
+  }
+  function hide() {
+    if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+    zone.classList.remove('is-near');
+  }
+  document.addEventListener('mousemove', (e) => {
+    const dx = window.innerWidth  - e.clientX;
+    const dy = window.innerHeight - e.clientY;
+    if (dx < REVEAL_RADIUS && dy < REVEAL_RADIUS) reveal(true);
+    else hide();
+  }, { passive: true });
+  document.addEventListener('touchstart', () => reveal(false), { passive: true });
+  // Brief peek on first paint so users discover it exists.
+  setTimeout(() => reveal(false), 400);
+}
+
+document.addEventListener('DOMContentLoaded', installSmoothModeToggle);
+// Apply right away in case DOMContentLoaded already fired (e.g. injected late)
+if (document.readyState !== 'loading') applySmoothMode(readSmoothMode());
+
+// ═══════════════════════════════════════════════════
 // PWA INSTALL PROMPT SYSTEM
 // ═══════════════════════════════════════════════════
 

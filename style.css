@@ -2252,6 +2252,15 @@ input[type="number"]:focus {
   line-height: 1;
 }
 
+.ot-export-clock {
+  min-width: 244px;
+}
+
+.ot-export-clock strong {
+  font-size: 42px;
+  letter-spacing: -0.06em;
+}
+
 .ot-export-meta {
   position: relative;
   display: flex;

@@ -1688,6 +1688,51 @@ tr:hover {
   opacity: 0.55;
 }
 
+.a4-report .dashboard-section-cell {
+  padding: 0.5rem !important;
+  background: #fff7ed !important;
+  border-right: 1px solid #f59e0b !important;
+}
+
+.a4-report .dashboard-section-marker {
+  overflow: visible !important;
+  padding: 0.8rem 0.55rem !important;
+  border: 2px solid #f59e0b !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.a4-report .dashboard-section-marker::before,
+.a4-report .dashboard-section-marker::after {
+  display: none !important;
+}
+
+.a4-report .dashboard-section-label {
+  background: none !important;
+  -webkit-background-clip: border-box !important;
+          background-clip: border-box !important;
+  -webkit-text-fill-color: #92400e !important;
+          color: #92400e !important;
+  filter: none !important;
+  font-size: 1.45rem !important;
+}
+
+.a4-report .dashboard-section-arrow-wrap {
+  color: #b45309 !important;
+  background: #fef3c7 !important;
+  border: 1px solid #f59e0b !important;
+  box-shadow: none !important;
+}
+
+.a4-report .dashboard-section-arrow {
+  filter: none !important;
+}
+
+.a4-report .dashboard-section-arrow-glow {
+  display: none !important;
+}
+
 input[type="number"] {
   display: block;
   margin: 0 auto;

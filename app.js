@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.23';
+const APP_VERSION = '2.6.24';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -2053,6 +2053,38 @@ function exportReport() {
   clone.querySelectorAll('.report-header-flex').forEach(el => {
     el.style.background = `linear-gradient(135deg, rgba(255,255,255,0.86), ${rgbaFromHex(themeSoft, 0.42)})`;
     el.style.boxShadow = `0 14px 42px ${rgbaFromHex(themeMain, 0.18)}`;
+  });
+  clone.querySelectorAll('.dashboard-section-cell').forEach(cell => {
+    cell.style.setProperty('background', '#fff7ed', 'important');
+    cell.style.setProperty('border-right', '1px solid #f59e0b', 'important');
+    cell.style.setProperty('padding', '0.5rem', 'important');
+  });
+  clone.querySelectorAll('.dashboard-section-marker').forEach(marker => {
+    marker.style.setProperty('background', '#ffffff', 'important');
+    marker.style.setProperty('border', '2px solid #f59e0b', 'important');
+    marker.style.setProperty('border-radius', '18px', 'important');
+    marker.style.setProperty('box-shadow', 'none', 'important');
+    marker.style.setProperty('overflow', 'visible', 'important');
+    marker.style.setProperty('padding', '0.8rem 0.55rem', 'important');
+  });
+  clone.querySelectorAll('.dashboard-section-label').forEach(label => {
+    label.style.setProperty('background', 'none', 'important');
+    label.style.setProperty('-webkit-background-clip', 'border-box', 'important');
+    label.style.setProperty('background-clip', 'border-box', 'important');
+    label.style.setProperty('-webkit-text-fill-color', '#92400e', 'important');
+    label.style.setProperty('color', '#92400e', 'important');
+    label.style.setProperty('filter', 'none', 'important');
+    label.style.setProperty('font-family', "'Fraunces', Georgia, 'Times New Roman', serif", 'important');
+    label.style.setProperty('font-size', '1.45rem', 'important');
+  });
+  clone.querySelectorAll('.dashboard-section-arrow-wrap').forEach(wrap => {
+    wrap.style.setProperty('background', '#fef3c7', 'important');
+    wrap.style.setProperty('border', '1px solid #f59e0b', 'important');
+    wrap.style.setProperty('box-shadow', 'none', 'important');
+    wrap.style.setProperty('color', '#b45309', 'important');
+  });
+  clone.querySelectorAll('.dashboard-section-arrow path').forEach(path => {
+    path.setAttribute('stroke', '#b45309');
   });
 
   // Force absent values to red in exported JPG

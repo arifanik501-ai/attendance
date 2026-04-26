@@ -3621,9 +3621,12 @@ body[data-theme="parrot"] {
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: rgba(20, 15, 30, 0.55);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  /* Slightly darker scrim instead of double backdrop-filter — only the card
+     blurs the page behind it, which is much cheaper than blurring the whole
+     viewport on top of the card's own blur (especially on mobile GPUs). */
+  background: rgba(20, 15, 30, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3639,9 +3642,11 @@ body[data-theme="parrot"] {
   height: min(88vh, 820px);
   border-radius: 32px;
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(255,255,255,0.82), rgba(255,255,255,0.66));
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  backdrop-filter: blur(40px) saturate(180%);
+  /* Bumped opacity so we can reduce the GPU-heavy backdrop-filter from
+     blur(40px) → blur(18px) without the card looking transparent. */
+  background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(255,255,255,0.84));
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
   box-shadow:
     0 30px 60px -15px rgba(10, 5, 30, 0.35),
     0 10px 30px -10px rgba(10, 5, 30, 0.25),
@@ -3714,8 +3719,6 @@ body[data-theme="parrot"] {
   color: #1c1134;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  -webkit-backdrop-filter: blur(6px);
-          backdrop-filter: blur(6px);
   transition: background 0.2s, transform 0.2s, color 0.2s;
 }
 .ios-hm-close:hover { background: rgba(239,68,68,0.12); color: #ef4444; transform: scale(1.06); }
@@ -3934,9 +3937,7 @@ body[data-theme="parrot"] {
   flex-wrap: wrap;
 }
 .ios-hm-stat {
-  background: rgba(255,255,255,0.75);
-  -webkit-backdrop-filter: blur(10px);
-          backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.85);
   border-radius: 14px;
   padding: 10px 18px;
   text-align: center;
@@ -3964,9 +3965,7 @@ body[data-theme="parrot"] {
 .ios-hm-stat--absent   .ios-hm-stat-value { color: #ef4444; }
 
 .ios-hm-table-wrap {
-  background: rgba(255,255,255,0.7);
-  -webkit-backdrop-filter: blur(14px);
-          backdrop-filter: blur(14px);
+  background: rgba(255,255,255,0.82);
   border-radius: 18px;
   overflow: hidden;
   box-shadow:
@@ -4281,58 +4280,58 @@ body[data-theme="parrot"] {
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
     inset 0 -1px 0 rgba(167, 139, 250, 0.18);
 }
+/* Aurora blobs are pure radial gradients — NO `filter: blur` so the GPU
+   doesn't have to re-rasterize them every frame. The gradient stops are
+   already soft enough to read as a glow, and animations stay on the
+   compositor (transform/opacity only). */
 .ios-hm-aurora {
   position: absolute;
   z-index: 0;
   pointer-events: none;
-  filter: blur(42px);
-  opacity: 0.75;
-  will-change: transform, opacity;
+  opacity: 0.85;
+  will-change: transform;
 }
 .ios-hm-aurora-1 {
-  top: -14%;
-  left: -8%;
-  width: 42%;
-  height: 42%;
-  background: radial-gradient(circle at 30% 40%,
-    rgba(167, 139, 250, 0.55) 0%,
-    rgba(124, 58, 237, 0.32) 35%,
-    transparent 70%);
-  animation: ios-hm-aurora-drift-a 22s ease-in-out infinite;
+  top: -20%;
+  left: -12%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(closest-side,
+    rgba(167, 139, 250, 0.45) 0%,
+    rgba(167, 139, 250, 0.22) 40%,
+    rgba(167, 139, 250, 0) 75%);
+  animation: ios-hm-aurora-drift-a 28s ease-in-out infinite;
 }
 .ios-hm-aurora-2 {
-  bottom: -16%;
-  right: -10%;
-  width: 50%;
-  height: 50%;
-  background: radial-gradient(circle at 70% 60%,
-    rgba(236, 72, 153, 0.35) 0%,
-    rgba(244, 114, 182, 0.18) 40%,
-    transparent 72%);
-  animation: ios-hm-aurora-drift-b 26s ease-in-out infinite;
+  bottom: -24%;
+  right: -14%;
+  width: 64%;
+  height: 64%;
+  background: radial-gradient(closest-side,
+    rgba(236, 72, 153, 0.28) 0%,
+    rgba(236, 72, 153, 0.12) 45%,
+    rgba(236, 72, 153, 0) 78%);
+  animation: ios-hm-aurora-drift-b 32s ease-in-out infinite;
 }
+/* Third aurora is a static accent (no animation) so we keep visual richness
+   without an extra animated layer compositing every frame. */
 .ios-hm-aurora-3 {
-  top: 30%;
-  right: 12%;
-  width: 30%;
-  height: 30%;
-  background: radial-gradient(circle at 50% 50%,
-    rgba(251, 191, 36, 0.25) 0%,
-    rgba(245, 158, 11, 0.10) 40%,
-    transparent 70%);
-  animation: ios-hm-aurora-drift-c 18s ease-in-out infinite;
+  top: 32%;
+  right: 14%;
+  width: 36%;
+  height: 36%;
+  background: radial-gradient(closest-side,
+    rgba(251, 191, 36, 0.22) 0%,
+    rgba(245, 158, 11, 0.08) 45%,
+    rgba(245, 158, 11, 0) 78%);
 }
 @keyframes ios-hm-aurora-drift-a {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50%      { transform: translate3d(4%, 6%, 0) scale(1.08); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(3%, 4%, 0); }
 }
 @keyframes ios-hm-aurora-drift-b {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.7; }
-  50%      { transform: translate3d(-5%, -4%, 0) scale(1.12); opacity: 0.85; }
-}
-@keyframes ios-hm-aurora-drift-c {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.55; }
-  50%      { transform: translate3d(-3%, 5%, 0) scale(1.1); opacity: 0.8; }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(-3%, -2%, 0); }
 }
 /* Keep all inner content above the aurora layer */
 .ios-hm-card > .ios-hm-header,
@@ -4351,38 +4350,28 @@ body[data-theme="parrot"] {
     0 3px 8px -2px rgba(76, 29, 149, 0.35),
     inset 0 1px 0 rgba(255,255,255,0.6);
 }
+/* Static violet glow — replaces the previous rotating + blurred conic halo,
+   which forced the GPU to re-rasterize a 60×60 px blur layer every frame. */
 .ios-hm-icon::after {
   content: '';
   position: absolute;
-  inset: -4px;
+  inset: -3px;
   border-radius: 20px;
-  background: conic-gradient(from 0deg,
-    rgba(167,139,250,0) 0%,
-    rgba(167,139,250,0.55) 25%,
-    rgba(167,139,250,0) 50%,
-    rgba(167,139,250,0.55) 75%,
-    rgba(167,139,250,0) 100%);
-  filter: blur(6px);
-  opacity: 0.75;
+  background: radial-gradient(closest-side,
+    rgba(167,139,250,0.4) 0%,
+    rgba(167,139,250,0) 75%);
   z-index: -1;
-  animation: ios-hm-icon-halo 4s linear infinite;
-}
-@keyframes ios-hm-icon-halo {
-  to { transform: rotate(360deg); }
+  pointer-events: none;
 }
 .ios-hm-icon-svg { display: block; }
-.ios-hm-icon-hand-hour {
-  transform-origin: 12px 12px;
-  transform-box: fill-box;
-  animation: ios-hm-tick-hour 60s linear infinite;
-}
+/* Only the minute hand ticks; the hour hand is static. Both running was
+   essentially redundant visual noise and a tiny extra compositor cost.    */
 .ios-hm-icon-hand-min {
   transform-origin: 12px 12px;
   transform-box: fill-box;
-  animation: ios-hm-tick-min 5s linear infinite;
+  animation: ios-hm-tick-min 12s linear infinite;
 }
-@keyframes ios-hm-tick-hour { to { transform: rotate(360deg); } }
-@keyframes ios-hm-tick-min  { to { transform: rotate(360deg); } }
+@keyframes ios-hm-tick-min { to { transform: rotate(360deg); } }
 
 /* -- Title: subtle gradient fill -- */
 .ios-hm-title {

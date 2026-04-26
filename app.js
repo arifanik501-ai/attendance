@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.26';
+const APP_VERSION = '2.6.27';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -70,6 +70,7 @@ let currentActivePageId = null;
 const SESSION_DEVICE_ID = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 const CUSTOM_PERIOD_CUTOFF_DAY = 26;
 const META_STATE_KEYS = ['history', 'branchAttendance'];
+const SMOOTH_MODE_STORAGE_KEY = 'mep_smooth_mode_enabled';
 
 function isMetaStateKey(key) {
   return META_STATE_KEYS.includes(key);
@@ -2557,6 +2558,53 @@ function initHighRefreshMotion() {
   document.documentElement.style.setProperty('--motion-frame', `${(1000 / 120).toFixed(3)}ms`);
 }
 
+function isSmoothModeEnabled() {
+  return localStorage.getItem(SMOOTH_MODE_STORAGE_KEY) === 'true';
+}
+
+function applySmoothModeState(enabled = isSmoothModeEnabled()) {
+  document.documentElement.classList.toggle('smooth-mode', enabled);
+  document.body?.classList.toggle('smooth-mode', enabled);
+  const btn = document.getElementById('smooth-mode-toggle');
+  if (!btn) return;
+  btn.classList.toggle('active', enabled);
+  btn.setAttribute('aria-pressed', String(enabled));
+  btn.setAttribute('aria-label', enabled ? 'Disable optimized smooth mode' : 'Enable optimized smooth mode');
+  const label = btn.querySelector('.smooth-mode-label');
+  if (label) label.textContent = enabled ? 'Smooth On' : 'Smooth';
+}
+
+function toggleSmoothMode() {
+  const enabled = !isSmoothModeEnabled();
+  localStorage.setItem(SMOOTH_MODE_STORAGE_KEY, String(enabled));
+  applySmoothModeState(enabled);
+}
+
+function initSmoothModeToggle() {
+  applySmoothModeState();
+  if (document.getElementById('smooth-mode-toggle')) return;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'smooth-mode-toggle';
+  btn.className = 'smooth-mode-toggle no-print';
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 13a8 8 0 0 1 14.7-4.4"></path>
+      <path d="M20 4v5h-5"></path>
+      <path d="M20 11a8 8 0 0 1-14.7 4.4"></path>
+      <path d="M4 20v-5h5"></path>
+    </svg>
+    <span class="smooth-mode-label">Smooth</span>
+  `;
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleSmoothMode();
+  });
+  document.body.appendChild(btn);
+  applySmoothModeState();
+}
+
 function nextMotionFrame(callback) {
   requestAnimationFrame(() => requestAnimationFrame(callback));
 }
@@ -2709,6 +2757,7 @@ function setupFirebaseListener() {
 // Auto-initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   initHighRefreshMotion();
+  initSmoothModeToggle();
   lockMobilePortraitOrientation();
   initThemePicker();
 

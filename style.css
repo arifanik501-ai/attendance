@@ -261,9 +261,21 @@ tbody tr:nth-child(n+21) {
 
 html.smooth-mode {
   scroll-behavior: auto;
+  color-scheme: light;
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(226, 232, 240, 0.92);
+  --glass-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
   --motion-fast: 0.001s;
   --motion-standard: 0.001s;
   --motion-slow: 0.001s;
+}
+
+html.smooth-mode body {
+  background:
+    linear-gradient(135deg, rgba(255, 247, 237, 0.96) 0%, rgba(254, 243, 199, 0.9) 48%, rgba(209, 250, 229, 0.92) 100%) !important;
+  background-attachment: scroll !important;
+  transition: none !important;
+  will-change: auto !important;
 }
 
 html.smooth-mode *,
@@ -275,6 +287,74 @@ html.smooth-mode *::after {
   transition-duration: 0.001s !important;
   transition-delay: 0s !important;
   scroll-behavior: auto !important;
+  will-change: auto !important;
+}
+
+html.smooth-mode .high-refresh-motion,
+html.smooth-mode .glass-card,
+html.smooth-mode .page-header,
+html.smooth-mode .table-container,
+html.smooth-mode .sidebar,
+html.smooth-mode .nav-link,
+html.smooth-mode .btn,
+html.smooth-mode .theme-fab,
+html.smooth-mode .theme-dropdown,
+html.smooth-mode .theme-backdrop,
+html.smooth-mode .theme-studio-hero,
+html.smooth-mode .theme-option,
+html.smooth-mode .theme-fab-btn,
+html.smooth-mode .fab-child,
+html.smooth-mode .solid-fab-btn,
+html.smooth-mode .smooth-mode-toggle,
+html.smooth-mode .clock-widget,
+html.smooth-mode .analog-clock,
+html.smooth-mode .ios-hm-overlay,
+html.smooth-mode .ios-hm-card,
+html.smooth-mode .branch-att-card,
+html.smooth-mode .branch-att-table th,
+html.smooth-mode .branch-att-table td,
+html.smooth-mode .ot-dashboard-wrap,
+html.smooth-mode .ot-dashboard-stats div,
+html.smooth-mode .ot-dashboard-table th,
+html.smooth-mode .ot-dashboard-table td,
+html.smooth-mode .entry-input,
+html.smooth-mode .pin-box {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+html.smooth-mode .glass-card,
+html.smooth-mode .page-header,
+html.smooth-mode .table-container,
+html.smooth-mode .sidebar,
+html.smooth-mode .theme-dropdown,
+html.smooth-mode .clock-widget,
+html.smooth-mode .ios-hm-card,
+html.smooth-mode .branch-att-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+html.smooth-mode .clock-widget::before,
+html.smooth-mode .clock-widget::after,
+html.smooth-mode .analog-clock::before,
+html.smooth-mode .analog-clock::after,
+html.smooth-mode .branch-att-card::before,
+html.smooth-mode .branch-modal-card::before,
+html.smooth-mode .theme-swatch-sheen,
+html.smooth-mode .theme-ripple,
+html.smooth-mode .glass-btn-ripple,
+html.smooth-mode .nav-link-ripple,
+html.smooth-mode .page-title-halo,
+html.smooth-mode .page-title-stars,
+html.smooth-mode .ios-hm-aurora,
+html.smooth-mode .glass-lock-halo,
+html.smooth-mode .glass-lock-ring,
+html.smooth-mode .glass-lock-glint,
+html.smooth-mode .glass-lock-burst,
+html.smooth-mode .glass-lock-sparkle {
+  display: none !important;
 }
 
 html.smooth-mode .nav-link,
@@ -291,6 +371,20 @@ html.smooth-mode .glass-lock {
   will-change: auto !important;
 }
 
+html.smooth-mode .clock-premium-badge::before,
+html.smooth-mode .hour-hand,
+html.smooth-mode .min-hand,
+html.smooth-mode .second-hand,
+html.smooth-mode .clock-center,
+html.smooth-mode .push-icon,
+html.smooth-mode .page-title-name,
+html.smooth-mode .page-title-letter,
+html.smooth-mode .branch-overview-mark.checked,
+html.smooth-mode .ot-dashboard-cell span {
+  filter: none !important;
+  box-shadow: none !important;
+}
+
 html.smooth-mode .nav-link,
 html.smooth-mode .btn.glass-btn,
 html.smooth-mode .theme-fab,
@@ -300,6 +394,42 @@ html.smooth-mode tbody tr,
 html.smooth-mode .scroll-reveal {
   transform: translateZ(0);
   backface-visibility: hidden;
+}
+
+html.smooth-mode .scroll-reveal,
+html.smooth-mode tbody tr {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html.smooth-mode .analog-clock,
+html.smooth-mode .clock-widget,
+html.smooth-mode .nav-link,
+html.smooth-mode .btn,
+html.smooth-mode .solid-fab-btn,
+html.smooth-mode .smooth-mode-toggle,
+html.smooth-mode .entry-input,
+html.smooth-mode .pin-box {
+  contain: layout paint;
+}
+
+html.smooth-mode .theme-dropdown,
+html.smooth-mode .branch-table-wrap,
+html.smooth-mode .ot-dashboard-wrap,
+html.smooth-mode .table-container {
+  overscroll-behavior: contain;
+}
+
+html.smooth-mode .smooth-mode-toggle,
+html.smooth-mode .smooth-mode-toggle:hover,
+html.smooth-mode .smooth-mode-toggle:focus-visible {
+  opacity: 1;
+  transform: none !important;
+}
+
+html.smooth-mode .smooth-mode-toggle.active {
+  background: rgba(220, 252, 231, 0.96) !important;
+  border-color: rgba(34, 197, 94, 0.32) !important;
 }
 
 /* Disable animations for JPG export */

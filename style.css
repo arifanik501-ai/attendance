@@ -7062,16 +7062,18 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
   75%      { transform: translateX(-2px) rotate(-1deg); }
 }
 
-/* Green "unlock" rings that ripple outward on unlock */
+/* Green "unlock" rings that ripple outward on unlock.
+   transform-box: fill-box makes transform-origin relative to the
+   element's own bounding box, so "center" = the circle's center. */
 .glass-lock-ring {
-  transform-origin: 60px 82px;
+  transform-origin: center;
   transform-box: fill-box;
   opacity: 0;
 }
 
 /* Bright light burst that erupts from the keyhole on unlock */
 .glass-lock-burst {
-  transform-origin: 60px 96px;
+  transform-origin: center;
   transform-box: fill-box;
   opacity: 0;
   transform: scale(0.15);

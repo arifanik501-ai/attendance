@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.28';
+const APP_VERSION = '2.6.29';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1038,6 +1038,10 @@ function _renderEntryContent(pageId) {
 }
 
 function exportEntryReport(pageId, title) {
+  return runWithOriginalExportMotion(() => exportEntryReportOriginal(pageId, title));
+}
+
+function exportEntryReportOriginal(pageId, title) {
   const content = document.getElementById('report-container');
   const exportScale = Math.max(8, Math.min(10, Math.ceil((window.devicePixelRatio || 1) * 4)));
   const exportTheme = getActiveTheme();
@@ -1159,7 +1163,7 @@ function exportEntryReport(pageId, title) {
     return;
   }
 
-  html2canvas(container, {
+  return html2canvas(container, {
     scale: exportScale,
     backgroundColor: '#ffffff',
     useCORS: true,
@@ -1604,6 +1608,10 @@ function scrollOvertimeDashboardToToday() {
 }
 
 window.downloadOvertimeAttendanceJpg = function () {
+  return runWithOriginalExportMotion(downloadOvertimeAttendanceJpgOriginal);
+};
+
+function downloadOvertimeAttendanceJpgOriginal() {
   const exportTheme = getActiveTheme();
   const periodOffset = document.getElementById('overtime-dashboard-report')
     ? getOvertimeDashboardPeriodOffset()
@@ -1621,7 +1629,7 @@ window.downloadOvertimeAttendanceJpg = function () {
     return;
   }
 
-  html2canvas(exportNode.querySelector('.ot-export-sheet'), {
+  return html2canvas(exportNode.querySelector('.ot-export-sheet'), {
     scale: Math.max(2, Math.min(3, window.devicePixelRatio || 2)),
     backgroundColor: exportTheme.bg[0],
     useCORS: true,
@@ -1638,7 +1646,7 @@ window.downloadOvertimeAttendanceJpg = function () {
     exportNode.remove();
     alert('Export failed. Please try again.');
   });
-};
+}
 
 // Exactly mapping the structure of Excel rows
 const EXACT_DASHBOARD_ROWS = [
@@ -2047,6 +2055,10 @@ function updateClock() {
 }
 
 function exportReport() {
+  return runWithOriginalExportMotion(exportReportOriginal);
+}
+
+function exportReportOriginal() {
   if (window.forceSaveHistory) window.forceSaveHistory(true);
   const content = document.getElementById('export-content');
   const exportScale = Math.max(8, Math.min(10, Math.ceil((window.devicePixelRatio || 1) * 4)));
@@ -2162,7 +2174,7 @@ function exportReport() {
   });
 
   // Use configuration to ensure entire table renders
-  html2canvas(clone, {
+  return html2canvas(clone, {
     scale: exportScale,
     backgroundColor: '#ffffff',
     useCORS: true,
@@ -2622,6 +2634,36 @@ function initSmoothModeToggle() {
   });
   document.body.appendChild(btn);
   applySmoothModeState();
+}
+
+function runWithOriginalExportMotion(task) {
+  const html = document.documentElement;
+  const body = document.body;
+  const smoothEnabled = html.classList.contains('smooth-mode');
+  if (!smoothEnabled) return task();
+
+  html.classList.remove('smooth-mode');
+  body?.classList.remove('smooth-mode');
+  html.classList.add('export-original-motion');
+  body?.classList.add('export-original-motion');
+
+  const finish = () => {
+    html.classList.remove('export-original-motion');
+    body?.classList.remove('export-original-motion');
+    applySmoothModeState(true);
+  };
+
+  try {
+    const result = task();
+    if (result && typeof result.finally === 'function') {
+      return result.finally(finish);
+    }
+    finish();
+    return result;
+  } catch (err) {
+    finish();
+    throw err;
+  }
 }
 
 function nextMotionFrame(callback) {

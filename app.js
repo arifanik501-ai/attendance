@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.27';
+const APP_VERSION = '2.6.28';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -2553,6 +2553,12 @@ function lockMobilePortraitOrientation() {
 }
 
 function initHighRefreshMotion() {
+  if (isSmoothModeEnabled()) {
+    document.documentElement.classList.remove('high-refresh-motion');
+    document.documentElement.style.setProperty('--motion-target-fps', '60');
+    document.documentElement.style.setProperty('--motion-frame', `${(1000 / 60).toFixed(3)}ms`);
+    return;
+  }
   document.documentElement.classList.add('high-refresh-motion');
   document.documentElement.style.setProperty('--motion-target-fps', '120');
   document.documentElement.style.setProperty('--motion-frame', `${(1000 / 120).toFixed(3)}ms`);
@@ -2564,12 +2570,25 @@ function isSmoothModeEnabled() {
 
 function applySmoothModeState(enabled = isSmoothModeEnabled()) {
   document.documentElement.classList.toggle('smooth-mode', enabled);
+  document.documentElement.classList.toggle('high-refresh-motion', !enabled);
   document.body?.classList.toggle('smooth-mode', enabled);
+  document.documentElement.style.setProperty('--motion-target-fps', enabled ? '60' : '120');
+  document.documentElement.style.setProperty('--motion-frame', `${(1000 / (enabled ? 60 : 120)).toFixed(3)}ms`);
+  if (enabled) {
+    document.querySelectorAll('.scroll-reveal').forEach(el => el.classList.add('visible'));
+    document.querySelectorAll('tbody tr').forEach(row => {
+      row.style.opacity = '1';
+      row.style.transform = 'none';
+      row.style.transition = 'none';
+    });
+  }
   const btn = document.getElementById('smooth-mode-toggle');
   if (!btn) return;
   btn.classList.toggle('active', enabled);
   btn.setAttribute('aria-pressed', String(enabled));
   btn.setAttribute('aria-label', enabled ? 'Disable optimized smooth mode' : 'Enable optimized smooth mode');
+  btn.setAttribute('data-tip-title', enabled ? 'Smooth mode on' : 'Smooth mode');
+  btn.setAttribute('data-tip-desc', enabled ? 'Lag-free mode: lighter effects, fewer animations' : 'Turn on lighter effects for better performance');
   const label = btn.querySelector('.smooth-mode-label');
   if (label) label.textContent = enabled ? 'Smooth On' : 'Smooth';
 }
@@ -2610,6 +2629,16 @@ function nextMotionFrame(callback) {
 }
 
 function initScrollReveal() {
+  if (isSmoothModeEnabled()) {
+    document.querySelectorAll('.scroll-reveal').forEach(el => el.classList.add('visible'));
+    document.querySelectorAll('tbody tr').forEach(row => {
+      row.style.opacity = '1';
+      row.style.transform = 'none';
+      row.style.transition = 'none';
+    });
+    return;
+  }
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {

@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.29';
+const APP_VERSION = '2.6.30';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -1067,7 +1067,14 @@ function exportEntryReportOriginal(pageId, title) {
       <p style="font-weight:700; font-size:1.1rem; color:${themeDeep}; text-transform:uppercase; margin:0;">${title} Manpower Report</p>
     </div>
     <div style="text-align:right; flex-shrink:0;">
-      ${buildExportClockMarkup(exportClock, exportTheme)}
+      ${buildExportClockMarkup(exportClock, exportTheme, {
+        analogSize: 82,
+        widgetPadding: '0.62rem 0.78rem',
+        width: '172px',
+        digitalSize: '1.32rem',
+        dateSize: '0.76rem',
+        ampmSize: '0.66rem'
+      })}
     </div>
   `;
 
@@ -1486,12 +1493,12 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
         </div>
         <div class="ot-export-clock-shell">
           ${buildExportClockMarkup(clock, getActiveTheme(), {
-            analogSize: 66,
-            widgetPadding: '0.48rem 0.64rem',
-            width: '148px',
-            digitalSize: '1.12rem',
-            dateSize: '0.66rem',
-            ampmSize: '0.58rem'
+            analogSize: 90,
+            widgetPadding: '0.64rem 0.84rem',
+            width: '188px',
+            digitalSize: '1.42rem',
+            dateSize: '0.8rem',
+            ampmSize: '0.7rem'
           })}
         </div>
       </div>
@@ -2076,12 +2083,12 @@ function exportReportOriginal() {
   });
   clone.querySelectorAll('.clock-widget').forEach(clockWidget => {
     clockWidget.outerHTML = buildExportClockMarkup(exportClock, exportTheme, {
-      analogSize: 58,
-      widgetPadding: '0.44rem 0.6rem',
-      width: '124px',
-      digitalSize: '1.02rem',
-      dateSize: '0.6rem',
-      ampmSize: '0.52rem'
+      analogSize: 86,
+      widgetPadding: '0.64rem 0.82rem',
+      width: '182px',
+      digitalSize: '1.38rem',
+      dateSize: '0.78rem',
+      ampmSize: '0.68rem'
     });
   });
 

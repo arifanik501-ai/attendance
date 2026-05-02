@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.33';
+const APP_VERSION = '2.6.34';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -2277,8 +2277,56 @@ const THEMES = [
   { id: 'crimson',      name: 'Crimson Ruby',    desc: 'Ruby red plate',           swatch: 'linear-gradient(135deg, #fee2e2, #dc2626)',    palette: ['#fee2e2','#dc2626','#7f1d1d'], bg: ['#fef2f2','#fee2e2','#fca5a5'], contrast: '#ffffff' },
   { id: 'copper',       name: 'Copper Clay',     desc: 'Clay copper plate',        swatch: 'linear-gradient(135deg, #ffedd5, #c2410c)',    palette: ['#ffedd5','#c2410c','#431407'], bg: ['#fff7ed','#ffedd5','#fb923c'], contrast: '#ffffff' },
   { id: 'sapphire',     name: 'Sapphire Royal',  desc: 'Royal sapphire plate',     swatch: 'linear-gradient(135deg, #dbeafe, #2563eb)',    palette: ['#dbeafe','#2563eb','#172554'], bg: ['#eff6ff','#bfdbfe','#60a5fa'], contrast: '#ffffff' },
-  { id: 'olive',        name: 'Olive Grove',     desc: 'Earth olive plate',        swatch: 'linear-gradient(135deg, #fef9c3, #65a30d)',    palette: ['#fef9c3','#65a30d','#3f6212'], bg: ['#fefce8','#fef9c3','#bef264'], contrast: '#1a2e05' }
+  { id: 'olive',        name: 'Olive Grove',     desc: 'Earth olive plate',        swatch: 'linear-gradient(135deg, #fef9c3, #65a30d)',    palette: ['#fef9c3','#65a30d','#3f6212'], bg: ['#fefce8','#fef9c3','#bef264'], contrast: '#1a2e05' },
+  { id: 'aurora-lite',  name: 'Aurora Pearl',    desc: 'Soft aurora glass',        swatch: 'linear-gradient(135deg, #e0f2fe, #a7f3d0 48%, #fbcfe8)', palette: ['#e0f2fe','#14b8a6','#0f766e'], bg: ['#f8fafc','#e0f2fe','#a7f3d0'], contrast: '#042f2e' },
+  { id: 'opal-gold',    name: 'Opal Gold',       desc: 'Pearl gold ledger',        swatch: 'linear-gradient(135deg, #fff7ed, #fde68a 45%, #fb7185)', palette: ['#fff7ed','#f59e0b','#9a3412'], bg: ['#fffaf0','#fef3c7','#fed7aa'], contrast: '#431407' },
+  { id: 'lotus',        name: 'Lotus Pink',      desc: 'Premium lotus bloom',      swatch: 'linear-gradient(135deg, #fce7f3, #f472b6 52%, #a855f7)', palette: ['#fce7f3','#ec4899','#831843'], bg: ['#fdf2f8','#fce7f3','#f9a8d4'], contrast: '#500724' },
+  { id: 'fresh-leaf',   name: 'Fresh Leaf',      desc: 'Green productivity',       swatch: 'linear-gradient(135deg, #f7fee7, #4ade80 52%, #16a34a)', palette: ['#f7fee7','#22c55e','#166534'], bg: ['#f7fee7','#dcfce7','#86efac'], contrast: '#052e16' },
+  { id: 'powder-blue',  name: 'Powder Blue',     desc: 'Clean blue report',        swatch: 'linear-gradient(135deg, #f0f9ff, #93c5fd 54%, #2563eb)', palette: ['#f0f9ff','#3b82f6','#1e3a8a'], bg: ['#f8fafc','#dbeafe','#93c5fd'], contrast: '#172554' },
+  { id: 'cream-clay',   name: 'Cream Clay',      desc: 'Warm clay paper',          swatch: 'linear-gradient(135deg, #fffbeb, #fdba74 55%, #b45309)', palette: ['#fffbeb','#f97316','#7c2d12'], bg: ['#fff7ed','#fed7aa','#fdba74'], contrast: '#431407' },
+  { id: 'midnight',     name: 'Midnight Pro',    desc: 'Dark report cockpit',      swatch: 'linear-gradient(135deg, #020617, #1e3a8a 48%, #38bdf8)', palette: ['#bfdbfe','#3b82f6','#e0f2fe'], bg: ['#020617','#0f172a','#1e3a8a'], contrast: '#f8fafc', mode: 'dark' },
+  { id: 'obsidian-gold',name: 'Obsidian Gold',   desc: 'Black gold premium',       swatch: 'linear-gradient(135deg, #030712, #92400e 48%, #facc15)', palette: ['#fde68a','#f59e0b','#fef3c7'], bg: ['#030712','#111827','#78350f'], contrast: '#fffbeb', mode: 'dark' },
+  { id: 'neon-rose',    name: 'Neon Rose',       desc: 'Dark pink neon',           swatch: 'linear-gradient(135deg, #111827, #be185d 50%, #f9a8d4)', palette: ['#fbcfe8','#ec4899','#fce7f3'], bg: ['#111827','#3b0764','#831843'], contrast: '#fdf2f8', mode: 'dark' },
+  { id: 'cyber-teal',   name: 'Cyber Teal',      desc: 'Terminal teal glow',       swatch: 'linear-gradient(135deg, #042f2e, #0f766e 48%, #5eead4)', palette: ['#ccfbf1','#14b8a6','#f0fdfa'], bg: ['#042f2e','#0f172a','#134e4a'], contrast: '#ecfeff', mode: 'dark' },
+  { id: 'amethyst-noir',name: 'Amethyst Noir',   desc: 'Violet glass night',       swatch: 'linear-gradient(135deg, #1e1b4b, #7c3aed 50%, #d8b4fe)', palette: ['#ddd6fe','#8b5cf6','#faf5ff'], bg: ['#111827','#1e1b4b','#4c1d95'], contrast: '#faf5ff', mode: 'dark' },
+  { id: 'forest-night', name: 'Forest Night',    desc: 'Deep emerald dark',        swatch: 'linear-gradient(135deg, #052e16, #15803d 50%, #86efac)', palette: ['#bbf7d0','#22c55e','#f0fdf4'], bg: ['#052e16','#064e3b','#14532d'], contrast: '#f0fdf4', mode: 'dark' },
+  { id: 'deep-space',   name: 'Deep Space',      desc: 'Galaxy dark blue',         swatch: 'linear-gradient(135deg, #020617, #312e81 52%, #818cf8)', palette: ['#c7d2fe','#6366f1','#eef2ff'], bg: ['#020617','#111827','#312e81'], contrast: '#eef2ff', mode: 'dark' },
+  { id: 'carbon-blue',  name: 'Carbon Blue',     desc: 'Steel blue dark',          swatch: 'linear-gradient(135deg, #0f172a, #0369a1 52%, #7dd3fc)', palette: ['#bae6fd','#0ea5e9','#f0f9ff'], bg: ['#0f172a','#082f49','#075985'], contrast: '#f0f9ff', mode: 'dark' },
+  { id: 'plum-shadow',  name: 'Plum Shadow',     desc: 'Wine dark gallery',        swatch: 'linear-gradient(135deg, #1f1027, #9d174d 50%, #f0abfc)', palette: ['#f5d0fe','#d946ef','#fdf4ff'], bg: ['#1f1027','#4a044e','#831843'], contrast: '#fdf4ff', mode: 'dark' },
+  { id: 'slate-lime',   name: 'Slate Lime',      desc: 'Dark lime accent',         swatch: 'linear-gradient(135deg, #0f172a, #4d7c0f 50%, #bef264)', palette: ['#d9f99d','#84cc16','#f7fee7'], bg: ['#0f172a','#1a2e05','#365314'], contrast: '#f7fee7', mode: 'dark' },
+  { id: 'royal-night',  name: 'Royal Night',     desc: 'Navy royal neon',          swatch: 'linear-gradient(135deg, #172554, #4338ca 48%, #f0abfc)', palette: ['#e0e7ff','#6366f1','#faf5ff'], bg: ['#020617','#172554','#312e81'], contrast: '#f8fafc', mode: 'dark' },
+  { id: 'graphite',     name: 'Graphite Luxe',   desc: 'Charcoal neutral dark',    swatch: 'linear-gradient(135deg, #020617, #475569 48%, #e2e8f0)', palette: ['#e2e8f0','#64748b','#f8fafc'], bg: ['#020617','#111827','#334155'], contrast: '#f8fafc', mode: 'dark' }
 ];
+
+let activeThemeFilter = 'lite';
+
+function getThemeMode(theme) {
+  return theme?.mode === 'dark' ? 'dark' : 'lite';
+}
+
+function getThemeCountByMode(mode) {
+  return THEMES.filter(theme => getThemeMode(theme) === mode).length;
+}
+
+function updateThemeFilterSummary() {
+  const countLabel = document.getElementById('theme-hdr-count');
+  if (countLabel) {
+    countLabel.textContent = `${getThemeCountByMode(activeThemeFilter)} ${activeThemeFilter} themes`;
+  }
+}
+
+function setThemeFilter(mode = 'lite') {
+  activeThemeFilter = mode === 'dark' ? 'dark' : 'lite';
+  document.body.setAttribute('data-theme-filter', activeThemeFilter);
+  document.querySelectorAll('.theme-filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filterTheme === activeThemeFilter);
+    btn.setAttribute('aria-selected', btn.dataset.filterTheme === activeThemeFilter ? 'true' : 'false');
+  });
+  document.querySelectorAll('.theme-option').forEach(btn => {
+    btn.classList.toggle('theme-filter-hidden', btn.dataset.themeMode !== activeThemeFilter);
+  });
+  updateThemeFilterSummary();
+}
 
 function rgbaFromHex(hex, alpha) {
   const clean = hex.replace('#', '');
@@ -2296,6 +2344,12 @@ function getActiveTheme() {
 
 function getThemeBackground(theme, accentAlpha = 0.34) {
   const main = theme.palette[1];
+  if (getThemeMode(theme) === 'dark') {
+    return `
+      radial-gradient(circle at 12% 8%, ${rgbaFromHex(main, Math.min(accentAlpha + 0.08, 0.52))} 0%, transparent 35%),
+      radial-gradient(circle at 88% 82%, ${rgbaFromHex(theme.palette[0], 0.18)} 0%, transparent 42%),
+      linear-gradient(135deg, ${theme.bg[0]} 0%, ${theme.bg[1]} 52%, ${theme.bg[2]} 100%)`;
+  }
   return `
     radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.62) 0%, transparent 40%),
     radial-gradient(circle at 85% 85%, ${rgbaFromHex(main, accentAlpha)} 0%, transparent 40%),
@@ -2356,12 +2410,13 @@ function applyThemeSurface(theme) {
   if (!theme) return;
   const [soft, main, deep] = theme.palette;
   document.body.style.setProperty('--theme-color', main);
-  document.body.style.setProperty('--total-bg', rgbaFromHex(soft, 0.72));
-  document.body.style.setProperty('--total-text', deep);
+  document.body.style.setProperty('--total-bg', rgbaFromHex(soft, getThemeMode(theme) === 'dark' ? 0.18 : 0.72));
+  document.body.style.setProperty('--total-text', getThemeMode(theme) === 'dark' ? (theme.contrast || soft) : deep);
   document.body.style.setProperty('--theme-contrast', theme.contrast || '#fff');
   document.body.style.setProperty('--glass-shadow', `0 15px 45px 0 ${rgbaFromHex(main, 0.24)}`);
   document.body.style.background = getThemeBackground(theme);
   document.body.style.backgroundAttachment = 'fixed';
+  document.body.classList.toggle('theme-dark-surface', getThemeMode(theme) === 'dark');
 }
 
 function setTheme(themeId) {
@@ -2401,6 +2456,10 @@ function setTheme(themeId) {
   }
   localStorage.setItem('mep_theme', themeId);
 
+  if (document.getElementById('theme-dropdown') && getThemeMode(selectedTheme) !== activeThemeFilter) {
+    setThemeFilter(getThemeMode(selectedTheme));
+  }
+
   // Update active state in dropdown
   document.querySelectorAll('.theme-option').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.theme === themeId);
@@ -2429,7 +2488,7 @@ function setTheme(themeId) {
 
 function pickRandomTheme() {
   const current = document.body.getAttribute('data-theme') || 'rose';
-  const pool = THEMES.filter(t => t.id !== current);
+  const pool = THEMES.filter(t => t.id !== current && getThemeMode(t) === activeThemeFilter);
   const next = pool[Math.floor(Math.random() * pool.length)];
   setTheme(next.id);
   // Subtle haptic-style pulse on the card
@@ -2470,14 +2529,16 @@ function initThemePicker() {
 
   const savedTheme = localStorage.getItem('mep_theme') || 'rose';
   const initialTheme = THEMES.find(t => t.id === savedTheme) || THEMES[0];
+  activeThemeFilter = getThemeMode(initialTheme);
 
   const cardsHtml = THEMES.map((t, i) => {
     const dotsHtml = t.palette.map(c => `<i style="background:${c}"></i>`).join('');
     const paletteSpans = t.palette.map(c => `<span style='background:${c}'></span>`).join('');
     const descHtml = `${t.desc}<span class='tt-pal'>${paletteSpans}</span>`;
     return `
-      <button class="theme-option ${t.id === savedTheme ? 'active' : ''}"
+      <button class="theme-option ${t.id === savedTheme ? 'active' : ''} ${getThemeMode(t) !== activeThemeFilter ? 'theme-filter-hidden' : ''}"
               data-theme="${t.id}"
+              data-theme-mode="${getThemeMode(t)}"
               style="--i:${i}; --tg:${t.swatch};"
               data-tip-title="${t.name}"
               data-tip-desc="${descHtml}"
@@ -2522,7 +2583,7 @@ function initThemePicker() {
           <div class="theme-hdr-text">
             <span class="theme-hdr-kicker">Personalize workspace</span>
             <span class="theme-hdr-title">Theme Studio</span>
-            <span class="theme-hdr-sub"><span id="theme-hdr-current">${(THEMES.find(x=>x.id===savedTheme)||{name:''}).name}</span> · ${THEMES.length} themes</span>
+            <span class="theme-hdr-sub"><span id="theme-hdr-current">${(THEMES.find(x=>x.id===savedTheme)||{name:''}).name}</span> · <span id="theme-hdr-count">${getThemeCountByMode(activeThemeFilter)} ${activeThemeFilter} themes</span></span>
           </div>
         </div>
         <button class="theme-hdr-close"
@@ -2558,6 +2619,27 @@ function initThemePicker() {
         </div>
       </div>
 
+      <div class="theme-filter-tabs" role="tablist" aria-label="Theme color modes">
+        <button class="theme-filter-btn ${activeThemeFilter === 'dark' ? 'active' : ''}"
+                data-filter-theme="dark"
+                role="tab"
+                aria-selected="${activeThemeFilter === 'dark'}"
+                onclick="event.stopPropagation(); setThemeFilter('dark');">
+          <span class="theme-filter-icon">🌙</span>
+          <span>Dark Themes</span>
+          <em>${getThemeCountByMode('dark')}</em>
+        </button>
+        <button class="theme-filter-btn ${activeThemeFilter === 'lite' ? 'active' : ''}"
+                data-filter-theme="lite"
+                role="tab"
+                aria-selected="${activeThemeFilter === 'lite'}"
+                onclick="event.stopPropagation(); setThemeFilter('lite');">
+          <span class="theme-filter-icon">☀️</span>
+          <span>Lite Themes</span>
+          <em>${getThemeCountByMode('lite')}</em>
+        </button>
+      </div>
+
       <div class="theme-grid">
         ${cardsHtml}
       </div>
@@ -2582,6 +2664,7 @@ function initThemePicker() {
     </div>
   `;
   document.body.appendChild(fab);
+  document.body.setAttribute('data-theme-filter', activeThemeFilter);
 
   // Call to populate change count immediately after injection
   setTimeout(_loadAndDisplayChangeCount, 100);
@@ -2605,6 +2688,7 @@ function initThemePicker() {
 window.pickRandomTheme = pickRandomTheme;
 window.closeThemeDropdown = closeThemeDropdown;
 window.toggleThemeDropdown = toggleThemeDropdown;
+window.setThemeFilter = setThemeFilter;
 
 
 // ═══════════════════════════════════════════════════

@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.31';
+const APP_VERSION = '2.6.32';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -713,7 +713,11 @@ function generateSidebar(activePage) {
       <button type="button" class="nav-link entry-sheet-toggle ${isEntryPageActive ? 'active' : ''}" aria-expanded="${isEntryMenuExpanded ? 'true' : 'false'}" aria-controls="entry-sheet-menu">
         ${entrySheetIcon}
         <span>Entry Sheet</span>
-        <span class="entry-sheet-chevron" aria-hidden="true">⌄</span>
+        <span class="entry-sheet-chevron" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 10l5 5 5-5"></path>
+          </svg>
+        </span>
       </button>
       <div id="entry-sheet-menu" class="entry-sheet-menu" ${isEntryMenuExpanded ? '' : 'hidden'}>`;
 

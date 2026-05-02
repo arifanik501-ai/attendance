@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.35';
+const APP_VERSION = '2.6.36';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -2283,7 +2283,37 @@ const THEMES = [
   { id: 'lotus',        name: 'Lotus Pink',      desc: 'Premium lotus bloom',      swatch: 'linear-gradient(135deg, #fce7f3, #f472b6 52%, #a855f7)', palette: ['#fce7f3','#ec4899','#831843'], bg: ['#fdf2f8','#fce7f3','#f9a8d4'], contrast: '#500724' },
   { id: 'fresh-leaf',   name: 'Fresh Leaf',      desc: 'Green productivity',       swatch: 'linear-gradient(135deg, #f7fee7, #4ade80 52%, #16a34a)', palette: ['#f7fee7','#22c55e','#166534'], bg: ['#f7fee7','#dcfce7','#86efac'], contrast: '#052e16' },
   { id: 'powder-blue',  name: 'Powder Blue',     desc: 'Clean blue report',        swatch: 'linear-gradient(135deg, #f0f9ff, #93c5fd 54%, #2563eb)', palette: ['#f0f9ff','#3b82f6','#1e3a8a'], bg: ['#f8fafc','#dbeafe','#93c5fd'], contrast: '#172554' },
-  { id: 'cream-clay',   name: 'Cream Clay',      desc: 'Warm clay paper',          swatch: 'linear-gradient(135deg, #fffbeb, #fdba74 55%, #b45309)', palette: ['#fffbeb','#f97316','#7c2d12'], bg: ['#fff7ed','#fed7aa','#fdba74'], contrast: '#431407' }
+  { id: 'cream-clay',   name: 'Cream Clay',      desc: 'Warm clay paper',          swatch: 'linear-gradient(135deg, #fffbeb, #fdba74 55%, #b45309)', palette: ['#fffbeb','#f97316','#7c2d12'], bg: ['#fff7ed','#fed7aa','#fdba74'], contrast: '#431407' },
+  { id: 'pearl-sunrise', name: 'Pearl Sunrise', desc: 'Pink gold morning', swatch: 'linear-gradient(135deg, #fff7ed, #fecdd3 45%, #f59e0b)', palette: ['#fff7ed','#fb7185','#9f1239'], bg: ['#fff7ed','#ffe4e6','#fdba74'], contrast: '#4c0519' },
+  { id: 'aqua-pearl', name: 'Aqua Pearl', desc: 'Aqua pearl shine', swatch: 'linear-gradient(135deg, #ecfeff, #99f6e4 48%, #0ea5e9)', palette: ['#ecfeff','#14b8a6','#155e75'], bg: ['#f0fdfa','#ccfbf1','#7dd3fc'], contrast: '#083344' },
+  { id: 'orchid-mist', name: 'Orchid Mist', desc: 'Orchid glass mist', swatch: 'linear-gradient(135deg, #faf5ff, #f0abfc 50%, #8b5cf6)', palette: ['#faf5ff','#d946ef','#6b21a8'], bg: ['#fdf4ff','#fae8ff','#e9d5ff'], contrast: '#4a044e' },
+  { id: 'lime-peach', name: 'Lime Peach', desc: 'Lime peach fusion', swatch: 'linear-gradient(135deg, #f7fee7, #fed7aa 50%, #84cc16)', palette: ['#f7fee7','#f97316','#3f6212'], bg: ['#f7fee7','#ffedd5','#bef264'], contrast: '#1a2e05' },
+  { id: 'sky-coral', name: 'Sky Coral', desc: 'Sky coral premium', swatch: 'linear-gradient(135deg, #e0f2fe, #fda4af 48%, #2563eb)', palette: ['#e0f2fe','#fb7185','#1e3a8a'], bg: ['#f0f9ff','#ffe4e6','#bfdbfe'], contrast: '#172554' },
+  { id: 'vanilla-mint', name: 'Vanilla Mint', desc: 'Vanilla mint clean', swatch: 'linear-gradient(135deg, #fffbeb, #a7f3d0 52%, #10b981)', palette: ['#fffbeb','#10b981','#065f46'], bg: ['#fffbeb','#ecfdf5','#a7f3d0'], contrast: '#064e3b' },
+  { id: 'rose-quartz', name: 'Rose Quartz', desc: 'Soft quartz rose', swatch: 'linear-gradient(135deg, #fff1f2, #f9a8d4 50%, #e11d48)', palette: ['#fff1f2','#f472b6','#9f1239'], bg: ['#fff1f2','#fce7f3','#f9a8d4'], contrast: '#831843' },
+  { id: 'citrus-splash', name: 'Citrus Splash', desc: 'Lemon orange splash', swatch: 'linear-gradient(135deg, #fefce8, #fde047 45%, #fb923c)', palette: ['#fefce8','#facc15','#9a3412'], bg: ['#fefce8','#fef3c7','#fdba74'], contrast: '#713f12' },
+  { id: 'glacier-blue', name: 'Glacier Blue', desc: 'Glacier blue glass', swatch: 'linear-gradient(135deg, #f8fafc, #bae6fd 52%, #0284c7)', palette: ['#f8fafc','#38bdf8','#075985'], bg: ['#f8fafc','#e0f2fe','#bae6fd'], contrast: '#0c4a6e' },
+  { id: 'pistachio-cream', name: 'Pistachio Cream', desc: 'Creamy pistachio', swatch: 'linear-gradient(135deg, #fefce8, #d9f99d 48%, #65a30d)', palette: ['#fefce8','#84cc16','#365314'], bg: ['#fefce8','#ecfccb','#d9f99d'], contrast: '#365314' },
+  { id: 'blush-violet', name: 'Blush Violet', desc: 'Blush violet blend', swatch: 'linear-gradient(135deg, #fce7f3, #c4b5fd 52%, #7c3aed)', palette: ['#fce7f3','#8b5cf6','#4c1d95'], bg: ['#fdf2f8','#ede9fe','#ddd6fe'], contrast: '#4c1d95' },
+  { id: 'teal-sand', name: 'Teal Sand', desc: 'Teal warm sand', swatch: 'linear-gradient(135deg, #fef3c7, #5eead4 50%, #0f766e)', palette: ['#fef3c7','#14b8a6','#134e4a'], bg: ['#fffbeb','#ccfbf1','#99f6e4'], contrast: '#134e4a' },
+  { id: 'apricot-ice', name: 'Apricot Ice', desc: 'Apricot ice glow', swatch: 'linear-gradient(135deg, #fff7ed, #fed7aa 48%, #06b6d4)', palette: ['#fff7ed','#f97316','#155e75'], bg: ['#fff7ed','#ffedd5','#cffafe'], contrast: '#7c2d12' },
+  { id: 'lilac-sky', name: 'Lilac Sky', desc: 'Lilac sky premium', swatch: 'linear-gradient(135deg, #f5f3ff, #bfdbfe 50%, #a855f7)', palette: ['#f5f3ff','#60a5fa','#6b21a8'], bg: ['#f5f3ff','#dbeafe','#e9d5ff'], contrast: '#4c1d95' },
+  { id: 'honeydew', name: 'Honeydew Silk', desc: 'Honeydew silk green', swatch: 'linear-gradient(135deg, #f7fee7, #bbf7d0 50%, #16a34a)', palette: ['#f7fee7','#22c55e','#14532d'], bg: ['#f7fee7','#dcfce7','#bbf7d0'], contrast: '#14532d' },
+  { id: 'ruby-cream', name: 'Ruby Cream', desc: 'Ruby cream plate', swatch: 'linear-gradient(135deg, #fff1f2, #fecaca 45%, #dc2626)', palette: ['#fff1f2','#ef4444','#7f1d1d'], bg: ['#fff1f2','#fee2e2','#fecaca'], contrast: '#7f1d1d' },
+  { id: 'turquoise-lime', name: 'Turquoise Lime', desc: 'Turquoise lime pop', swatch: 'linear-gradient(135deg, #ecfeff, #bef264 48%, #0d9488)', palette: ['#ecfeff','#84cc16','#0f766e'], bg: ['#ecfeff','#ecfccb','#99f6e4'], contrast: '#134e4a' },
+  { id: 'champagne', name: 'Champagne Glow', desc: 'Champagne premium', swatch: 'linear-gradient(135deg, #fffdf4, #fde68a 50%, #d97706)', palette: ['#fffdf4','#f59e0b','#78350f'], bg: ['#fffdf4','#fef3c7','#fde68a'], contrast: '#78350f' },
+  { id: 'powder-rose', name: 'Powder Rose', desc: 'Powder rose blue', swatch: 'linear-gradient(135deg, #eff6ff, #fbcfe8 52%, #3b82f6)', palette: ['#eff6ff','#ec4899','#1e40af'], bg: ['#eff6ff','#fce7f3','#bfdbfe'], contrast: '#1e3a8a' },
+  { id: 'jade-gold', name: 'Jade Gold', desc: 'Jade golden glass', swatch: 'linear-gradient(135deg, #ecfdf5, #fde68a 48%, #059669)', palette: ['#ecfdf5','#10b981','#065f46'], bg: ['#ecfdf5','#fef3c7','#a7f3d0'], contrast: '#064e3b' },
+  { id: 'blueberry-cream', name: 'Blueberry Cream', desc: 'Blueberry cream', swatch: 'linear-gradient(135deg, #eef2ff, #c4b5fd 48%, #4f46e5)', palette: ['#eef2ff','#6366f1','#312e81'], bg: ['#eef2ff','#e0e7ff','#c7d2fe'], contrast: '#312e81' },
+  { id: 'papaya', name: 'Papaya Smooth', desc: 'Papaya smooth glow', swatch: 'linear-gradient(135deg, #fff7ed, #fdba74 50%, #fb7185)', palette: ['#fff7ed','#f97316','#be123c'], bg: ['#fff7ed','#ffedd5','#fecdd3'], contrast: '#9a3412' },
+  { id: 'seafoam', name: 'Seafoam Pearl', desc: 'Seafoam pearl', swatch: 'linear-gradient(135deg, #f0fdfa, #67e8f9 50%, #0891b2)', palette: ['#f0fdfa','#06b6d4','#155e75'], bg: ['#f0fdfa','#ccfbf1','#a5f3fc'], contrast: '#164e63' },
+  { id: 'cotton-candy', name: 'Cotton Candy', desc: 'Candy pastel gradient', swatch: 'linear-gradient(135deg, #fdf2f8, #bfdbfe 50%, #f472b6)', palette: ['#fdf2f8','#60a5fa','#be185d'], bg: ['#fdf2f8','#dbeafe','#fbcfe8'], contrast: '#831843' },
+  { id: 'kiwi-frost', name: 'Kiwi Frost', desc: 'Kiwi frosted glass', swatch: 'linear-gradient(135deg, #f7fee7, #a7f3d0 50%, #65a30d)', palette: ['#f7fee7','#22c55e','#3f6212'], bg: ['#f7fee7','#dcfce7','#d9f99d'], contrast: '#365314' },
+  { id: 'mango-tango', name: 'Mango Tango', desc: 'Mango tango glow', swatch: 'linear-gradient(135deg, #fffbeb, #fbbf24 48%, #ea580c)', palette: ['#fffbeb','#f59e0b','#7c2d12'], bg: ['#fffbeb','#fef3c7','#fed7aa'], contrast: '#7c2d12' },
+  { id: 'lavender-mint', name: 'Lavender Mint', desc: 'Lavender mint glass', swatch: 'linear-gradient(135deg, #faf5ff, #99f6e4 50%, #a855f7)', palette: ['#faf5ff','#14b8a6','#6b21a8'], bg: ['#faf5ff','#ccfbf1','#e9d5ff'], contrast: '#4a044e' },
+  { id: 'pearl-indigo', name: 'Pearl Indigo', desc: 'Pearl indigo sheet', swatch: 'linear-gradient(135deg, #f8fafc, #c7d2fe 50%, #4338ca)', palette: ['#f8fafc','#6366f1','#312e81'], bg: ['#f8fafc','#e0e7ff','#c7d2fe'], contrast: '#312e81' },
+  { id: 'coral-mint', name: 'Coral Mint', desc: 'Coral mint premium', swatch: 'linear-gradient(135deg, #fff7ed, #5eead4 48%, #fb7185)', palette: ['#fff7ed','#14b8a6','#be123c'], bg: ['#fff7ed','#ccfbf1','#fecdd3'], contrast: '#831843' },
+  { id: 'golden-sky', name: 'Golden Sky', desc: 'Golden sky glass', swatch: 'linear-gradient(135deg, #eff6ff, #fde047 50%, #0ea5e9)', palette: ['#eff6ff','#eab308','#075985'], bg: ['#eff6ff','#fef9c3','#bae6fd'], contrast: '#075985' }
 ];
 
 function rgbaFromHex(hex, alpha) {

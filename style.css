@@ -723,6 +723,86 @@ h4 {
   line-height: 1.08;
 }
 
+.entry-sheet-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.entry-sheet-toggle {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  text-align: left;
+}
+
+.entry-sheet-toggle.active,
+.entry-sheet-nav.expanded .entry-sheet-toggle {
+  --nl-accent: #b45309;
+  --nl-accent-strong: #78350f;
+  --nl-tint: rgba(234, 179, 8, 0.14);
+  --nl-tint-strong: rgba(234, 179, 8, 0.32);
+  --nl-blob: rgba(250, 204, 21, 0.55);
+}
+
+.entry-sheet-chevron {
+  flex: 0 0 auto !important;
+  width: auto;
+  min-width: 1.3rem !important;
+  height: 1.3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--nl-tint-strong);
+  color: var(--nl-accent-strong);
+  font-size: 1.05rem;
+  line-height: 1;
+  transition: transform 0.28s var(--nl-ease, cubic-bezier(0.25, 0.46, 0.45, 0.94));
+}
+
+.entry-sheet-toggle[aria-expanded="true"] .entry-sheet-chevron {
+  transform: rotate(180deg);
+}
+
+.entry-sheet-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+  padding-left: 0.65rem;
+  animation: entrySheetMenuReveal var(--motion-standard) var(--motion-ease) both;
+}
+
+.entry-sheet-menu[hidden] {
+  display: none;
+}
+
+.entry-sheet-menu .nav-link {
+  min-height: 46px;
+  padding-top: 0.58rem;
+  padding-bottom: 0.58rem;
+  border-radius: 16px;
+}
+
+.entry-sheet-menu .nav-link svg {
+  flex-basis: 32px;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 7px;
+}
+
+@keyframes entrySheetMenuReveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 .dashboard-top-export {
   align-self: center;
   display: inline-flex;

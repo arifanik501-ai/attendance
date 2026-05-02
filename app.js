@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.30';
+const APP_VERSION = '2.6.31';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -591,6 +591,22 @@ function installSmoothNav() {
   window.__smoothNavInstalled = true;
 
   document.addEventListener('click', (e) => {
+    const entrySheetToggle = e.target.closest('.entry-sheet-toggle');
+    if (entrySheetToggle) {
+      e.preventDefault();
+      const entrySheetNav = entrySheetToggle.closest('.entry-sheet-nav');
+      const entrySheetMenu = entrySheetNav?.querySelector('.entry-sheet-menu');
+      const isExpanded = entrySheetToggle.getAttribute('aria-expanded') === 'true';
+      const nextExpanded = !isExpanded;
+
+      spawnRipple(entrySheetToggle, e, 'nav-link-ripple');
+      entrySheetToggle.setAttribute('aria-expanded', nextExpanded ? 'true' : 'false');
+      if (entrySheetNav) entrySheetNav.classList.toggle('expanded', nextExpanded);
+      if (entrySheetMenu) entrySheetMenu.hidden = !nextExpanded;
+      sessionStorage.setItem('entry_sheet_menu_expanded', nextExpanded ? 'true' : 'false');
+      return;
+    }
+
     // Non-navigating glass buttons: ripple + spring press only
     if (!__smoothNavInFlight) {
       const glassBtn = e.target.closest('.glass-btn');
@@ -654,15 +670,21 @@ if (document.readyState === 'loading') {
 }
 
 function generateSidebar(activePage) {
-  const pages = [
+  const entrySheetIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+  const dashboardPages = [
     { id: 'index', title: 'Dashboard', url: 'index.html', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>' },
-    { id: 'overtime-dashboard', title: 'Overtime Dashboard', url: 'index.html#overtime-dashboard', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 8h10M7 12h10M7 16h6"/><path d="M8 13l2 2 4-5"/></svg>' },
-    { id: 'anik', title: 'Entry (Anik)', url: 'entry.html?page=anik', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
-    { id: 'takbir', title: 'Entry (Takbir)', url: 'entry.html?page=takbir', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
-    { id: 'monir', title: 'Entry (Monir)', url: 'entry.html?page=monir', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
-    { id: 'anwar', title: 'Entry (Anwar)', url: 'entry.html?page=anwar', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
-    { id: 'bikash', title: 'Entry (Bikash)', url: 'entry.html?page=bikash', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' }
+    { id: 'overtime-dashboard', title: 'Overtime Dashboard', url: 'index.html#overtime-dashboard', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 8h10M7 12h10M7 16h6"/><path d="M8 13l2 2 4-5"/></svg>' }
   ];
+  const entryPages = [
+    { id: 'anik', title: 'Entry (Anik)', url: 'entry.html?page=anik', icon: entrySheetIcon },
+    { id: 'takbir', title: 'Entry (Takbir)', url: 'entry.html?page=takbir', icon: entrySheetIcon },
+    { id: 'monir', title: 'Entry (Monir)', url: 'entry.html?page=monir', icon: entrySheetIcon },
+    { id: 'anwar', title: 'Entry (Anwar)', url: 'entry.html?page=anwar', icon: entrySheetIcon },
+    { id: 'bikash', title: 'Entry (Bikash)', url: 'entry.html?page=bikash', icon: entrySheetIcon }
+  ];
+  const isEntryPageActive = entryPages.some(p => p.id === activePage);
+  const storedEntryMenuState = sessionStorage.getItem('entry_sheet_menu_expanded');
+  const isEntryMenuExpanded = isEntryPageActive || storedEntryMenuState === 'true';
 
   let html = `
     <div class="brand-container">
@@ -674,9 +696,30 @@ function generateSidebar(activePage) {
     </div>
     <div class="sidebar-divider"></div>
     <nav style="display:flex; flex-direction:column; gap:0.6rem;">`;
-  pages.forEach(p => {
+  dashboardPages.forEach(p => {
+    const isMainDashboard = p.id === 'index';
+
+    let specialClass = '';
+    if (isMainDashboard) specialClass = 'main-dashboard-link';
+    if (p.id === 'overtime-dashboard') specialClass = 'overtime-dashboard-link';
+
+    html += `<a href="${p.url}" class="nav-link ${specialClass} ${activePage === p.id ? 'active' : ''}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+      ${p.icon} <span>${p.title}</span>
+    </a>`;
+  });
+
+  html += `
+    <div class="entry-sheet-nav ${isEntryMenuExpanded ? 'expanded' : ''}">
+      <button type="button" class="nav-link entry-sheet-toggle ${isEntryPageActive ? 'active' : ''}" aria-expanded="${isEntryMenuExpanded ? 'true' : 'false'}" aria-controls="entry-sheet-menu">
+        ${entrySheetIcon}
+        <span>Entry Sheet</span>
+        <span class="entry-sheet-chevron" aria-hidden="true">⌄</span>
+      </button>
+      <div id="entry-sheet-menu" class="entry-sheet-menu" ${isEntryMenuExpanded ? '' : 'hidden'}>`;
+
+  entryPages.forEach(p => {
     const isSpecialPrimary = p.id === 'anik' || p.id === 'takbir';
-    const isSpecialSecondary = p.id !== 'index' && !isSpecialPrimary;
+    const isSpecialSecondary = !isSpecialPrimary;
     const isMainDashboard = p.id === 'index';
 
     let specialClass = '';
@@ -689,7 +732,7 @@ function generateSidebar(activePage) {
       ${p.icon} <span>${p.title}</span>
     </a>`;
   });
-  html += `</nav>`;
+  html += `</div></div></nav>`;
 
   html += `
     <div class="sidebar-divider"></div>

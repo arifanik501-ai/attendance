@@ -1506,64 +1506,115 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
   const dates = getCustomPeriodDates(period);
   const rows = getAllBranchAttendanceRows();
   const clock = getClockSnapshot();
+  const trackableDates = dates.filter(day => !day.isFuture);
+
+  let totalTicks = 0;
+  let activeSections = 0;
+
   const bodyRows = rows.map(row => {
     const periodState = getBranchAttendancePeriodState(state, row.pageId, period.key, false) || {};
     const dayMap = periodState[row.groupName] || {};
+    let rowTicks = 0;
     const dateCells = dates.map(day => {
       const checked = !day.isFuture && isTickValueChecked(dayMap[day.key]);
-      return `<td class="${day.isFriday ? 'friday' : ''} ${day.isFuture ? 'future' : ''}">${checked ? '✓' : ''}</td>`;
+      if (checked) rowTicks += 1;
+      const cls = [
+        'ot-export-cell',
+        checked ? 'is-checked' : 'is-empty',
+        day.isFriday ? 'is-friday' : '',
+        day.isToday ? 'is-today' : '',
+        day.isFuture ? 'is-future' : ''
+      ].filter(Boolean).join(' ');
+      return `<td class="${cls}"><span class="ot-export-mark">${checked ? '✓' : ''}</span></td>`;
     }).join('');
+    totalTicks += rowTicks;
+    if (rowTicks > 0) activeSections += 1;
+    const trackableDenominator = Math.max(trackableDates.length, 1);
     return `
       <tr>
         <td class="ot-export-branch">
           <strong>${row.groupName}</strong>
+          <em>${row.pageTitle}</em>
         </td>
         ${dateCells}
+        <td class="ot-export-total">
+          <strong>${rowTicks}</strong>
+          <span>/${trackableDenominator}</span>
+        </td>
       </tr>`;
   }).join('');
 
   const headerCells = dates.map(day => `
-    <th class="${day.isFriday ? 'friday' : ''} ${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}">
+    <th class="ot-export-date ${day.isFriday ? 'is-friday' : ''} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
       <b>${day.dayNumber}</b>
       <span>${day.weekday}</span>
     </th>
   `).join('');
 
+  const totalSlots = rows.length * trackableDates.length;
+  const coverage = totalSlots > 0 ? Math.round((totalTicks / totalSlots) * 100) : 0;
+  const stats = [
+    { value: totalTicks, label: 'Total Ticks', sub: `out of ${totalSlots}` },
+    { value: `${activeSections}/${rows.length}`, label: 'Active Sections', sub: 'with ticks logged' },
+    { value: `${coverage}%`, label: 'Coverage', sub: 'period completion' },
+    { value: `${trackableDates.length}/${dates.length}`, label: 'Days Tracked', sub: `${dates.length - trackableDates.length} upcoming` }
+  ];
+  const statsHtml = stats.map(s => `
+    <div class="ot-export-stat">
+      <strong>${s.value}</strong>
+      <span class="ot-export-stat-label">${s.label}</span>
+      <span class="ot-export-stat-sub">${s.sub}</span>
+    </div>
+  `).join('');
+
+  const generated = new Date();
+  const generatedLabel = generated.toLocaleString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+
   return `
     <div class="ot-export-sheet">
-      <div class="ot-export-watermark"></div>
-      <div class="ot-export-head">
-        <div>
-          <div class="ot-export-company">MEP FAN LTD.</div>
-          <h1>Overtime Attendance</h1>
-          <p>${period.rangeLabel} · ${period.label}</p>
+      <div class="ot-export-aurora ot-export-aurora-a"></div>
+      <div class="ot-export-aurora ot-export-aurora-b"></div>
+      <header class="ot-export-head">
+        <div class="ot-export-head-main">
+          <div class="ot-export-eyebrow">
+            <span class="ot-export-eyebrow-dot"></span>
+            Overtime Report · MEP FAN LTD.
+          </div>
+          <h1 class="ot-export-title">Overtime Attendance</h1>
+          <p class="ot-export-subtitle">${period.rangeLabel} · ${period.label}</p>
+          <p class="ot-export-meta-line">Generated ${generatedLabel} · Auto-tracked from entry sheets</p>
         </div>
         <div class="ot-export-clock-shell">
           ${buildExportClockMarkup(clock, getActiveTheme(), {
-            analogSize: 90,
-            widgetPadding: '0.64rem 0.84rem',
-            width: '188px',
-            digitalSize: '1.42rem',
-            dateSize: '0.8rem',
-            ampmSize: '0.7rem'
+            analogSize: 110,
+            widgetPadding: '0.9rem 1.05rem',
+            width: '224px',
+            digitalSize: '1.7rem',
+            dateSize: '0.92rem',
+            ampmSize: '0.78rem'
           })}
         </div>
+      </header>
+      <div class="ot-export-stats">${statsHtml}</div>
+      <div class="ot-export-table-wrap">
+        <table class="ot-export-table">
+          <thead>
+            <tr>
+              <th class="ot-export-name-head">Section</th>
+              ${headerCells}
+              <th class="ot-export-total-head">Total</th>
+            </tr>
+          </thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
       </div>
-      <div class="ot-export-meta">
-        <span>${Object.keys(SECTIONS_CONFIG).length} Entry Sheets</span>
-        <span>${rows.length} Sections</span>
-        <span>${dates.length} Days</span>
-        <span>Future dates disabled</span>
-      </div>
-      <table class="ot-export-table">
-        <thead>
-          <tr>
-            <th class="ot-export-name-head">Section Name</th>
-            ${headerCells}
-          </tr>
-        </thead>
-        <tbody>${bodyRows}</tbody>
-      </table>
+      <footer class="ot-export-footer">
+        <span class="ot-export-footer-brand">MEP FAN LTD. · Manpower System</span>
+        <span class="ot-export-footer-divider"></span>
+        <span class="ot-export-footer-meta">${rows.length} sections · ${dates.length} days · ${totalTicks} overtime ticks recorded</span>
+      </footer>
     </div>`;
 }
 
@@ -1683,12 +1734,19 @@ function downloadOvertimeAttendanceJpgOriginal() {
     return;
   }
 
-  return html2canvas(exportNode.querySelector('.ot-export-sheet'), {
+  const sheetEl = exportNode.querySelector('.ot-export-sheet');
+  const captureWidth = sheetEl.offsetWidth;
+  const captureHeight = sheetEl.scrollHeight;
+  return html2canvas(sheetEl, {
     scale: Math.max(2, Math.min(3, window.devicePixelRatio || 2)),
     backgroundColor: exportTheme.bg[0],
     useCORS: true,
     scrollX: 0,
-    scrollY: 0
+    scrollY: 0,
+    width: captureWidth,
+    height: captureHeight,
+    windowWidth: captureWidth,
+    windowHeight: captureHeight
   }).then(canvas => {
     const link = document.createElement('a');
     link.download = `overtime-attendance-${period.monthName.toLowerCase()}-${period.start.getFullYear()}.jpg`;
@@ -2353,38 +2411,85 @@ function applyThemeToOvertimeExport(sheet, theme) {
   if (!sheet || !theme) return;
   const [soft, main, deep] = theme.palette;
   applyThemeToExportRoot(sheet, theme);
-  sheet.style.background = getThemeBackground(theme, 0.24);
-  sheet.querySelector('.ot-export-watermark')?.style.setProperty('background', `radial-gradient(circle, ${rgbaFromHex(main, 0.14)}, transparent 68%)`);
-  sheet.querySelector('.ot-export-company')?.style.setProperty('color', deep);
-  sheet.querySelector('.ot-export-company')?.style.setProperty('background', rgbaFromHex(soft, 0.42));
-  sheet.querySelector('.ot-export-head h1')?.style.setProperty('color', deep);
-  sheet.querySelector('.ot-export-badge')?.style.setProperty('background', `linear-gradient(135deg, ${main}, ${deep})`);
-  sheet.querySelectorAll('.ot-export-meta span').forEach(el => {
+  sheet.style.background = getThemeBackground(theme, 0.22);
+
+  const auroraA = sheet.querySelector('.ot-export-aurora-a');
+  if (auroraA) auroraA.style.background = `radial-gradient(circle at 50% 50%, ${rgbaFromHex(main, 0.22)}, transparent 70%)`;
+  const auroraB = sheet.querySelector('.ot-export-aurora-b');
+  if (auroraB) auroraB.style.background = `radial-gradient(circle at 50% 50%, ${rgbaFromHex(soft, 0.55)}, transparent 65%)`;
+
+  sheet.querySelectorAll('.ot-export-eyebrow').forEach(el => {
     el.style.color = deep;
-    el.style.background = rgbaFromHex(soft, 0.5);
+    el.style.background = rgbaFromHex(soft, 0.55);
+    el.style.boxShadow = `inset 0 0 0 1px ${rgbaFromHex(main, 0.22)}`;
   });
-  sheet.querySelectorAll('.ot-export-table th').forEach(th => {
+  sheet.querySelectorAll('.ot-export-eyebrow-dot').forEach(dot => {
+    dot.style.background = `linear-gradient(135deg, ${main}, ${deep})`;
+    dot.style.boxShadow = `0 0 0 4px ${rgbaFromHex(main, 0.16)}`;
+  });
+  const title = sheet.querySelector('.ot-export-title');
+  if (title) title.style.color = deep;
+  const subtitle = sheet.querySelector('.ot-export-subtitle');
+  if (subtitle) subtitle.style.color = deep;
+
+  sheet.querySelectorAll('.ot-export-stat').forEach(el => {
+    el.style.background = `linear-gradient(135deg, ${rgbaFromHex(soft, 0.72)}, rgba(255,255,255,0.92))`;
+    el.style.boxShadow = `0 24px 48px -32px ${rgbaFromHex(main, 0.55)}, inset 0 1px 0 rgba(255,255,255,0.85)`;
+    el.style.borderColor = rgbaFromHex(main, 0.18);
+  });
+  sheet.querySelectorAll('.ot-export-stat strong').forEach(el => {
+    el.style.color = deep;
+  });
+  sheet.querySelectorAll('.ot-export-stat-label').forEach(el => {
+    el.style.color = deep;
+  });
+
+  sheet.querySelectorAll('.ot-export-table th.ot-export-date').forEach(th => {
     th.style.color = deep;
-    th.style.background = rgbaFromHex(soft, 0.78);
+    th.style.background = `linear-gradient(180deg, ${rgbaFromHex(soft, 0.92)}, ${rgbaFromHex(soft, 0.55)})`;
+    th.style.borderColor = rgbaFromHex(main, 0.18);
   });
-  sheet.querySelectorAll('.ot-export-table td:not(.ot-export-branch):not(:empty)').forEach(td => {
-    td.style.background = `linear-gradient(135deg, ${main}, ${deep})`;
+  sheet.querySelectorAll('.ot-export-name-head, .ot-export-total-head').forEach(th => {
+    th.style.color = deep;
+    th.style.background = `linear-gradient(180deg, ${rgbaFromHex(soft, 0.96)}, ${rgbaFromHex(soft, 0.65)})`;
+    th.style.borderColor = rgbaFromHex(main, 0.18);
   });
-  sheet.querySelectorAll('.ot-export-total-head, .ot-export-total').forEach(el => {
+
+  sheet.querySelectorAll('.ot-export-cell.is-checked .ot-export-mark').forEach(span => {
+    span.style.background = `linear-gradient(135deg, ${main}, ${deep})`;
+    span.style.boxShadow = `0 10px 22px -12px ${rgbaFromHex(main, 0.85)}, inset 0 1px 0 rgba(255,255,255,0.4)`;
+  });
+  sheet.querySelectorAll('.ot-export-cell').forEach(td => {
+    td.style.borderColor = rgbaFromHex(main, 0.12);
+  });
+  sheet.querySelectorAll('.ot-export-cell.is-today').forEach(el => {
+    el.style.background = rgbaFromHex(main, 0.16);
+    el.style.boxShadow = `inset 0 0 0 2px ${rgbaFromHex(main, 0.55)}`;
+  });
+  sheet.querySelectorAll('.ot-export-date.is-today').forEach(el => {
+    el.style.background = `linear-gradient(180deg, ${rgbaFromHex(main, 0.32)}, ${rgbaFromHex(main, 0.14)})`;
     el.style.color = deep;
-    el.style.background = rgbaFromHex(soft, 0.62);
   });
-  sheet.querySelectorAll('.ot-export-table .today').forEach(el => {
-    el.style.boxShadow = `inset 0 0 0 2px ${rgbaFromHex(main, 0.48)}`;
+  sheet.querySelectorAll('.ot-export-branch').forEach(td => {
+    td.style.background = `linear-gradient(135deg, ${rgbaFromHex(soft, 0.58)}, rgba(255,255,255,0.92))`;
+    td.style.borderColor = rgbaFromHex(main, 0.16);
   });
-  sheet.querySelectorAll('.ot-export-table .friday').forEach(el => {
-    el.style.color = '#7f1d1d';
-    el.style.background = 'linear-gradient(135deg, rgba(254, 226, 226, 0.96), rgba(254, 202, 202, 0.82))';
-    el.style.boxShadow = 'inset 0 0 0 2px rgba(220, 38, 38, 0.32)';
+  sheet.querySelectorAll('.ot-export-branch strong').forEach(el => {
+    el.style.color = deep;
   });
-  sheet.querySelectorAll('.ot-export-table td.friday:not(.ot-export-branch):not(:empty)').forEach(td => {
-    td.style.color = '#ffffff';
-    td.style.background = 'linear-gradient(135deg, #f97316, #dc2626)';
+  sheet.querySelectorAll('.ot-export-total').forEach(td => {
+    td.style.background = `linear-gradient(135deg, ${rgbaFromHex(soft, 0.6)}, rgba(255,255,255,0.95))`;
+    td.style.borderColor = rgbaFromHex(main, 0.16);
+  });
+  sheet.querySelectorAll('.ot-export-total strong').forEach(el => {
+    el.style.color = deep;
+  });
+
+  sheet.querySelectorAll('.ot-export-footer').forEach(el => {
+    el.style.color = deep;
+  });
+  sheet.querySelectorAll('.ot-export-footer-divider').forEach(el => {
+    el.style.background = rgbaFromHex(main, 0.4);
   });
 }
 

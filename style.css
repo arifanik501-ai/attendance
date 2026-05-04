@@ -2625,18 +2625,17 @@ input[type="number"]:focus {
   position: fixed;
   left: -99999px;
   top: 0;
-  width: 1600px;
-  background: #f8fafc;
+  width: 1800px;
+  background: transparent;
   z-index: -1;
 }
 
 .ot-export-sheet {
   position: relative;
-  width: 1600px;
-  min-height: 980px;
-  padding: 42px;
-  overflow: hidden;
+  width: 1800px;
+  padding: 56px 56px 44px;
   box-sizing: border-box;
+  overflow: hidden;
   color: #0f172a;
   background:
     radial-gradient(circle at 8% 0%, rgba(20, 184, 166, 0.18), transparent 28%),
@@ -2645,204 +2644,360 @@ input[type="number"]:focus {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.ot-export-watermark {
+.ot-export-aurora {
   position: absolute;
-  right: -90px;
-  bottom: -130px;
-  width: 430px;
-  height: 430px;
+  width: 640px;
+  height: 640px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(20, 184, 166, 0.12), transparent 68%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ot-export-aurora-a {
+  top: -200px;
+  right: -120px;
+  background: radial-gradient(circle at 50% 50%, rgba(20, 184, 166, 0.22), transparent 70%);
+}
+
+.ot-export-aurora-b {
+  bottom: 120px;
+  left: -160px;
+  background: radial-gradient(circle at 50% 50%, rgba(204, 251, 241, 0.55), transparent 65%);
 }
 
 .ot-export-head {
   position: relative;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 28px;
-  padding: 28px 32px;
-  border: 1px solid rgba(255,255,255,0.9);
-  border-radius: 34px;
-  background: rgba(255,255,255,0.74);
-  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255,255,255,0.9);
+  align-items: stretch;
+  gap: 32px;
+  padding: 32px 36px;
+  border: 1px solid rgba(255,255,255,0.92);
+  border-radius: 36px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.86), rgba(255,255,255,0.62));
+  box-shadow: 0 32px 90px -32px rgba(15, 23, 42, 0.32), inset 0 1px 0 rgba(255,255,255,0.92);
+  z-index: 2;
 }
 
-.ot-export-company {
+.ot-export-head-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ot-export-eyebrow {
+  position: relative;
   display: inline-flex;
-  margin-bottom: 10px;
-  padding: 6px 12px;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  padding: 8px 16px 8px 14px;
   border-radius: 999px;
   color: #0f766e;
-  background: rgba(20, 184, 166, 0.12);
-  font-size: 16px;
-  font-weight: 950;
-  letter-spacing: 0.14em;
+  background: rgba(204, 251, 241, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.22);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
-.ot-export-head h1 {
-  margin: 0;
-  color: #134e4a;
-  font-size: 52px;
+.ot-export-eyebrow-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #14b8a6, #0f766e);
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.16);
+}
+
+.ot-export-title {
+  margin: 6px 0 0;
+  font-size: 64px;
   line-height: 1;
   letter-spacing: -0.055em;
+  color: #134e4a;
 }
 
-.ot-export-head p {
-  margin: 12px 0 0;
-  color: #475569;
-  font-size: 20px;
+.ot-export-subtitle {
+  margin: 4px 0 0;
+  color: #0f766e;
+  font-size: 22px;
   font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
-.ot-export-badge {
-  min-width: 188px;
-  padding: 18px;
-  border-radius: 28px;
-  text-align: center;
-  background: linear-gradient(135deg, #14b8a6, #0f766e);
-  color: #fff;
-  box-shadow: 0 18px 44px rgba(15, 118, 110, 0.28), inset 0 1px 0 rgba(255,255,255,0.35);
-}
-
-.ot-export-badge span,
-.ot-export-badge em {
-  display: block;
-  font-style: normal;
-  font-size: 15px;
-  font-weight: 900;
-  opacity: 0.9;
-}
-
-.ot-export-badge strong {
-  display: block;
-  margin: 4px 0;
-  font-size: 48px;
-  line-height: 1;
-}
-
-.ot-export-clock {
-  min-width: 244px;
+.ot-export-meta-line {
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .ot-export-clock-shell {
   flex: 0 0 auto;
-}
-
-.ot-export-clock strong {
-  font-size: 42px;
-  letter-spacing: -0.06em;
-}
-
-.ot-export-meta {
-  position: relative;
   display: flex;
-  gap: 12px;
-  margin: 22px 0;
+  align-items: center;
 }
 
-.ot-export-meta span {
-  padding: 10px 16px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.78);
-  color: #155e75;
-  font-size: 15px;
+.ot-export-stats {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 22px 0;
+  z-index: 2;
+}
+
+.ot-export-stat {
+  position: relative;
+  padding: 18px 22px;
+  border: 1px solid rgba(20, 184, 166, 0.18);
+  border-radius: 26px;
+  background: linear-gradient(135deg, rgba(204, 251, 241, 0.72), rgba(255,255,255,0.92));
+  box-shadow: 0 24px 48px -32px rgba(15, 118, 110, 0.55), inset 0 1px 0 rgba(255,255,255,0.85);
+}
+
+.ot-export-stat strong {
+  display: block;
+  color: #134e4a;
+  font-size: 34px;
   font-weight: 950;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.ot-export-stat-label {
+  display: block;
+  margin-top: 8px;
+  color: #134e4a;
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ot-export-stat-sub {
+  display: block;
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ot-export-table-wrap {
+  position: relative;
+  padding: 12px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(255,255,255,0.6));
+  box-shadow: 0 32px 80px -40px rgba(15, 23, 42, 0.4), inset 0 1px 0 rgba(255,255,255,0.95);
+  z-index: 2;
 }
 
 .ot-export-table {
   position: relative;
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0;
-  overflow: hidden;
-  border-radius: 24px;
-  background: rgba(255,255,255,0.86);
-  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+  border-spacing: 6px;
 }
 
 .ot-export-table th,
 .ot-export-table td {
-  border-right: 1px solid rgba(15, 118, 110, 0.12);
-  border-bottom: 1px solid rgba(15, 118, 110, 0.11);
-  padding: 7px 4px;
+  padding: 8px 4px;
   text-align: center;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 900;
+  border: 1px solid rgba(20, 184, 166, 0.12);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.96);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);
 }
 
 .ot-export-table th {
   color: #0f766e;
-  background: rgba(204, 251, 241, 0.78);
+  background: linear-gradient(180deg, rgba(204, 251, 241, 0.92), rgba(204, 251, 241, 0.55));
 }
 
 .ot-export-table th b,
 .ot-export-table th span {
   display: block;
+  line-height: 1.05;
+}
+
+.ot-export-table th b {
+  font-size: 17px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
 }
 
 .ot-export-table th span {
-  margin-top: 2px;
+  margin-top: 3px;
   font-size: 10px;
-  color: #475569;
+  color: #64748b;
+  letter-spacing: 0.08em;
 }
 
 .ot-export-name-head,
 .ot-export-branch {
-  width: 240px;
-  min-width: 240px;
+  width: 232px;
+  min-width: 232px;
   text-align: left !important;
-  padding-left: 16px !important;
+  padding-left: 18px !important;
+  padding-right: 14px !important;
 }
 
-.ot-export-branch strong,
-.ot-export-branch span {
-  display: block;
+.ot-export-branch {
+  background: linear-gradient(135deg, rgba(204, 251, 241, 0.58), rgba(255,255,255,0.92));
 }
 
 .ot-export-branch strong {
+  display: block;
   color: #0f172a;
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 950;
+  letter-spacing: -0.01em;
 }
 
-.ot-export-branch span {
-  display: none;
+.ot-export-branch em {
+  display: block;
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+  font-style: normal;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .ot-export-total-head,
 .ot-export-total {
-  width: 62px;
+  width: 78px;
+  min-width: 78px;
+}
+
+.ot-export-total {
+  background: linear-gradient(135deg, rgba(204, 251, 241, 0.6), rgba(255,255,255,0.95));
+}
+
+.ot-export-total strong {
+  display: block;
   color: #0f766e;
-  background: rgba(240, 253, 250, 0.9);
+  font-size: 18px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
 }
 
-.ot-export-table td:not(.ot-export-branch) {
-  color: #fff;
+.ot-export-total span {
+  display: block;
+  margin-top: 1px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
 }
 
-.ot-export-table td:not(.ot-export-branch):not(:empty) {
-  background: linear-gradient(135deg, #2dd4bf, #0f766e);
+.ot-export-cell {
+  width: 38px;
+  min-width: 38px;
+  height: 46px;
+  background: rgba(248, 250, 252, 0.78);
 }
 
-.ot-export-table .future {
-  color: rgba(100, 116, 139, 0.34) !important;
-  background: rgba(226, 232, 240, 0.36) !important;
+.ot-export-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 950;
+  color: transparent;
 }
 
-.ot-export-table .today {
-  box-shadow: inset 0 0 0 2px rgba(20, 184, 166, 0.38);
-}
-
-.ot-export-table .friday {
-  color: #7f1d1d;
-  background: linear-gradient(135deg, rgba(254, 226, 226, 0.96), rgba(254, 202, 202, 0.82));
-  box-shadow: inset 0 0 0 2px rgba(220, 38, 38, 0.32);
-}
-
-.ot-export-table td.friday:not(.ot-export-branch):not(:empty) {
+.ot-export-cell.is-checked .ot-export-mark {
   color: #ffffff;
+  background: linear-gradient(135deg, #2dd4bf, #0f766e);
+  box-shadow: 0 10px 22px -12px rgba(15, 118, 110, 0.85), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+.ot-export-cell.is-future {
+  background: rgba(241, 245, 249, 0.45);
+}
+
+.ot-export-date.is-future {
+  color: rgba(100, 116, 139, 0.55);
+  background: linear-gradient(180deg, rgba(241, 245, 249, 0.86), rgba(248, 250, 252, 0.6));
+}
+
+.ot-export-date.is-future span {
+  color: rgba(100, 116, 139, 0.5);
+}
+
+.ot-export-cell.is-today {
+  background: rgba(20, 184, 166, 0.16);
+  box-shadow: inset 0 0 0 2px rgba(20, 184, 166, 0.55);
+}
+
+.ot-export-date.is-today {
+  color: #134e4a;
+  background: linear-gradient(180deg, rgba(20, 184, 166, 0.32), rgba(20, 184, 166, 0.14));
+}
+
+.ot-export-date.is-today span {
+  color: #0f766e;
+}
+
+.ot-export-cell.is-friday {
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.6), rgba(255, 237, 213, 0.5));
+  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.18);
+}
+
+.ot-export-cell.is-friday.is-checked .ot-export-mark {
   background: linear-gradient(135deg, #f97316, #dc2626);
+  box-shadow: 0 10px 22px -12px rgba(220, 38, 38, 0.85), inset 0 1px 0 rgba(255,255,255,0.45);
+}
+
+.ot-export-date.is-friday {
+  color: #7f1d1d;
+  background: linear-gradient(180deg, rgba(254, 226, 226, 0.92), rgba(254, 202, 202, 0.6));
+}
+
+.ot-export-date.is-friday span {
+  color: #b91c1c;
+  font-weight: 950;
+}
+
+.ot-export-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 22px;
+  color: #134e4a;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  z-index: 2;
+  position: relative;
+}
+
+.ot-export-footer-brand {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.ot-export-footer-divider {
+  width: 32px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(20, 184, 166, 0.4);
+}
+
+.ot-export-footer-meta {
+  color: #475569;
+  letter-spacing: 0.04em;
+  text-transform: none;
 }
 
 .a4-report .branch-period-actions {

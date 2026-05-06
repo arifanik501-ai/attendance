@@ -3906,35 +3906,32 @@ function getAttendanceTone(pct) {
 function collectFanAssembleDimmerTotals(state) {
   const targetGroups = ["Fan Assemble", "Fan Dimmer & Blade"];
   const totals = { authorized: 0, existing: 0, present: 0, absent: 0 };
-  const byDesignation = {};
+  const workerRow = { designation: 'Worker', existing: 0, present: 0, absent: 0 };
 
   targetGroups.forEach(function(groupName) {
     getHistoryRows(state, 'anik', groupName).forEach(function(row) {
       if (!row || typeof row !== 'object') return;
-      const designation = row.designation || 'N/A';
+      const designation = String(row.designation || '').trim();
+      if (designation.toLowerCase() !== 'worker') return;
       const authorized = historyToCount(row.authorized);
       const existing = historyToCount(row.existing);
       const present = historyToCount(row.present);
       let absent = historyToCount(row.absent);
       if (absent === 0 && present < existing) absent = existing - present;
 
-      if (!byDesignation[designation]) {
-        byDesignation[designation] = { designation: designation, existing: 0, present: 0, absent: 0 };
-      }
-
       totals.authorized += authorized;
       totals.existing += existing;
       totals.present += present;
       totals.absent += absent;
-      byDesignation[designation].existing += existing;
-      byDesignation[designation].present += present;
-      byDesignation[designation].absent += absent;
+      workerRow.existing += existing;
+      workerRow.present += present;
+      workerRow.absent += absent;
     });
   });
 
   return {
     totals: totals,
-    rows: Object.values(byDesignation)
+    rows: workerRow.existing > 0 || workerRow.present > 0 || workerRow.absent > 0 ? [workerRow] : []
   };
 }
 
@@ -3980,7 +3977,7 @@ window.renderFanAssembleDimmerMergedForDate = function(dateStr) {
   viewer.innerHTML = `
     <div class="ios-hm-loader">
       <div class="ios-hm-spinner"></div>
-      <div class="ios-hm-loader-text">Loading daily Fan Assemble + Dimmer total…</div>
+      <div class="ios-hm-loader-text">Loading daily Worker merge…</div>
     </div>
   `;
 
@@ -4012,7 +4009,7 @@ window.renderFanAssembleDimmerMergedForDate = function(dateStr) {
 function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
   const merged = collectFanAssembleDimmerTotals(state);
   if (merged.rows.length === 0) {
-    container.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No Fan Assemble or Fan Dimmer history found.</div></div>';
+    container.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No Worker history found for Fan Assemble or Fan Dimmer.</div></div>';
     return;
   }
 
@@ -4038,13 +4035,13 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
   container.innerHTML =
     '<div class="ios-merge-head">' +
       '<div>' +
-        '<h3 class="ios-ss-head-title">Daily Merged Attendance</h3>' +
-        '<div class="ios-ss-head-date">' + historyEscapeHtml(formatHistoryDate(dateStr)) + ' · Fan Assemble + Fan Dimmer & Blade</div>' +
+        '<h3 class="ios-ss-head-title">Daily Worker Merge</h3>' +
+        '<div class="ios-ss-head-date">' + historyEscapeHtml(formatHistoryDate(dateStr)) + ' · Fan Assemble Worker + Fan Dimmer Worker</div>' +
       '</div>' +
       '<div class="ios-ss-ring" style="--pct:' + totalPct + '"><span class="ios-ss-ring-val">' + totalPct + '%</span></div>' +
     '</div>' +
     '<div class="ios-merge-kpis">' +
-      '<div><span>Designations</span><b>' + merged.rows.length + '</b></div>' +
+      '<div><span>Type</span><b>Worker</b></div>' +
       '<div><span>Existing</span><b class="k-existing">' + merged.totals.existing + '</b></div>' +
       '<div><span>Present</span><b class="k-present">' + merged.totals.present + '</b></div>' +
       '<div><span>Absent</span><b class="k-absent">' + merged.totals.absent + '</b></div>' +

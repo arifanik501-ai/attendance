@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.36';
+const APP_VERSION = '2.6.37';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -2917,6 +2917,7 @@ function setupFirebaseListener() {
 
 // Auto-initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+  initServiceWorkerUpdateFlow();
   initHighRefreshMotion();
   initSmoothModeToggle();
   lockMobilePortraitOrientation();
@@ -2947,6 +2948,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setTimeout(initScrollReveal, 100);
 });
+
+function initServiceWorkerUpdateFlow() {
+  if (!('serviceWorker' in navigator)) return;
+
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+
+  navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(reg => {
+    const activateWaitingWorker = worker => {
+      if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
+    };
+
+    activateWaitingWorker(reg.waiting);
+    reg.addEventListener('updatefound', () => {
+      const worker = reg.installing;
+      if (!worker) return;
+      worker.addEventListener('statechange', () => {
+        if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+          activateWaitingWorker(worker);
+        }
+      });
+    });
+    reg.update().catch(() => {});
+  }).catch(err => console.warn('Service Worker update check failed:', err));
+}
 
 window.addEventListener('orientationchange', () => {
   setTimeout(lockMobilePortraitOrientation, 250);
@@ -3086,7 +3116,8 @@ const MEP_NOTIFICATION = {
       return null;
     }
     try {
-      const reg = await navigator.serviceWorker.register('./sw.js');
+      const reg = await navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
+      reg.update().catch(() => {});
       this.swRegistration = reg;
       console.log('✅ Service Worker registered');
       return reg;

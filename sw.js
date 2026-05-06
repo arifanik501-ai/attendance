@@ -3,12 +3,12 @@
 // Daily 8:00 AM & 1:00 PM Attendance Notifications
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-fan-v76';
+const CACHE_NAME = 'mep-fan-v77';
 const NOTIFICATION_HOUR_AM = 8; // 8:00 AM
 const NOTIFICATION_HOUR_PM = 13; // 1:00 PM
 const NOTIFICATION_MINUTE = 0;
 
-const ASSET_VERSION = 'v=71';
+const ASSET_VERSION = 'v=77';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -42,23 +42,38 @@ self.addEventListener('activate', (event) => {
   startNotificationCheck();
 });
 
-// Fetch handler — network first, fallback to cache (required for PWA installability)
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests and Firebase/external URLs
   if (event.request.method !== 'GET') return;
   if (event.request.url.includes('firebaseio.com') || event.request.url.includes('googleapis.com')) return;
 
+  const url = new URL(event.request.url);
+  const isLocalAsset = url.origin === self.location.origin;
+  const mustBeFresh = isLocalAsset && (
+    event.request.mode === 'navigate' ||
+    url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css') ||
+    url.searchParams.has('v')
+  );
+
+  if (mustBeFresh) {
+    event.respondWith(
+      fetch(new Request(event.request, { cache: 'no-store' })).catch(() =>
+        caches.match(event.request, { ignoreSearch: true })
+      )
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(event.request).then(response => {
-      // Cache successful responses
-      if (response && response.status === 200) {
+      if (isLocalAsset && response && response.status === 200) {
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
       }
       return response;
     }).catch(() => {
-      // Offline fallback
-      return caches.match(event.request);
+      return caches.match(event.request, { ignoreSearch: true });
     })
   );
 });
@@ -73,6 +88,9 @@ self.addEventListener('message', (event) => {
   }
   if (event.data && event.data.type === 'KEEPALIVE') {
     // Just keep the SW alive
+  }
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });
 

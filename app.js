@@ -3666,7 +3666,7 @@ window.openHistoryModal = function() {
           </div>
         </div>
         <div class="ios-hm-header-actions">
-          <button class="ios-hm-merge-btn" onclick="window.showFanAssembleDimmerMergedHistory()" type="button">
+          <button id="fan-merge-history-btn" class="ios-hm-merge-btn" onclick="window.showFanAssembleDimmerMergedHistory()" type="button">
             <span class="ios-hm-merge-icon" aria-hidden="true">↔</span>
             <span>Fan Assemble + Dimmer</span>
           </button>
@@ -3726,6 +3726,8 @@ window.openHistoryModal = function() {
   nextMotionFrame(() => modal.classList.add('is-open'));
 
   window.historyCurrentDate = new Date();
+  window.historySelectedDate = null;
+  window.historyMergedMode = false;
   window._fetchSavedHistoryDates(() => {
     window._renderHistoryCalendar();
     window._updateHistoryCountBadge();
@@ -3833,6 +3835,12 @@ window._renderHistoryCalendar = function() {
 window._loadHistoryForDate = function(dateStr) {
   const viewer = document.getElementById('history-data-viewer');
   if (!viewer) return;
+  window.historySelectedDate = dateStr;
+  if (window.historyMergedMode) {
+    window.renderFanAssembleDimmerMergedForDate(dateStr);
+    return;
+  }
+  updateMergedHistoryButtonState();
   
   viewer.innerHTML = `
     <div class="ios-hm-loader">
@@ -3854,6 +3862,12 @@ window._loadHistoryForDate = function(dateStr) {
     });
   }
 };
+
+function updateMergedHistoryButtonState() {
+  const btn = document.getElementById('fan-merge-history-btn');
+  if (!btn) return;
+  btn.classList.toggle('is-active', !!window.historyMergedMode);
+}
 
 function historyEscapeHtml(value) {
   return String(value).replace(/[&<>"']/g, function(ch) {
@@ -3926,104 +3940,117 @@ function collectFanAssembleDimmerTotals(state) {
 }
 
 window.showFanAssembleDimmerMergedHistory = function() {
+  window.historyMergedMode = !window.historyMergedMode;
+  updateMergedHistoryButtonState();
+  if (!window.historyMergedMode) {
+    if (window.historySelectedDate) {
+      window._loadHistoryForDate(window.historySelectedDate);
+    }
+    return;
+  }
+
+  const selectedDate = window.historySelectedDate || Array.from(window.savedHistoryDates || []).sort().reverse()[0];
+  if (!selectedDate) {
+    if (!window.savedHistoryDates || window.savedHistoryDates.size === 0) {
+      window._fetchSavedHistoryDates(function() {
+        const latestDate = Array.from(window.savedHistoryDates || []).sort().reverse()[0];
+        if (latestDate) {
+          window.historySelectedDate = latestDate;
+          window.renderFanAssembleDimmerMergedForDate(latestDate);
+          return;
+        }
+        const viewer = document.getElementById('history-data-viewer');
+        if (viewer) {
+          viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No saved history found yet.</div><div class="ios-hm-empty-hint">Save attendance snapshots first, then open this merged history.</div></div>';
+        }
+      });
+    }
+    return;
+  }
+  window.historySelectedDate = selectedDate;
+  window.renderFanAssembleDimmerMergedForDate(selectedDate);
+};
+
+window.renderFanAssembleDimmerMergedForDate = function(dateStr) {
   const viewer = document.getElementById('history-data-viewer');
   if (!viewer) return;
+  window.historySelectedDate = dateStr;
+  window.historyMergedMode = true;
+  updateMergedHistoryButtonState();
 
   viewer.innerHTML = `
     <div class="ios-hm-loader">
       <div class="ios-hm-spinner"></div>
-      <div class="ios-hm-loader-text">Merging Fan Assemble + Dimmer history…</div>
+      <div class="ios-hm-loader-text">Loading daily Fan Assemble + Dimmer total…</div>
     </div>
   `;
 
-  const loadMerged = function() {
-    const dates = Array.from(window.savedHistoryDates || []).sort().reverse();
-    if (dates.length === 0) {
-      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No saved history found yet.</div><div class="ios-hm-empty-hint">Save attendance snapshots first, then open this merged history.</div></div>';
-      return;
-    }
+  const loadDailyMerged = function() {
     if (!window.firebaseDb) {
-      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text" style="color:#ef4444;">Firebase not connected</div><div class="ios-hm-empty-hint">Merged history needs saved Firebase snapshots.</div></div>';
+      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text" style="color:#ef4444;">Firebase not connected</div><div class="ios-hm-empty-hint">Daily merged history needs saved Firebase snapshots.</div></div>';
       return;
     }
 
-    Promise.all(dates.map(function(dateStr) {
-      return window.firebaseDb.ref('mep_attendance_history/' + dateStr).once('value').then(function(snapshot) {
-        return { dateStr: dateStr, state: snapshot.exists() ? snapshot.val() : null };
-      });
-    })).then(function(items) {
-      renderFanAssembleDimmerMergedHistory(items, viewer);
+    window.firebaseDb.ref('mep_attendance_history/' + dateStr).once('value').then(function(snapshot) {
+      if (snapshot.exists()) {
+        renderFanAssembleDimmerMergedHistory(dateStr, snapshot.val(), viewer);
+      } else {
+        viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No snapshot found for ' + historyEscapeHtml(dateStr) + '.</div></div>';
+      }
     }).catch(function(err) {
       console.error('Merged history load error:', err);
       viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text" style="color:#ef4444;">Error loading merged history</div></div>';
     });
   };
 
-  if (!window.savedHistoryDates || window.savedHistoryDates.size === 0) {
-    window._fetchSavedHistoryDates(loadMerged);
+  if (!window.savedHistoryDates || !window.savedHistoryDates.has(dateStr)) {
+    window._fetchSavedHistoryDates(loadDailyMerged);
   } else {
-    loadMerged();
+    loadDailyMerged();
   }
 };
 
-function renderFanAssembleDimmerMergedHistory(items, container) {
-  let savedDays = 0;
-  const total = { authorized: 0, existing: 0, present: 0, absent: 0 };
-  const cards = [];
-
-  items.forEach(function(item) {
-    if (!item.state) return;
-    const merged = collectFanAssembleDimmerTotals(item.state);
-    if (merged.rows.length === 0) return;
-    savedDays += 1;
-    total.authorized += merged.totals.authorized;
-    total.existing += merged.totals.existing;
-    total.present += merged.totals.present;
-    total.absent += merged.totals.absent;
-
-    const dayPct = getAttendancePct(merged.totals.present, merged.totals.existing);
-    const rowChips = merged.rows.map(function(row) {
-      return '<span class="ios-merge-chip"><b>' + historyEscapeHtml(row.designation) + '</b><i>' + row.present + '/' + row.existing + '</i></span>';
-    }).join('');
-
-    cards.push(
-      '<article class="ios-merge-card">' +
-        '<div class="ios-merge-card-main">' +
-          '<div class="ios-merge-date">' + historyEscapeHtml(formatHistoryDate(item.dateStr)) + '</div>' +
-          '<div class="ios-merge-title">Fan Assemble + Fan Dimmer & Blade</div>' +
-          '<div class="ios-merge-chip-row">' + rowChips + '</div>' +
-        '</div>' +
-        '<div class="ios-merge-card-stats">' +
-          '<span class="ios-merge-pill present">P ' + merged.totals.present + '</span>' +
-          '<span class="ios-merge-pill existing">E ' + merged.totals.existing + '</span>' +
-          '<span class="ios-merge-pill absent">A ' + merged.totals.absent + '</span>' +
-          '<span class="ios-merge-percent ' + getAttendanceTone(dayPct) + '">' + dayPct + '%</span>' +
-        '</div>' +
-      '</article>'
-    );
-  });
-
-  if (cards.length === 0) {
+function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
+  const merged = collectFanAssembleDimmerTotals(state);
+  if (merged.rows.length === 0) {
     container.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No Fan Assemble or Fan Dimmer history found.</div></div>';
     return;
   }
 
-  const totalPct = getAttendancePct(total.present, total.existing);
+  const totalPct = getAttendancePct(merged.totals.present, merged.totals.existing);
+  const rowCards = merged.rows.map(function(row) {
+    const rowPct = getAttendancePct(row.present, row.existing);
+    return (
+      '<article class="ios-merge-card">' +
+        '<div class="ios-merge-card-main">' +
+          '<div class="ios-merge-date">' + historyEscapeHtml(row.designation) + '</div>' +
+          '<div class="ios-merge-title">' + row.present + '/' + row.existing + ' present</div>' +
+        '</div>' +
+        '<div class="ios-merge-card-stats">' +
+          '<span class="ios-merge-pill present">P ' + row.present + '</span>' +
+          '<span class="ios-merge-pill existing">E ' + row.existing + '</span>' +
+          '<span class="ios-merge-pill absent">A ' + row.absent + '</span>' +
+          '<span class="ios-merge-percent ' + getAttendanceTone(rowPct) + '">' + rowPct + '%</span>' +
+        '</div>' +
+      '</article>'
+    );
+  }).join('');
+
   container.innerHTML =
     '<div class="ios-merge-head">' +
       '<div>' +
-        '<h3 class="ios-ss-head-title">Merged Attendance History</h3>' +
-        '<div class="ios-ss-head-date">Fan Assemble + Fan Dimmer & Blade · ' + savedDays + ' saved day' + (savedDays === 1 ? '' : 's') + ' counted</div>' +
+        '<h3 class="ios-ss-head-title">Daily Merged Attendance</h3>' +
+        '<div class="ios-ss-head-date">' + historyEscapeHtml(formatHistoryDate(dateStr)) + ' · Fan Assemble + Fan Dimmer & Blade</div>' +
       '</div>' +
       '<div class="ios-ss-ring" style="--pct:' + totalPct + '"><span class="ios-ss-ring-val">' + totalPct + '%</span></div>' +
     '</div>' +
     '<div class="ios-merge-kpis">' +
-      '<div><span>Saved Days</span><b>' + savedDays + '</b></div>' +
-      '<div><span>Total Existing</span><b class="k-existing">' + total.existing + '</b></div>' +
-      '<div><span>Total Present</span><b class="k-present">' + total.present + '</b></div>' +
-      '<div><span>Total Absent</span><b class="k-absent">' + total.absent + '</b></div>' +
+      '<div><span>Designations</span><b>' + merged.rows.length + '</b></div>' +
+      '<div><span>Existing</span><b class="k-existing">' + merged.totals.existing + '</b></div>' +
+      '<div><span>Present</span><b class="k-present">' + merged.totals.present + '</b></div>' +
+      '<div><span>Absent</span><b class="k-absent">' + merged.totals.absent + '</b></div>' +
     '</div>' +
-    '<div class="ios-merge-list">' + cards.join('') + '</div>';
+    '<div class="ios-merge-list">' + rowCards + '</div>';
 }
 
 function _renderHistoryState(dateStr, state, container) {

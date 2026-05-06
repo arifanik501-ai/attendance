@@ -3665,9 +3665,15 @@ window.openHistoryModal = function() {
             <div class="ios-hm-sub">Browse past records by date</div>
           </div>
         </div>
-        <button class="ios-hm-close" onclick="window.closeHistoryModal()" aria-label="Close">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+        <div class="ios-hm-header-actions">
+          <button class="ios-hm-merge-btn" onclick="window.showFanAssembleDimmerMergedHistory()" type="button">
+            <span class="ios-hm-merge-icon" aria-hidden="true">↔</span>
+            <span>Fan Assemble + Dimmer</span>
+          </button>
+          <button class="ios-hm-close" onclick="window.closeHistoryModal()" aria-label="Close">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
       </div>
 
       <div class="ios-hm-body">
@@ -3849,19 +3855,183 @@ window._loadHistoryForDate = function(dateStr) {
   }
 };
 
+function historyEscapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, function(ch) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+  });
+}
+
+function historyToCount(value) {
+  return parseInt(value, 10) || 0;
+}
+
+function getHistoryRows(state, pageId, groupName) {
+  const groupRows = state?.[pageId]?.[groupName];
+  if (Array.isArray(groupRows)) return groupRows;
+  if (groupRows && typeof groupRows === 'object') return Object.values(groupRows);
+  return [];
+}
+
+function formatHistoryDate(dateStr) {
+  try {
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+  } catch(e) {
+    return dateStr;
+  }
+}
+
+function getAttendancePct(present, existing) {
+  return existing > 0 ? Math.round((present / existing) * 100) : 0;
+}
+
+function getAttendanceTone(pct) {
+  if (pct >= 90) return 'high';
+  if (pct >= 70) return 'mid';
+  return 'low';
+}
+
+function collectFanAssembleDimmerTotals(state) {
+  const targetGroups = ["Fan Assemble", "Fan Dimmer & Blade"];
+  const totals = { authorized: 0, existing: 0, present: 0, absent: 0 };
+  const byDesignation = {};
+
+  targetGroups.forEach(function(groupName) {
+    getHistoryRows(state, 'anik', groupName).forEach(function(row) {
+      if (!row || typeof row !== 'object') return;
+      const designation = row.designation || 'N/A';
+      const authorized = historyToCount(row.authorized);
+      const existing = historyToCount(row.existing);
+      const present = historyToCount(row.present);
+      let absent = historyToCount(row.absent);
+      if (absent === 0 && present < existing) absent = existing - present;
+
+      if (!byDesignation[designation]) {
+        byDesignation[designation] = { designation: designation, existing: 0, present: 0, absent: 0 };
+      }
+
+      totals.authorized += authorized;
+      totals.existing += existing;
+      totals.present += present;
+      totals.absent += absent;
+      byDesignation[designation].existing += existing;
+      byDesignation[designation].present += present;
+      byDesignation[designation].absent += absent;
+    });
+  });
+
+  return {
+    totals: totals,
+    rows: Object.values(byDesignation)
+  };
+}
+
+window.showFanAssembleDimmerMergedHistory = function() {
+  const viewer = document.getElementById('history-data-viewer');
+  if (!viewer) return;
+
+  viewer.innerHTML = `
+    <div class="ios-hm-loader">
+      <div class="ios-hm-spinner"></div>
+      <div class="ios-hm-loader-text">Merging Fan Assemble + Dimmer history…</div>
+    </div>
+  `;
+
+  const loadMerged = function() {
+    const dates = Array.from(window.savedHistoryDates || []).sort().reverse();
+    if (dates.length === 0) {
+      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No saved history found yet.</div><div class="ios-hm-empty-hint">Save attendance snapshots first, then open this merged history.</div></div>';
+      return;
+    }
+    if (!window.firebaseDb) {
+      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text" style="color:#ef4444;">Firebase not connected</div><div class="ios-hm-empty-hint">Merged history needs saved Firebase snapshots.</div></div>';
+      return;
+    }
+
+    Promise.all(dates.map(function(dateStr) {
+      return window.firebaseDb.ref('mep_attendance_history/' + dateStr).once('value').then(function(snapshot) {
+        return { dateStr: dateStr, state: snapshot.exists() ? snapshot.val() : null };
+      });
+    })).then(function(items) {
+      renderFanAssembleDimmerMergedHistory(items, viewer);
+    }).catch(function(err) {
+      console.error('Merged history load error:', err);
+      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text" style="color:#ef4444;">Error loading merged history</div></div>';
+    });
+  };
+
+  if (!window.savedHistoryDates || window.savedHistoryDates.size === 0) {
+    window._fetchSavedHistoryDates(loadMerged);
+  } else {
+    loadMerged();
+  }
+};
+
+function renderFanAssembleDimmerMergedHistory(items, container) {
+  let savedDays = 0;
+  const total = { authorized: 0, existing: 0, present: 0, absent: 0 };
+  const cards = [];
+
+  items.forEach(function(item) {
+    if (!item.state) return;
+    const merged = collectFanAssembleDimmerTotals(item.state);
+    if (merged.rows.length === 0) return;
+    savedDays += 1;
+    total.authorized += merged.totals.authorized;
+    total.existing += merged.totals.existing;
+    total.present += merged.totals.present;
+    total.absent += merged.totals.absent;
+
+    const dayPct = getAttendancePct(merged.totals.present, merged.totals.existing);
+    const rowChips = merged.rows.map(function(row) {
+      return '<span class="ios-merge-chip"><b>' + historyEscapeHtml(row.designation) + '</b><i>' + row.present + '/' + row.existing + '</i></span>';
+    }).join('');
+
+    cards.push(
+      '<article class="ios-merge-card">' +
+        '<div class="ios-merge-card-main">' +
+          '<div class="ios-merge-date">' + historyEscapeHtml(formatHistoryDate(item.dateStr)) + '</div>' +
+          '<div class="ios-merge-title">Fan Assemble + Fan Dimmer & Blade</div>' +
+          '<div class="ios-merge-chip-row">' + rowChips + '</div>' +
+        '</div>' +
+        '<div class="ios-merge-card-stats">' +
+          '<span class="ios-merge-pill present">P ' + merged.totals.present + '</span>' +
+          '<span class="ios-merge-pill existing">E ' + merged.totals.existing + '</span>' +
+          '<span class="ios-merge-pill absent">A ' + merged.totals.absent + '</span>' +
+          '<span class="ios-merge-percent ' + getAttendanceTone(dayPct) + '">' + dayPct + '%</span>' +
+        '</div>' +
+      '</article>'
+    );
+  });
+
+  if (cards.length === 0) {
+    container.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No Fan Assemble or Fan Dimmer history found.</div></div>';
+    return;
+  }
+
+  const totalPct = getAttendancePct(total.present, total.existing);
+  container.innerHTML =
+    '<div class="ios-merge-head">' +
+      '<div>' +
+        '<h3 class="ios-ss-head-title">Merged Attendance History</h3>' +
+        '<div class="ios-ss-head-date">Fan Assemble + Fan Dimmer & Blade · ' + savedDays + ' saved day' + (savedDays === 1 ? '' : 's') + ' counted</div>' +
+      '</div>' +
+      '<div class="ios-ss-ring" style="--pct:' + totalPct + '"><span class="ios-ss-ring-val">' + totalPct + '%</span></div>' +
+    '</div>' +
+    '<div class="ios-merge-kpis">' +
+      '<div><span>Saved Days</span><b>' + savedDays + '</b></div>' +
+      '<div><span>Total Existing</span><b class="k-existing">' + total.existing + '</b></div>' +
+      '<div><span>Total Present</span><b class="k-present">' + total.present + '</b></div>' +
+      '<div><span>Total Absent</span><b class="k-absent">' + total.absent + '</b></div>' +
+    '</div>' +
+    '<div class="ios-merge-list">' + cards.join('') + '</div>';
+}
+
 function _renderHistoryState(dateStr, state, container) {
   try {
-    var formattedDate = dateStr;
-    try { formattedDate = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}); } catch(e) {}
+    var formattedDate = formatHistoryDate(dateStr);
 
     var totalAuth = 0, totalExist = 0, totalPresent = 0, totalAbsent = 0;
     var sectionsHtml = '';
-
-    function barClass(pct) {
-      if (pct >= 90) return 'high';
-      if (pct >= 70) return 'mid';
-      return 'low';
-    }
 
     var pageIds = Object.keys(state);
     pageIds.forEach(function(pageId) {
@@ -3904,8 +4074,11 @@ function _renderHistoryState(dateStr, state, container) {
           rowsHtml +=
             '<div class="ios-ss-row">' +
               '<div class="ios-ss-desig">' +
-                '<div class="ios-ss-desig-name">' + r.desig + '</div>' +
-                '<div class="ios-ss-bar"><div class="ios-ss-bar-fill ' + barClass(pct) + '" style="width:' + pct + '%"></div></div>' +
+                '<div class="ios-ss-desig-name">' + historyEscapeHtml(r.desig) + '</div>' +
+                '<div class="ios-ss-mini-meta">' +
+                  '<span class="ios-ss-mini-dot ' + getAttendanceTone(pct) + '"></span>' +
+                  '<span>' + pct + '% present</span>' +
+                '</div>' +
               '</div>' +
               '<div class="ios-ss-chips">' +
                 '<span class="ios-ss-chip c-exist"><span class="lbl">E</span>' + r.existing + '</span>' +
@@ -3918,7 +4091,7 @@ function _renderHistoryState(dateStr, state, container) {
         sectionsHtml +=
           '<div class="ios-ss-section">' +
             '<div class="ios-ss-sec-head">' +
-              '<h4 class="ios-ss-sec-title">' + groupName + '</h4>' +
+              '<h4 class="ios-ss-sec-title">' + historyEscapeHtml(groupName) + '</h4>' +
               '<div class="ios-ss-sec-summary"><b>' + secPresent + '</b>/' + secExist + ' present · <i>' + secAbsent + '</i> absent</div>' +
             '</div>' +
             '<div class="ios-ss-rows">' + rowsHtml + '</div>' +

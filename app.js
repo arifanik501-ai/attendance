@@ -1918,16 +1918,16 @@ function _performDashboardRender() {
 
         <!-- History Button -->
         <div class="fab-child history-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="history-btn" class="no-print solid-fab-btn" data-tip-title="Attendance History" data-tip-desc="View past snapshots" data-tip-shortcut="Ctrl+H" data-tip-placement="left"
+          <button id="history-btn" class="no-print solid-fab-btn" data-tip-title="Admin" data-tip-desc="Protected attendance history" data-tip-shortcut="Pass: 12" data-tip-placement="left"
             style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
             position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(139,92,246,0.3), 0 0 0 4px rgba(139,92,246,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
-            onclick="window.openHistoryModal()">
-            <svg class="pfab pfab-hist" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(139,92,246,0.45));" aria-hidden="true"><defs><linearGradient id="g-hist-glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(237,233,254,0.95)"/><stop offset="50%" stop-color="rgba(196,181,253,0.6)"/><stop offset="100%" stop-color="rgba(167,139,250,0.35)"/></linearGradient><linearGradient id="g-hist-cap" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c4b5fd"/><stop offset="100%" stop-color="#6d28d9"/></linearGradient><linearGradient id="g-hist-sand" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fde68a"/><stop offset="60%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#b45309"/></linearGradient><clipPath id="g-hist-top-clip"><path d="M5 3.2 L19 3.2 Q19 9, 12 12 Q5 9, 5 3.2 Z"/></clipPath><clipPath id="g-hist-bottom-clip"><path d="M5 20.8 L19 20.8 Q19 15, 12 12 Q5 15, 5 20.8 Z"/></clipPath></defs><g class="pf-hourglass"><rect class="pf-cap pf-cap-top" x="3.2" y="1.8" width="17.6" height="1.8" rx="0.8" fill="url(#g-hist-cap)"/><rect class="pf-cap pf-cap-bottom" x="3.2" y="20.4" width="17.6" height="1.8" rx="0.8" fill="url(#g-hist-cap)"/><path class="pf-glass" d="M5 3.2 L19 3.2 Q19 9, 12 12 Q5 9, 5 3.2 Z M5 20.8 L19 20.8 Q19 15, 12 12 Q5 15, 5 20.8 Z" fill="url(#g-hist-glass)" stroke="#7c3aed" stroke-width="1.05" stroke-linejoin="round"/><g clip-path="url(#g-hist-top-clip)"><path class="pf-sand-top" d="M5 3.2 L19 3.2 L19 7.8 L5 7.8 Z" fill="url(#g-hist-sand)"/></g><g clip-path="url(#g-hist-bottom-clip)"><path class="pf-sand-bottom" d="M6.5 20.8 L17.5 20.8 L14.5 17.5 L9.5 17.5 Z" fill="url(#g-hist-sand)"/></g><circle class="pf-grain g1" cx="12" cy="9" r="0.5" fill="#f59e0b"/><circle class="pf-grain g2" cx="12" cy="9" r="0.5" fill="#f59e0b"/><circle class="pf-grain g3" cx="12" cy="9" r="0.45" fill="#fbbf24"/><path class="pf-glass-highlight" d="M6.5 3.6 L7.4 7.5" stroke="rgba(255,255,255,0.85)" stroke-width="0.8" stroke-linecap="round" fill="none"/></g></svg>
-            <span style="font-size:0.52rem; font-weight:800; color:#8b5cf6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">HIST</span>
+            onclick="window.openAdminHistoryModal()">
+            <svg class="pfab pfab-admin" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(124,58,237,0.45));" aria-hidden="true"><defs><linearGradient id="g-admin-shield" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#c4b5fd"/><stop offset="55%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#4c1d95"/></linearGradient><radialGradient id="g-admin-face" cx="50%" cy="35%" r="68%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#ede9fe"/></radialGradient></defs><path d="M12 2.8l7 2.8v5.4c0 4.7-2.8 8.4-7 10.2-4.2-1.8-7-5.5-7-10.2V5.6l7-2.8z" fill="url(#g-admin-shield)" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/><circle cx="12" cy="9.2" r="2.6" fill="url(#g-admin-face)"/><path d="M7.9 16.8c.8-2.2 2.2-3.4 4.1-3.4s3.3 1.2 4.1 3.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M9.2 18.4h5.6" stroke="rgba(255,255,255,0.7)" stroke-width="1.2" stroke-linecap="round"/></svg>
+            <span style="font-size:0.52rem; font-weight:800; color:#8b5cf6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">ADMIN</span>
           </button>
         </div>
 
@@ -3617,6 +3617,16 @@ function _saveAttendanceHistory(state) {
   } catch(e) { console.error('_saveAttendanceHistory error:', e); }
 }
 
+window.openAdminHistoryModal = function() {
+  const pass = prompt('Enter Admin Password');
+  if (pass === null) return;
+  if (pass !== '12') {
+    alert('Wrong admin password');
+    return;
+  }
+  window.openHistoryModal();
+};
+
 window.openHistoryModal = function() {
   if (document.getElementById('history-modal')) return;
 
@@ -3634,35 +3644,24 @@ window.openHistoryModal = function() {
           <div class="ios-hm-icon" aria-hidden="true">
             <svg class="ios-hm-icon-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <radialGradient id="ios-hm-face" cx="50%" cy="40%" r="60%">
-                  <stop offset="0%" stop-color="#fff" stop-opacity="0.95"/>
-                  <stop offset="70%" stop-color="#ede9fe" stop-opacity="0.85"/>
-                  <stop offset="100%" stop-color="#c4b5fd" stop-opacity="0.75"/>
-                </radialGradient>
+                <linearGradient id="ios-admin-shield" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.96"/><stop offset="100%" stop-color="#ddd6fe" stop-opacity="0.84"/></linearGradient>
               </defs>
-              <circle cx="12" cy="12" r="10" fill="url(#ios-hm-face)" stroke="#fff" stroke-width="1.2" stroke-opacity="0.85"/>
-              <circle cx="12" cy="12" r="10" fill="none" stroke="rgba(124,58,237,0.45)" stroke-width="0.6"/>
-              <g stroke="#fff" stroke-width="1" stroke-linecap="round">
-                <line x1="12" y1="3" x2="12" y2="4.5"/>
-                <line x1="21" y1="12" x2="19.5" y2="12"/>
-                <line x1="12" y1="21" x2="12" y2="19.5"/>
-                <line x1="3" y1="12" x2="4.5" y2="12"/>
-              </g>
-              <line class="ios-hm-icon-hand-hour" x1="12" y1="12" x2="12" y2="7.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
-              <line class="ios-hm-icon-hand-min" x1="12" y1="12" x2="16.2" y2="12" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
-              <circle cx="12" cy="12" r="1" fill="#fff"/>
+              <path d="M12 2.9l7.1 2.8v5.5c0 4.8-2.9 8.5-7.1 10.3-4.2-1.8-7.1-5.5-7.1-10.3V5.7L12 2.9z" fill="url(#ios-admin-shield)" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/>
+              <circle cx="12" cy="9.4" r="2.4" fill="#7c3aed"/>
+              <path d="M8.2 16.5c.75-2.05 2.05-3.1 3.8-3.1s3.05 1.05 3.8 3.1" stroke="#7c3aed" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M9.1 18.1h5.8" stroke="#a78bfa" stroke-width="1.2" stroke-linecap="round"/>
             </svg>
           </div>
           <div>
             <h2 id="ios-hm-title" class="ios-hm-title">
-              Attendance History
+              Admin
               <span id="history-count-badge" class="ios-hm-count-badge" aria-hidden="true">
                 <span class="ios-hm-count-dot"></span>
                 <span class="ios-hm-count-num">\u2014</span>
                 <span class="ios-hm-count-lbl">snapshots</span>
               </span>
             </h2>
-            <div class="ios-hm-sub">Browse past records by date</div>
+            <div class="ios-hm-sub">Protected attendance history</div>
           </div>
         </div>
         <div class="ios-hm-header-actions">
@@ -3678,7 +3677,7 @@ window.openHistoryModal = function() {
 
       <div class="ios-hm-body">
         <aside class="ios-hm-sidebar">
-          <div class="ios-hm-sidebar-eyebrow" aria-hidden="true">Archive</div>
+          <div class="ios-hm-sidebar-eyebrow" aria-hidden="true">Admin Archive</div>
           <div class="ios-hm-month-nav">
             <button class="ios-hm-nav-btn" onclick="window.changeHistoryMonth(-1)" aria-label="Previous month">
               <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -3696,7 +3695,7 @@ window.openHistoryModal = function() {
           <div id="history-calendar-grid" class="ios-hm-grid"></div>
 
           <div class="ios-hm-legend">
-            <span class="ios-hm-legend-dot"></span>Green dots indicate saved snapshots
+            <span class="ios-hm-legend-dot"></span>Green dots indicate saved admin snapshots
           </div>
         </aside>
 
@@ -3707,7 +3706,7 @@ window.openHistoryModal = function() {
               <span class="ios-hm-empty-ring ios-hm-empty-ring-2"></span>
               <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><circle cx="8.5" cy="14.5" r="1" fill="currentColor"/><circle cx="12" cy="14.5" r="1" fill="currentColor"/><circle cx="15.5" cy="14.5" r="1" fill="currentColor"/></svg>
             </div>
-            <div class="ios-hm-empty-text">Select a date to view history</div>
+            <div class="ios-hm-empty-text">Select a date to view admin history</div>
             <div class="ios-hm-empty-hint">Days with a glowing dot have saved snapshots</div>
           </div>
         </section>

@@ -6210,6 +6210,40 @@ body[data-theme] .btn-primary:hover {
   font-size: 0.78rem;
   letter-spacing: -0.005em;
 }
+.ios-ss-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.ios-ss-delete-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 9px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #b91c1c;
+  background: rgba(254, 226, 226, 0.82);
+  box-shadow:
+    inset 0 0 0 1px rgba(239, 68, 68, 0.22),
+    0 10px 22px -16px rgba(185, 28, 28, 0.75);
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+.ios-ss-delete-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(254, 202, 202, 0.95);
+  box-shadow:
+    inset 0 0 0 1px rgba(239, 68, 68, 0.36),
+    0 14px 28px -18px rgba(185, 28, 28, 0.85);
+}
+.ios-ss-delete-btn:active {
+  transform: scale(0.96);
+}
 .ios-ss-ring {
   --pct: 0;
   width: 60px;

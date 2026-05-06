@@ -3862,6 +3862,53 @@ window._loadHistoryForDate = function(dateStr) {
   }
 };
 
+window.deleteHistoryDate = function(dateStr) {
+  if (!window.firebaseDb) {
+    alert('Firebase not connected!');
+    return;
+  }
+
+  const formattedDate = formatHistoryDate(dateStr);
+  const confirmed = confirm(
+    'Warning: This will permanently delete attendance history for ' +
+    formattedDate +
+    '.\n\nThis action cannot be undone. Delete this date?'
+  );
+  if (!confirmed) return;
+
+  const viewer = document.getElementById('history-data-viewer');
+  if (viewer) {
+    viewer.innerHTML = `
+      <div class="ios-hm-loader">
+        <div class="ios-hm-spinner"></div>
+        <div class="ios-hm-loader-text">Deleting snapshot for ${historyEscapeHtml(dateStr)}…</div>
+      </div>
+    `;
+  }
+
+  Promise.all([
+    window.firebaseDb.ref('mep_attendance_history/' + dateStr).remove(),
+    window.firebaseDb.ref('mep_attendance_history_index/' + dateStr).remove()
+  ]).then(function() {
+    window.savedHistoryDates.delete(dateStr);
+    if (window.historySelectedDate === dateStr) window.historySelectedDate = null;
+    window.historyMergedMode = false;
+    updateMergedHistoryButtonState();
+    window._renderHistoryCalendar();
+    window._updateHistoryCountBadge();
+    if (viewer) {
+      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">Deleted history for ' + historyEscapeHtml(formattedDate) + '.</div><div class="ios-hm-empty-hint">Select another saved date to view admin history.</div></div>';
+    }
+  }).catch(function(err) {
+    console.error('History delete error:', err);
+    if (viewer) {
+      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text" style="color:#ef4444;">Error deleting history</div><div class="ios-hm-empty-hint">' + historyEscapeHtml(err.message || String(err)) + '</div></div>';
+    } else {
+      alert('Error deleting history: ' + (err.message || err));
+    }
+  });
+};
+
 function updateMergedHistoryButtonState() {
   const btn = document.getElementById('fan-merge-history-btn');
   if (!btn) return;
@@ -4038,7 +4085,13 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
         '<h3 class="ios-ss-head-title">Daily Worker Merge</h3>' +
         '<div class="ios-ss-head-date">' + historyEscapeHtml(formatHistoryDate(dateStr)) + ' · Fan Assemble Worker + Fan Dimmer Worker</div>' +
       '</div>' +
-      '<div class="ios-ss-ring" style="--pct:' + totalPct + '"><span class="ios-ss-ring-val">' + totalPct + '%</span></div>' +
+      '<div class="ios-ss-head-actions">' +
+        '<button class="ios-ss-delete-btn" onclick="window.deleteHistoryDate(\'' + historyEscapeHtml(dateStr) + '\')" type="button">' +
+          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>' +
+          '<span>Delete Date</span>' +
+        '</button>' +
+        '<div class="ios-ss-ring" style="--pct:' + totalPct + '"><span class="ios-ss-ring-val">' + totalPct + '%</span></div>' +
+      '</div>' +
     '</div>' +
     '<div class="ios-merge-kpis">' +
       '<div><span>Type</span><b>Worker</b></div>' +
@@ -4135,7 +4188,13 @@ function _renderHistoryState(dateStr, state, container) {
           '<h3 class="ios-ss-head-title">Attendance Snapshot</h3>' +
           '<div class="ios-ss-head-date">' + formattedDate + '</div>' +
         '</div>' +
-        '<div class="ios-ss-ring" style="--pct:' + pct + '"><span class="ios-ss-ring-val">' + pct + '%</span></div>' +
+        '<div class="ios-ss-head-actions">' +
+          '<button class="ios-ss-delete-btn" onclick="window.deleteHistoryDate(\'' + historyEscapeHtml(dateStr) + '\')" type="button">' +
+            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>' +
+            '<span>Delete Date</span>' +
+          '</button>' +
+          '<div class="ios-ss-ring" style="--pct:' + pct + '"><span class="ios-ss-ring-val">' + pct + '%</span></div>' +
+        '</div>' +
       '</div>' +
       '<div class="ios-ss-kpi">' +
         '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Authorized</div><div class="ios-ss-kpi-value k-total">' + (totalAuth || totalExist) + '</div></div>' +

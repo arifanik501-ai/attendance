@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.36';
+const APP_VERSION = '2.6.37';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -427,20 +427,26 @@ function getAppState() {
     const w = stateToReturn.takbir["Fan Armature"].find(x => x.designation === "Worker");
     if (w) w.authorized = 28;
   }
-if (stateToReturn.anik && stateToReturn.anik["Fan Dimmer & Blade"]) {
-  const w = stateToReturn.anik["Fan Dimmer & Blade"].find(x => x.designation === "Worker");
-  if (w) w.authorized = 17;
-}
-if (stateToReturn.anwar && stateToReturn.anwar["Fan Auto Powder Coating"]) {
-  const w = stateToReturn.anwar["Fan Auto Powder Coating"].find(x => x.designation === "Worker");
-  if (w) w.authorized = 40;
-}
-if (stateToReturn.bikash && stateToReturn.bikash["Fan Rojonigondha"]) {
-  const w = stateToReturn.bikash["Fan Rojonigondha"].find(x => x.designation === "Worker");
-  if (w) w.authorized = 9;
-}
+  if (stateToReturn.anik && stateToReturn.anik["Fan Dimmer & Blade"]) {
+    const w = stateToReturn.anik["Fan Dimmer & Blade"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 17;
+  }
+  if (stateToReturn.monir && stateToReturn.monir["Power Press & Stamping"]) {
+    const eng = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Engineer");
+    const tech = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Technicalman");
+    if (eng) eng.authorized = 3;
+    if (tech) tech.authorized = 2;
+  }
+  if (stateToReturn.anwar && stateToReturn.anwar["Fan Auto Powder Coating"]) {
+    const w = stateToReturn.anwar["Fan Auto Powder Coating"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 40;
+  }
+  if (stateToReturn.bikash && stateToReturn.bikash["Fan Rojonigondha"]) {
+    const w = stateToReturn.bikash["Fan Rojonigondha"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 9;
+  }
 
-return stateToReturn;
+  return stateToReturn;
 }
 
 // ═══════════════════════════════════════════════════

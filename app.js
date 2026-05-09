@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.37';
+const APP_VERSION = '2.6.38';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -668,11 +668,57 @@ function installSmoothNav() {
   }, true);
 }
 
+const APP_SW_URL = './sw.js';
+let appSwRegistrationPromise = null;
+
+function reloadForFreshServiceWorker() {
+  if (sessionStorage.getItem('mep_sw_reloading') === APP_VERSION) return;
+  sessionStorage.setItem('mep_sw_reloading', APP_VERSION);
+  window.location.reload();
+}
+
+function registerFreshServiceWorker() {
+  if (!('serviceWorker' in navigator)) return Promise.resolve(null);
+  if (!appSwRegistrationPromise) {
+    appSwRegistrationPromise = navigator.serviceWorker.register(APP_SW_URL, { updateViaCache: 'none' })
+      .then(reg => {
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        reg.addEventListener('updatefound', () => {
+          const worker = reg.installing;
+          if (!worker) return;
+          worker.addEventListener('statechange', () => {
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+              worker.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+        reg.update().catch(() => {});
+        return reg;
+      })
+      .catch(err => {
+        appSwRegistrationPromise = null;
+        console.error('SW registration failed:', err);
+        return null;
+      });
+  }
+  return appSwRegistrationPromise;
+}
+
+function installServiceWorkerRefresh() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.addEventListener('controllerchange', reloadForFreshServiceWorker);
+  registerFreshServiceWorker();
+}
+
 // Install once as soon as possible. Safe to call repeatedly.
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', installSmoothNav, { once: true });
+  document.addEventListener('DOMContentLoaded', installServiceWorkerRefresh, { once: true });
 } else {
   installSmoothNav();
+  installServiceWorkerRefresh();
 }
 
 function generateSidebar(activePage) {
@@ -3092,9 +3138,9 @@ const MEP_NOTIFICATION = {
       return null;
     }
     try {
-      const reg = await navigator.serviceWorker.register('./sw.js');
+      const reg = await registerFreshServiceWorker();
       this.swRegistration = reg;
-      console.log('✅ Service Worker registered');
+      if (reg) console.log('✅ Service Worker registered');
       return reg;
     } catch (err) {
       console.error('SW registration failed:', err);

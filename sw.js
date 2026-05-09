@@ -3,12 +3,12 @@
 // Daily 8:00 AM & 1:00 PM Attendance Notifications
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-fan-v76';
+const CACHE_NAME = 'mep-fan-v77';
 const NOTIFICATION_HOUR_AM = 8; // 8:00 AM
 const NOTIFICATION_HOUR_PM = 13; // 1:00 PM
 const NOTIFICATION_MINUTE = 0;
 
-const ASSET_VERSION = 'v=71';
+const ASSET_VERSION = 'v=72';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -48,23 +48,28 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (event.request.url.includes('firebaseio.com') || event.request.url.includes('googleapis.com')) return;
 
-  event.respondWith(
-    fetch(event.request).then(response => {
-      // Cache successful responses
+  event.respondWith((async () => {
+    try {
+      const response = await fetch(event.request, { cache: 'no-store' });
       if (response && response.status === 200) {
         const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(event.request, clone);
       }
       return response;
-    }).catch(() => {
-      // Offline fallback
-      return caches.match(event.request);
-    })
-  );
+    } catch (err) {
+      const cached = await caches.match(event.request);
+      if (cached) return cached;
+      throw err;
+    }
+  })());
 });
 
 // Listen for messages from the main page
 self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
   if (event.data && event.data.type === 'ENABLE_NOTIFICATIONS') {
     startNotificationCheck();
   }

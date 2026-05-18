@@ -127,6 +127,10 @@ function buildExportAnalogClockSvg(snapshot = getClockSnapshot(), theme = getAct
   const hourAngle = snapshot.hourDegrees;
   const minuteAngle = snapshot.minDegrees;
   const secondAngle = snapshot.secondDegrees;
+  const isMonochromeExport = theme.id === 'monochrome-export';
+  const minuteHandStroke = isMonochromeExport ? themeDeep : '#1e293b';
+  const secondHandStroke = isMonochromeExport ? themeDeep : '#dc2626';
+  const clockFaceStop = isMonochromeExport ? '#ffffff' : '#f8fafc';
 
   return `
     <svg class="export-analog-clock-svg" viewBox="0 0 140 140" width="108" height="108" aria-label="Export clock ${snapshot.displayTime} ${snapshot.ampm}" xmlns="http://www.w3.org/2000/svg">
@@ -138,7 +142,7 @@ function buildExportAnalogClockSvg(snapshot = getClockSnapshot(), theme = getAct
         </linearGradient>
         <radialGradient id="exportClockFace" cx="42" cy="28" r="104" gradientUnits="userSpaceOnUse">
           <stop offset="0" stop-color="#ffffff"/>
-          <stop offset="0.72" stop-color="#f8fafc"/>
+          <stop offset="0.72" stop-color="${clockFaceStop}"/>
           <stop offset="1" stop-color="${themeSoft}"/>
         </radialGradient>
       </defs>
@@ -147,8 +151,8 @@ function buildExportAnalogClockSvg(snapshot = getClockSnapshot(), theme = getAct
       ${ticks}
       ${numbers}
       <line x1="70" y1="74" x2="70" y2="38" stroke="${themeDeep}" stroke-width="5.4" stroke-linecap="round" transform="rotate(${hourAngle} 70 70)"/>
-      <line x1="70" y1="76" x2="70" y2="26" stroke="#1e293b" stroke-width="3.8" stroke-linecap="round" transform="rotate(${minuteAngle} 70 70)"/>
-      <line x1="70" y1="82" x2="70" y2="18" stroke="#dc2626" stroke-width="2" stroke-linecap="round" transform="rotate(${secondAngle} 70 70)"/>
+      <line x1="70" y1="76" x2="70" y2="26" stroke="${minuteHandStroke}" stroke-width="3.8" stroke-linecap="round" transform="rotate(${minuteAngle} 70 70)"/>
+      <line x1="70" y1="82" x2="70" y2="18" stroke="${secondHandStroke}" stroke-width="2" stroke-linecap="round" transform="rotate(${secondAngle} 70 70)"/>
       <circle cx="70" cy="70" r="7.2" fill="${themeMain}" stroke="#ffffff" stroke-width="2.6"/>
       <circle cx="70" cy="70" r="2.4" fill="#ffffff"/>
     </svg>`;
@@ -269,6 +273,13 @@ function getBranchAttendancePeriodState(state, pageId, periodKey, createIfMissin
 function isTickValueChecked(value) {
   return value === true || value === 1 || value === '1' || value === 'true';
 }
+
+const OVERTIME_EXPORT_THEME = Object.freeze({
+  id: 'monochrome-export',
+  bg: ['#ffffff', '#ffffff', '#ffffff'],
+  palette: ['#ffffff', '#000000', '#000000'],
+  contrast: '#ffffff'
+});
 
 function getAllBranchAttendanceRows() {
   const rows = [];
@@ -1591,7 +1602,7 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
           <p>${period.rangeLabel} · ${period.label}</p>
         </div>
         <div class="ot-export-clock-shell">
-          ${buildExportClockMarkup(clock, getActiveTheme(), {
+          ${buildExportClockMarkup(clock, OVERTIME_EXPORT_THEME, {
             analogSize: 90,
             widgetPadding: '0.64rem 0.84rem',
             width: '188px',
@@ -1718,7 +1729,6 @@ window.downloadOvertimeAttendanceJpg = function () {
 };
 
 function downloadOvertimeAttendanceJpgOriginal() {
-  const exportTheme = getActiveTheme();
   const periodOffset = document.getElementById('overtime-dashboard-report')
     ? getOvertimeDashboardPeriodOffset()
     : (window.branchAttendanceModalOffset || 0);
@@ -1727,7 +1737,7 @@ function downloadOvertimeAttendanceJpgOriginal() {
   exportNode.className = 'ot-export-canvas';
   exportNode.innerHTML = buildOvertimeAttendanceJpgHtml(getAppState(), period);
   document.body.appendChild(exportNode);
-  applyThemeToOvertimeExport(exportNode.querySelector('.ot-export-sheet'), exportTheme);
+  applyThemeToOvertimeExport(exportNode.querySelector('.ot-export-sheet'));
 
   if (typeof html2canvas === 'undefined') {
     alert("Missing html2canvas script! Please ensure html2canvas is loaded.");
@@ -1737,7 +1747,7 @@ function downloadOvertimeAttendanceJpgOriginal() {
 
   return html2canvas(exportNode.querySelector('.ot-export-sheet'), {
     scale: Math.max(2, Math.min(3, window.devicePixelRatio || 2)),
-    backgroundColor: exportTheme.bg[0],
+    backgroundColor: '#ffffff',
     useCORS: true,
     scrollX: 0,
     scrollY: 0
@@ -2401,42 +2411,71 @@ function applyThemeToExportRoot(root, theme) {
   root.style.setProperty('--glass-shadow', `0 15px 45px 0 ${rgbaFromHex(main, 0.24)}`);
 }
 
-function applyThemeToOvertimeExport(sheet, theme) {
-  if (!sheet || !theme) return;
-  const [soft, main, deep] = theme.palette;
-  applyThemeToExportRoot(sheet, theme);
-  sheet.style.background = getThemeBackground(theme, 0.24);
-  sheet.querySelector('.ot-export-watermark')?.style.setProperty('background', `radial-gradient(circle, ${rgbaFromHex(main, 0.14)}, transparent 68%)`);
-  sheet.querySelector('.ot-export-company')?.style.setProperty('color', deep);
-  sheet.querySelector('.ot-export-company')?.style.setProperty('background', rgbaFromHex(soft, 0.42));
-  sheet.querySelector('.ot-export-head h1')?.style.setProperty('color', deep);
-  sheet.querySelector('.ot-export-badge')?.style.setProperty('background', `linear-gradient(135deg, ${main}, ${deep})`);
+function applyThemeToOvertimeExport(sheet) {
+  if (!sheet) return;
+  const black = '#000000';
+  const white = '#ffffff';
+  const setStyles = (el, styles) => {
+    if (!el) return;
+    Object.entries(styles).forEach(([property, value]) => el.style.setProperty(property, value));
+  };
+
+  applyThemeToExportRoot(sheet, OVERTIME_EXPORT_THEME);
+  setStyles(sheet, { background: white, color: black, 'box-shadow': 'none' });
+  setStyles(sheet.querySelector('.ot-export-watermark'), { display: 'none' });
+  setStyles(sheet.querySelector('.ot-export-head'), {
+    background: white,
+    border: `2px solid ${black}`,
+    'border-radius': '0',
+    'box-shadow': 'none'
+  });
+  setStyles(sheet.querySelector('.ot-export-company'), {
+    background: white,
+    border: `1px solid ${black}`,
+    color: black,
+    'border-radius': '0'
+  });
+  setStyles(sheet.querySelector('.ot-export-head h1'), { color: black });
+  setStyles(sheet.querySelector('.ot-export-head p'), { color: black });
+  setStyles(sheet.querySelector('.export-clock-widget'), {
+    background: white,
+    border: `1px solid ${black}`,
+    color: black,
+    'border-radius': '0'
+  });
+  setStyles(sheet.querySelector('.export-clock-accent'), { background: black });
   sheet.querySelectorAll('.ot-export-meta span').forEach(el => {
-    el.style.color = deep;
-    el.style.background = rgbaFromHex(soft, 0.5);
+    setStyles(el, {
+      background: white,
+      border: `1px solid ${black}`,
+      color: black,
+      'border-radius': '0',
+      'box-shadow': 'none'
+    });
   });
-  sheet.querySelectorAll('.ot-export-table th').forEach(th => {
-    th.style.color = deep;
-    th.style.background = rgbaFromHex(soft, 0.78);
+  setStyles(sheet.querySelector('.ot-export-table'), {
+    background: white,
+    border: `2px solid ${black}`,
+    'border-collapse': 'collapse',
+    'border-radius': '0',
+    'box-shadow': 'none'
   });
-  sheet.querySelectorAll('.ot-export-table td:not(.ot-export-branch):not(:empty)').forEach(td => {
-    td.style.background = `linear-gradient(135deg, ${main}, ${deep})`;
+  sheet.querySelectorAll('.ot-export-table th, .ot-export-table td').forEach(cell => {
+    setStyles(cell, {
+      background: white,
+      border: `1px solid ${black}`,
+      color: black,
+      'box-shadow': 'none'
+    });
   });
   sheet.querySelectorAll('.ot-export-total-head, .ot-export-total').forEach(el => {
-    el.style.color = deep;
-    el.style.background = rgbaFromHex(soft, 0.62);
+    setStyles(el, { background: white, color: black });
   });
   sheet.querySelectorAll('.ot-export-table .today').forEach(el => {
-    el.style.boxShadow = `inset 0 0 0 2px ${rgbaFromHex(main, 0.48)}`;
+    setStyles(el, { 'box-shadow': `inset 0 0 0 2px ${black}` });
   });
-  sheet.querySelectorAll('.ot-export-table .friday').forEach(el => {
-    el.style.color = '#7f1d1d';
-    el.style.background = 'linear-gradient(135deg, rgba(254, 226, 226, 0.96), rgba(254, 202, 202, 0.82))';
-    el.style.boxShadow = 'inset 0 0 0 2px rgba(220, 38, 38, 0.32)';
-  });
-  sheet.querySelectorAll('.ot-export-table td.friday:not(.ot-export-branch):not(:empty)').forEach(td => {
-    td.style.color = '#ffffff';
-    td.style.background = 'linear-gradient(135deg, #f97316, #dc2626)';
+  sheet.querySelectorAll('.ot-export-table td:not(.ot-export-branch):not(:empty)').forEach(td => {
+    setStyles(td, { background: black, color: white });
   });
 }
 

@@ -434,7 +434,9 @@ html.smooth-mode .smooth-mode-toggle.active {
 
 /* Disable animations for JPG export */
 .a4-report,
-.a4-report * {
+.a4-report *,
+.ot-export-canvas,
+.ot-export-canvas * {
   animation: none !important;
   transition: none !important;
 }

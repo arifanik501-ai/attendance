@@ -168,17 +168,23 @@ function buildExportClockMarkup(snapshot = getClockSnapshot(), theme = getActive
   const dateSize = options.dateSize || '0.58rem';
   const ampmSize = options.ampmSize || '0.5rem';
   const clockSvg = buildExportAnalogClockSvg(snapshot, theme).replace('width="108" height="108"', `width="${analogSize}" height="${analogSize}"`);
+  const isMonochromeExport = theme.id === 'monochrome-export';
+  const clockBorderColor = isMonochromeExport ? themeDeep : themeSoft;
+  const clockRadius = isMonochromeExport ? '0' : '14px';
+  const clockTextColor = isMonochromeExport ? themeDeep : '#0f172a';
+  const clockDateColor = isMonochromeExport ? themeDeep : '#475569';
+  const accentRadius = isMonochromeExport ? '0' : '999px';
 
   return `
-    <div class="export-clock-widget" style="padding:${widgetPadding}; width:${clockWidth}; min-width:${clockWidth}; max-width:${clockWidth}; background:#ffffff; border-radius:14px; border:1.5px solid ${themeSoft}; margin:0; box-shadow:none; text-align:center; box-sizing:border-box; flex:0 0 auto;">
+    <div class="export-clock-widget" style="padding:${widgetPadding}; width:${clockWidth}; min-width:${clockWidth}; max-width:${clockWidth}; background:#ffffff; border-radius:${clockRadius}; border:1.5px solid ${clockBorderColor}; margin:0; box-shadow:none; text-align:center; box-sizing:border-box; flex:0 0 auto;">
       <div class="export-analog-clock" style="width:${analogSize}px; height:${analogSize}px; margin:0 auto 0.28rem auto; line-height:0;">
         ${clockSvg}
       </div>
-      <div class="export-digital-time" style="font-weight:850; font-size:${digitalSize}; color:#0f172a; letter-spacing:-0.035em; font-family:'Inter', sans-serif; margin:0 0 0.14rem; padding:0; background:transparent; border:0; box-shadow:none; display:flex; align-items:flex-start; justify-content:center; line-height:1;">
-        ${snapshot.displayTime}<span style="font-size:${ampmSize}; font-weight:850; margin-left:4px; color:${themeDeep}; letter-spacing:0;">${snapshot.ampm}</span>
+      <div class="export-digital-time" style="font-weight:850; font-size:${digitalSize}; color:${clockTextColor}; letter-spacing:-0.035em; font-family:'Inter', sans-serif; margin:0 0 0.14rem; padding:0; background:transparent; border:0; box-shadow:none; display:flex; align-items:flex-start; justify-content:center; line-height:1;">
+        ${snapshot.displayTime}<span style="font-size:${ampmSize}; font-weight:850; margin-left:4px; color:${clockTextColor}; letter-spacing:0;">${snapshot.ampm}</span>
       </div>
-      <div class="export-clock-date" style="font-weight:750; font-size:${dateSize}; color:#475569; background:transparent; line-height:1.1;">${dateText}</div>
-      <div class="export-clock-accent" style="width:34px; height:2px; margin:0.22rem auto 0; border-radius:999px; background:${themeMain};"></div>
+      <div class="export-clock-date" style="font-weight:750; font-size:${dateSize}; color:${clockDateColor}; background:transparent; line-height:1.1;">${dateText}</div>
+      <div class="export-clock-accent" style="width:34px; height:2px; margin:0.22rem auto 0; border-radius:${accentRadius}; background:${themeMain};"></div>
     </div>`;
 }
 
@@ -2443,7 +2449,10 @@ function applyThemeToOvertimeExport(sheet) {
     color: black,
     'border-radius': '0'
   });
-  setStyles(sheet.querySelector('.export-clock-accent'), { background: black });
+  setStyles(sheet.querySelector('.export-clock-accent'), { background: black, 'border-radius': '0' });
+  sheet.querySelectorAll('.export-digital-time, .export-digital-time span, .export-clock-date').forEach(el => {
+    setStyles(el, { color: black });
+  });
   sheet.querySelectorAll('.ot-export-meta span').forEach(el => {
     setStyles(el, {
       background: white,
@@ -2465,8 +2474,12 @@ function applyThemeToOvertimeExport(sheet) {
       background: white,
       border: `1px solid ${black}`,
       color: black,
-      'box-shadow': 'none'
+      'box-shadow': 'none',
+      opacity: '1'
     });
+  });
+  sheet.querySelectorAll('.ot-export-table th span, .ot-export-table .future').forEach(el => {
+    setStyles(el, { color: black, opacity: '1' });
   });
   sheet.querySelectorAll('.ot-export-total-head, .ot-export-total').forEach(el => {
     setStyles(el, { background: white, color: black });

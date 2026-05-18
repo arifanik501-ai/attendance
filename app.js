@@ -1580,7 +1580,7 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
     const dayMap = periodState[row.groupName] || {};
     const dateCells = dates.map(day => {
       const checked = !day.isFuture && isTickValueChecked(dayMap[day.key]);
-      return `<td class="${day.isFriday ? 'friday' : ''} ${day.isFuture ? 'future' : ''}">${checked ? '✓' : ''}</td>`;
+      return `<td class="${day.isFriday ? 'friday' : ''} ${day.isFuture ? 'future' : ''} ${checked ? 'checked' : ''}">${checked ? '<span class="ot-export-check">✓</span>' : ''}</td>`;
     }).join('');
     return `
       <tr>
@@ -2479,16 +2479,36 @@ function applyThemeToOvertimeExport(sheet) {
     });
   });
   sheet.querySelectorAll('.ot-export-table th span, .ot-export-table .future').forEach(el => {
-    setStyles(el, { color: black, opacity: '1' });
+    setStyles(el, { color: black, background: white, opacity: '1' });
+    el.style.setProperty('color', black, 'important');
+    el.style.setProperty('background', white, 'important');
   });
   sheet.querySelectorAll('.ot-export-total-head, .ot-export-total').forEach(el => {
     setStyles(el, { background: white, color: black });
   });
   sheet.querySelectorAll('.ot-export-table .today').forEach(el => {
-    setStyles(el, { 'box-shadow': `inset 0 0 0 2px ${black}` });
+    setStyles(el, { background: white, color: black, 'box-shadow': `inset 0 0 0 2px ${black}` });
+    el.style.setProperty('background', white, 'important');
+    el.style.setProperty('color', black, 'important');
   });
-  sheet.querySelectorAll('.ot-export-table td:not(.ot-export-branch):not(:empty)').forEach(td => {
-    setStyles(td, { background: black, color: white });
+  sheet.querySelectorAll('.ot-export-table td.checked').forEach(td => {
+    setStyles(td, { background: white, color: black });
+  });
+  sheet.querySelectorAll('.ot-export-check').forEach(mark => {
+    setStyles(mark, {
+      display: 'inline-flex',
+      width: '28px',
+      height: '28px',
+      'align-items': 'center',
+      'justify-content': 'center',
+      background: white,
+      border: `2px solid ${black}`,
+      color: black,
+      'border-radius': '50%',
+      'font-size': '20px',
+      'font-weight': '900',
+      'line-height': '1'
+    });
   });
 }
 

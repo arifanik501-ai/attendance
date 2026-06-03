@@ -1,4 +1,4 @@
-﻿// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // APP VERSION — update this string when you deploy a
 // new release. The change count below auto-increments
 // on every data save.
@@ -440,46 +440,49 @@ function getAppState() {
     }
   }
 
-  // Hardcoded Admin Authorized Values
-  if (stateToReturn.anik && stateToReturn.anik["Fan Assemble"]) {
-    const w = stateToReturn.anik["Fan Assemble"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 40;
-  }
-  if (stateToReturn.takbir && stateToReturn.takbir["Fan Armature"]) {
-    const w = stateToReturn.takbir["Fan Armature"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 32;
-  }
-  if (stateToReturn.anik && stateToReturn.anik["Fan Dimmer & Blade"]) {
-    const w = stateToReturn.anik["Fan Dimmer & Blade"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 17;
-  }
-  if (stateToReturn.takbir && stateToReturn.takbir["Fan Replace"]) {
-    const w = stateToReturn.takbir["Fan Replace"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 7;
-  }
-  if (stateToReturn.monir && stateToReturn.monir["Power Press & Stamping"]) {
-    const w = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 25;
-    const eng = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Engineer");
-    const tech = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Technicalman");
-    if (eng) eng.authorized = 3;
-    if (tech) tech.authorized = 2;
-  }
-  if (stateToReturn.monir && stateToReturn.monir["Fan Dalai & Die Casting"]) {
-    const w = stateToReturn.monir["Fan Dalai & Die Casting"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 23;
-  }
-  if (stateToReturn.anwar && stateToReturn.anwar["Fan Lathe"]) {
-    const w = stateToReturn.anwar["Fan Lathe"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 28;
-  }
-  if (stateToReturn.anwar && stateToReturn.anwar["Fan Auto Powder Coating"]) {
-    const w = stateToReturn.anwar["Fan Auto Powder Coating"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 45;
-  }
-  if (stateToReturn.bikash && stateToReturn.bikash["Fan Rojonigondha"]) {
-    const w = stateToReturn.bikash["Fan Rojonigondha"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 9;
+  // Hardcoded Admin Authorized Values — only apply when NOT in edit-auth mode
+  // (when user is editing authorized values, skip overrides so edits are preserved)
+  if (!isEditAuthEnabled()) {
+    if (stateToReturn.anik && stateToReturn.anik["Fan Assemble"]) {
+      const w = stateToReturn.anik["Fan Assemble"].find(x => x.designation === "Worker");
+      if (w) w.authorized = 40;
+    }
+    if (stateToReturn.takbir && stateToReturn.takbir["Fan Armature"]) {
+      const w = stateToReturn.takbir["Fan Armature"].find(x => x.designation === "Worker");
+      if (w) w.authorized = 32;
+    }
+    if (stateToReturn.anik && stateToReturn.anik["Fan Dimmer & Blade"]) {
+      const w = stateToReturn.anik["Fan Dimmer & Blade"].find(x => x.designation === "Worker");
+      if (w) w.authorized = 17;
+    }
+    if (stateToReturn.takbir && stateToReturn.takbir["Fan Replace"]) {
+      const w = stateToReturn.takbir["Fan Replace"].find(x => x.designation === "Worker");
+      if (w) w.authorized = 7;
+    }
+    if (stateToReturn.monir && stateToReturn.monir["Power Press & Stamping"]) {
+      const w = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Worker");
+      if (w) w.authorized = 25;
+      const eng = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Engineer");
+      const tech = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Technicalman");
+      if (eng) eng.authorized = 3;
+      if (tech) tech.authorized = 2;
+    }
+    if (stateToReturn.monir && stateToReturn.monir["Fan Dalai & Die Casting"]) {
+      const w = stateToReturn.monir["Fan Dalai & Die Casting"].find(x => x.designation === "Worker");
+      if (w) w.authorized = 23;
+    }
+    if (stateToReturn.anwar && stateToReturn.anwar["Fan Lathe"]) {
+      const w = stateToReturn.anwar["Fan Lathe"].find(x => x.designation === "Worker");
+      if (w) w.authorized = 28;
+    }
+    if (stateToReturn.anwar && stateToReturn.anwar["Fan Auto Powder Coating"]) {
+      const w = stateToReturn.anwar["Fan Auto Powder Coating"].find(x => x.designation === "Worker");
+      if (w) w.authorized = 45;
+    }
+    if (stateToReturn.bikash && stateToReturn.bikash["Fan Rojonigondha"]) {
+      const w = stateToReturn.bikash["Fan Rojonigondha"].find(x => x.designation === "Worker");
+      if (w) w.authorized = 9;
+    }
   }
 
   return stateToReturn;
@@ -1166,6 +1169,17 @@ function _renderEntryContent(pageId) {
     };
 
     document.getElementById('btn-save').onclick = () => {
+      // Sync any auth-input edits into the save state
+      document.querySelectorAll('.auth-input').forEach(inp => {
+        const g = inp.getAttribute('data-group');
+        const i = parseInt(inp.getAttribute('data-index'), 10);
+        const val = parseInt(inp.value) || 0;
+        if (state[pageId] && state[pageId][g] && state[pageId][g][i] !== undefined) {
+          state[pageId][g][i].authorized = val;
+        }
+      });
+      globalAppState = state;
+
       // Add history notification
       const now = new Date();
       if (!state.history) state.history = [];
@@ -2989,6 +3003,10 @@ function _openSettingsPanel() {
   modal.addEventListener('click', function(e) {
     if (e.target === modal) modal.remove();
   });
+
+  // Wire close button
+  var closeBtn = document.getElementById('settings-close-btn');
+  if (closeBtn) closeBtn.addEventListener('click', function() { modal.remove(); });
 
   var toggleBtn = document.getElementById('edit-auth-toggle');
   var knob = document.getElementById('edit-auth-knob');

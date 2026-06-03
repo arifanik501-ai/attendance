@@ -1,4 +1,4 @@
-// ═══════════════════════════════════════════════════
+﻿// ═══════════════════════════════════════════════════
 // APP VERSION — update this string when you deploy a
 // new release. The change count below auto-increments
 // on every data save.
@@ -71,6 +71,7 @@ const SESSION_DEVICE_ID = Math.random().toString(36).substring(2, 10) + Date.now
 const CUSTOM_PERIOD_CUTOFF_DAY = 26;
 const META_STATE_KEYS = ['history', 'branchAttendance'];
 const SMOOTH_MODE_STORAGE_KEY = 'mep_smooth_mode_enabled';
+const EDIT_AUTH_STORAGE_KEY = 'mep_edit_auth_enabled';
 
 function isMetaStateKey(key) {
   return META_STATE_KEYS.includes(key);
@@ -382,7 +383,7 @@ function createDefaultState() {
     let eng = state.anik["Fan Assemble"].find(x => x.designation === "Engineer");
     if (eng) { eng.authorized = 1; }
     let wkr = state.anik["Fan Assemble"].find(x => x.designation === "Worker");
-    if (wkr) { wkr.authorized = 36; wkr.existing = 36; wkr.present = 35; wkr.absent = 1; }
+    if (wkr) { wkr.authorized = 40; wkr.existing = 36; wkr.present = 35; wkr.absent = 1; }
   }
   return state;
 }
@@ -440,23 +441,41 @@ function getAppState() {
   }
 
   // Hardcoded Admin Authorized Values
+  if (stateToReturn.anik && stateToReturn.anik["Fan Assemble"]) {
+    const w = stateToReturn.anik["Fan Assemble"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 40;
+  }
   if (stateToReturn.takbir && stateToReturn.takbir["Fan Armature"]) {
     const w = stateToReturn.takbir["Fan Armature"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 28;
+    if (w) w.authorized = 32;
   }
   if (stateToReturn.anik && stateToReturn.anik["Fan Dimmer & Blade"]) {
     const w = stateToReturn.anik["Fan Dimmer & Blade"].find(x => x.designation === "Worker");
     if (w) w.authorized = 17;
   }
+  if (stateToReturn.takbir && stateToReturn.takbir["Fan Replace"]) {
+    const w = stateToReturn.takbir["Fan Replace"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 7;
+  }
   if (stateToReturn.monir && stateToReturn.monir["Power Press & Stamping"]) {
+    const w = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 25;
     const eng = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Engineer");
     const tech = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Technicalman");
     if (eng) eng.authorized = 3;
     if (tech) tech.authorized = 2;
   }
+  if (stateToReturn.monir && stateToReturn.monir["Fan Dalai & Die Casting"]) {
+    const w = stateToReturn.monir["Fan Dalai & Die Casting"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 23;
+  }
+  if (stateToReturn.anwar && stateToReturn.anwar["Fan Lathe"]) {
+    const w = stateToReturn.anwar["Fan Lathe"].find(x => x.designation === "Worker");
+    if (w) w.authorized = 28;
+  }
   if (stateToReturn.anwar && stateToReturn.anwar["Fan Auto Powder Coating"]) {
     const w = stateToReturn.anwar["Fan Auto Powder Coating"].find(x => x.designation === "Worker");
-    if (w) w.authorized = 40;
+    if (w) w.authorized = 45;
   }
   if (stateToReturn.bikash && stateToReturn.bikash["Fan Rojonigondha"]) {
     const w = stateToReturn.bikash["Fan Rojonigondha"].find(x => x.designation === "Worker");
@@ -1073,9 +1092,23 @@ function _renderEntryContent(pageId) {
         sums.pres += parseInt(row.present) || 0;
         sums.abs += parseInt(row.absent) || 0;
 
+        const editAuthOn = isEditAuthEnabled();
+        const authCellContent = editAuthOn
+          ? `<input type="number" min="0"
+              class="entry-input auth-input"
+              data-group="${groupName}"
+              data-index="${index}"
+              value="${row.authorized}"
+              style="text-align:center; font-weight:700; color:var(--text-dark); background:rgba(99,102,241,0.08); border:2px solid rgba(99,102,241,0.35); border-radius:8px; width:72px; padding:4px 6px;">`
+          : `<span class="auth-cell-display"
+              data-group="${groupName}"
+              data-index="${index}"
+              data-auth-value="${row.authorized}"
+              style="color:var(--text-dark); font-weight:700;">${row.authorized}</span>`;
+
         html += `<tr>
         <td style="font-weight:500;">${row.designation}</td>
-        <td style="text-align: center; color: var(--text-dark); font-weight: 700; background: rgba(0,0,0,0.02);">${row.authorized}</td>
+        <td style="text-align:center; background:rgba(0,0,0,0.02);">${authCellContent}</td>
         <td style="text-align: center;"><input type="number" min="0" data-group="${groupName}" data-index="${index}" data-field="existing" value="${row.existing}" class="entry-input"></td>
         <td style="text-align: center;"><input type="number" min="0" data-group="${groupName}" data-index="${index}" data-field="present" value="${row.present}" class="entry-input"></td>
         <td class="absent-val" style="font-weight:600; color:#ef4444;">${row.absent}</td>
@@ -1100,9 +1133,17 @@ function _renderEntryContent(pageId) {
     document.querySelectorAll('.entry-input').forEach(input => {
       input.addEventListener('input', (e) => {
         const g = e.target.getAttribute('data-group');
-        const i = e.target.getAttribute('data-index');
+        const i = parseInt(e.target.getAttribute('data-index'), 10);
         const f = e.target.getAttribute('data-field');
         const val = parseInt(e.target.value) || 0;
+
+        // Handle authorized column edits
+        if (e.target.classList.contains('auth-input')) {
+          state[pageId][g][i].authorized = val;
+          globalAppState = state;
+          updateGroupTotals(e.target.closest('table'), state[pageId][g]);
+          return;
+        }
 
         state[pageId][g][i][f] = val;
 
@@ -2824,6 +2865,210 @@ function toggleSmoothMode() {
   localStorage.setItem(SMOOTH_MODE_STORAGE_KEY, String(enabled));
   applySmoothModeState(enabled);
 }
+
+// ═══════════════════════════════════════════════════
+// SETTINGS MODAL — Edit Authorize Manpower Toggle
+// ═══════════════════════════════════════════════════
+
+function isEditAuthEnabled() {
+  return localStorage.getItem(EDIT_AUTH_STORAGE_KEY) === 'true';
+}
+
+function applyEditAuthState(enabled) {
+  // Update all authorized cells on the current page
+  document.querySelectorAll('.auth-cell-display').forEach(span => {
+    const cell = span.closest('td');
+    if (!cell) return;
+    const val = span.getAttribute('data-auth-value') || span.textContent.trim();
+    if (enabled) {
+      // Replace static text with editable input
+      cell.innerHTML = `<input type="number" min="0"
+        class="entry-input auth-input"
+        data-group="${span.getAttribute('data-group')}"
+        data-index="${span.getAttribute('data-index')}"
+        value="${val}"
+        style="text-align:center; font-weight:700; color:var(--text-dark); background:rgba(99,102,241,0.08); border:2px solid rgba(99,102,241,0.35); border-radius:8px; width:72px; padding:4px 6px;">`;
+      // Bind change handler
+      const inp = cell.querySelector('.auth-input');
+      if (inp) {
+        inp.addEventListener('input', (e) => {
+          const g = e.target.getAttribute('data-group');
+          const i = parseInt(e.target.getAttribute('data-index'), 10);
+          const newVal = parseInt(e.target.value) || 0;
+          const pageId = currentActivePageId;
+          const state = getAppState();
+          if (state[pageId] && state[pageId][g] && state[pageId][g][i]) {
+            state[pageId][g][i].authorized = newVal;
+            globalAppState = state;
+            // Update sum row
+            const table = e.target.closest('table');
+            updateGroupTotals(table, state[pageId][g]);
+          }
+        });
+      }
+    } else {
+      cell.innerHTML = `<span class="auth-cell-display"
+        data-group="${span.getAttribute('data-group') || ''}"
+        data-index="${span.getAttribute('data-index') || ''}"
+        data-auth-value="${val}"
+        style="text-align:center; color:var(--text-dark); font-weight:700;">${val}</span>`;
+    }
+  });
+
+  // Also convert auth-inputs back to spans if toggled off
+  if (!enabled) {
+    document.querySelectorAll('.auth-input').forEach(inp => {
+      const g = inp.getAttribute('data-group') || '';
+      const i = inp.getAttribute('data-index') || '';
+      const val = inp.value;
+      const cell = inp.closest('td');
+      if (cell) {
+        cell.innerHTML = `<span class="auth-cell-display"
+          data-group="${g}"
+          data-index="${i}"
+          data-auth-value="${val}"
+          style="text-align:center; color:var(--text-dark); font-weight:700;">${val}</span>`;
+      }
+    });
+  }
+
+  // Update toggle button state in the modal if open
+  const toggle = document.getElementById('edit-auth-toggle');
+  if (toggle) {
+    toggle.setAttribute('aria-pressed', String(enabled));
+    toggle.classList.toggle('settings-toggle-on', enabled);
+  }
+}
+
+function _openSettingsPanel() {
+  var existing = document.getElementById('settings-modal');
+  if (existing) existing.remove();
+
+  var enabled = isEditAuthEnabled();
+
+  var eOn = enabled ? 'linear-gradient(135deg,#6366f1,#4f46e5)' : 'rgba(0,0,0,0.13)';
+  var eShadow = enabled ? '0 4px 14px rgba(99,102,241,0.38)' : 'none';
+  var eKnob = enabled ? '26px' : '3px';
+  var ePressed = enabled ? 'true' : 'false';
+
+  var modalHTML = '<div id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(15,23,42,0.65);backdrop-filter:blur(12px);z-index:10000;display:flex;justify-content:center;align-items:center;opacity:0;transition:opacity 0.28s ease;">'
+    + '<div class="glass-card" style="width:92%;max-width:400px;padding:2.2rem 1.8rem;transform:scale(0.92) translateY(14px);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);position:relative;">'
+    + '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.6rem;">'
+    + '<div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#4f46e5);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(99,102,241,0.38);flex-shrink:0;">'
+    + '<svg width="20" height="20" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>'
+    + '</div>'
+    + '<div><h3 id="settings-title" style="margin:0;font-size:1.25rem;font-weight:800;color:var(--text-dark);letter-spacing:-0.02em;">Settings</h3>'
+    + '<p style="margin:0;font-size:0.8rem;color:var(--text-light);font-weight:500;">Entry Sheet Preferences</p></div>'
+    + '<button onclick="document.getElementById(&apos;settings-modal&apos;).remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-light);padding:6px;border-radius:8px;display:flex;align-items:center;transition:background 0.2s;" aria-label="Close settings" id="settings-close-btn">'
+    + '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+    + '</button></div>'
+    + '<hr style="border:none;border-top:1.5px solid rgba(0,0,0,0.07);margin:0 0 1.4rem;">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.1rem;border-radius:14px;background:rgba(99,102,241,0.06);border:1.5px solid rgba(99,102,241,0.14);">'
+    + '<div style="display:flex;align-items:center;gap:0.75rem;">'
+    + '<div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(99,102,241,0.08));display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+    + '<svg width="18" height="18" fill="none" stroke="#6366f1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5"/><path d="M17.586 3.414a2 2 0 112.828 2.828L12 14.828 8 16l1.172-4L17.586 3.414z"/></svg>'
+    + '</div>'
+    + '<div><div style="font-weight:700;font-size:0.95rem;color:var(--text-dark);">Edit Authorize Manpower</div>'
+    + '<div style="font-size:0.78rem;color:var(--text-light);margin-top:2px;">Allow editing authorized counts in the table</div></div>'
+    + '</div>'
+    + '<button id="edit-auth-toggle" role="switch" aria-pressed="' + ePressed + '" aria-label="Toggle edit authorize manpower" style="position:relative;width:52px;height:28px;border-radius:999px;border:none;cursor:pointer;flex-shrink:0;outline:none;background:' + eOn + ';box-shadow:' + eShadow + ';transition:background 0.25s,box-shadow 0.25s;">'
+    + '<span id="edit-auth-knob" style="position:absolute;top:3px;left:' + eKnob + ';width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.22);transition:left 0.25s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;"></span>'
+    + '</button></div>'
+    + '<p style="margin:1.2rem 0 0;font-size:0.77rem;color:var(--text-light);text-align:center;font-style:italic;">Changes to authorized values are applied immediately but must be saved via <strong>Entry Update</strong>.</p>'
+    + '</div></div>';
+
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  var modal = document.getElementById('settings-modal');
+  var card = modal.querySelector('.glass-card');
+
+  setTimeout(function() {
+    modal.style.opacity = '1';
+    card.style.transform = 'scale(1) translateY(0)';
+  }, 10);
+
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) modal.remove();
+  });
+
+  var toggleBtn = document.getElementById('edit-auth-toggle');
+  var knob = document.getElementById('edit-auth-knob');
+  toggleBtn.addEventListener('click', function() {
+    var nowEnabled = toggleBtn.getAttribute('aria-pressed') !== 'true';
+    localStorage.setItem(EDIT_AUTH_STORAGE_KEY, String(nowEnabled));
+    toggleBtn.style.background = nowEnabled ? 'linear-gradient(135deg,#6366f1,#4f46e5)' : 'rgba(0,0,0,0.13)';
+    toggleBtn.style.boxShadow = nowEnabled ? '0 4px 14px rgba(99,102,241,0.38)' : 'none';
+    knob.style.left = nowEnabled ? '26px' : '3px';
+    toggleBtn.setAttribute('aria-pressed', String(nowEnabled));
+    applyEditAuthState(nowEnabled);
+  });
+}
+
+// Password gate -> then open settings panel
+window.openSettingsModal = function() {
+  if (sessionStorage.getItem('settings_auth') === 'true') {
+    _openSettingsPanel();
+    return;
+  }
+
+  var existingPwd = document.getElementById('settings-pwd-modal');
+  if (existingPwd) existingPwd.remove();
+
+  var pwdHTML = '<div id="settings-pwd-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(15,23,42,0.70);backdrop-filter:blur(14px);z-index:10001;display:flex;justify-content:center;align-items:center;opacity:0;transition:opacity 0.25s ease;">'
+    + '<div class="glass-card" style="width:88%;max-width:340px;padding:2rem 1.8rem;transform:scale(0.9) translateY(12px);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);text-align:center;">'
+    + '<div style="width:52px;height:52px;border-radius:50%;margin:0 auto 1.2rem;background:linear-gradient(135deg,#6366f1,#4f46e5);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(99,102,241,0.42);">'
+    + '<svg width="24" height="24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>'
+    + '</div>'
+    + '<h3 style="margin:0 0 0.3rem;font-size:1.2rem;font-weight:800;color:var(--text-dark);letter-spacing:-0.02em;">Settings Access</h3>'
+    + '<p style="margin:0 0 1.5rem;font-size:0.82rem;color:var(--text-light);font-weight:500;">Enter the settings password to continue</p>'
+    + '<input type="password" id="settings-pwd-input" placeholder="Enter password" autocomplete="off" style="width:100%;padding:0.85rem 1rem;border-radius:12px;border:2px solid rgba(99,102,241,0.25);background:rgba(99,102,241,0.05);font-size:1.05rem;font-family:Inter,sans-serif;outline:none;color:var(--text-dark);text-align:center;letter-spacing:0.18em;box-sizing:border-box;margin-bottom:0.6rem;transition:border-color 0.2s,box-shadow 0.2s;" id="settings-pwd-input-field">'
+    + '<div id="settings-pwd-err" style="font-size:0.78rem;color:#ef4444;font-weight:600;min-height:1.1rem;margin-bottom:1rem;transition:opacity 0.2s;opacity:0;">&#10005; Incorrect password. Try again.</div>'
+    + '<div style="display:flex;gap:0.75rem;">'
+    + '<button id="settings-pwd-cancel" style="flex:1;padding:0.75rem;background:#f1f5f9;border:none;border-radius:10px;color:#475569;font-weight:700;font-size:0.95rem;cursor:pointer;transition:background 0.2s;" >Cancel</button>'
+    + '<button id="settings-pwd-submit" style="flex:1.4;padding:0.75rem;background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border:none;border-radius:10px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,0.38);transition:transform 0.15s,box-shadow 0.15s;" >Unlock &#128275;</button>'
+    + '</div></div></div>';
+
+  document.body.insertAdjacentHTML('beforeend', pwdHTML);
+  var pwdModal = document.getElementById('settings-pwd-modal');
+  var pwdCard = pwdModal.querySelector('.glass-card');
+  var pwdInput = document.getElementById('settings-pwd-input');
+  var pwdErr = document.getElementById('settings-pwd-err');
+
+  setTimeout(function() {
+    pwdModal.style.opacity = '1';
+    pwdCard.style.transform = 'scale(1) translateY(0)';
+    pwdInput.focus();
+  }, 10);
+
+  pwdModal.addEventListener('click', function(e) {
+    if (e.target === pwdModal) pwdModal.remove();
+  });
+
+  document.getElementById('settings-pwd-cancel').addEventListener('click', function() { pwdModal.remove(); });
+
+  function attemptUnlock() {
+    if (pwdInput.value === '12') {
+      sessionStorage.setItem('settings_auth', 'true');
+      pwdModal.style.opacity = '0';
+      pwdCard.style.transform = 'scale(0.9) translateY(12px)';
+      setTimeout(function() {
+        pwdModal.remove();
+        _openSettingsPanel();
+      }, 260);
+    } else {
+      pwdErr.style.opacity = '1';
+      pwdInput.style.borderColor = '#ef4444';
+      pwdInput.style.animation = 'shake 0.4s ease';
+      pwdInput.value = '';
+      setTimeout(function() {
+        pwdInput.style.animation = 'none';
+        pwdInput.style.borderColor = 'rgba(99,102,241,0.25)';
+      }, 420);
+    }
+  }
+
+  document.getElementById('settings-pwd-submit').addEventListener('click', attemptUnlock);
+  pwdInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') attemptUnlock(); });
+};
 
 function initSmoothModeToggle() {
   applySmoothModeState();

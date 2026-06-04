@@ -534,6 +534,11 @@ window.sendAdminBroadcast = function () {
 
 function saveAppState(state, customActionStr = null) {
   
+  // Auto-save history snapshot on every state update
+  if (typeof _saveAttendanceHistory === 'function') {
+    _saveAttendanceHistory(state);
+  }
+
   if (window.firebaseDb) {
     window.firebaseDb.ref('mep_dashboard_state').set(state);
 
@@ -1155,6 +1160,9 @@ function _renderEntryContent(pageId) {
       localStorage.setItem('has_new_notifications', 'true');
 
       saveAppState(state);
+
+      // Re-lock the authorize manpower edit mode after saving
+      localStorage.setItem(EDIT_AUTH_STORAGE_KEY, 'false');
 
       alert('Entry Updated & Saved to Dashboard Successfully!');
       window.location.href = 'index.html';
@@ -3134,6 +3142,30 @@ function initSmoothModeToggle() {
   applySmoothModeState();
 }
 
+function initRefreshButton() {
+  if (document.getElementById('refresh-app-btn')) return;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'refresh-app-btn';
+  btn.className = 'smooth-mode-toggle no-print';
+  btn.style.bottom = 'calc(1rem + 40px + 0.75rem)';
+  btn.setAttribute('aria-label', 'Refresh Application');
+  btn.setAttribute('title', 'Refresh Application');
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+    </svg>
+    <span class="smooth-mode-label">Refresh</span>
+  `;
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    location.reload();
+  });
+  document.body.appendChild(btn);
+}
+
 function runWithOriginalExportMotion(task) {
   const html = document.documentElement;
   const body = document.body;
@@ -3327,6 +3359,7 @@ function setupFirebaseListener() {
 document.addEventListener('DOMContentLoaded', () => {
   initHighRefreshMotion();
   initSmoothModeToggle();
+  initRefreshButton();
   lockMobilePortraitOrientation();
   initThemePicker();
 
@@ -4016,12 +4049,20 @@ window.forceSaveHistory = function(silent) {
 };
 
 function _saveAttendanceHistory(state) {
-  if (!window.firebaseDb) return;
   try {
     var stamp = new Date();
     var today = stamp.getFullYear() + '-' + String(stamp.getMonth() + 1).padStart(2, '0') + '-' + String(stamp.getDate()).padStart(2, '0');
-    window.firebaseDb.ref('mep_attendance_history/' + today).set(state).catch(function(e) { console.error('Error saving history snapshot:', e); });
-    window.firebaseDb.ref('mep_attendance_history_index/' + today).set(true).catch(function(e) { console.error('Error saving history index:', e); });
+    
+    // Save to LocalStorage
+    try {
+      localStorage.setItem('mep_history_' + today, JSON.stringify(state));
+    } catch(err) { console.error('Local history save error:', err); }
+
+    // Save to Cloud
+    if (window.firebaseDb) {
+      window.firebaseDb.ref('mep_attendance_history/' + today).set(state).catch(function(e) { console.error('Error saving history snapshot:', e); });
+      window.firebaseDb.ref('mep_attendance_history_index/' + today).set(true).catch(function(e) { console.error('Error saving history index:', e); });
+    }
   } catch(e) { console.error('_saveAttendanceHistory error:', e); }
 }
 
@@ -4498,9 +4539,13 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
           '<select id="merged-pdf-month-select" style="padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(139, 92, 246, 0.22); background: white; font-family: inherit; font-size: 0.72rem; font-weight: 700; color: #1c1134; outline: none; cursor: pointer; height: 32px; box-sizing: border-box; transition: border-color 0.2s;" onmouseover="this.style.borderColor=\'#8b5cf6\'" onmouseout="this.style.borderColor=\'rgba(139, 92, 246, 0.22)\'">' +
             '<option value="" disabled selected>Select Month...</option>' +
           '</select>' +
-          '<button onclick="window.downloadMonthlyHistoryPDF()" class="ios-ss-delete-btn" style="color: #6d28d9; background: rgba(245, 240, 255, 0.82); border: 1px solid rgba(139, 92, 246, 0.22); height: 32px; padding: 0 12px; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s;" onmouseover="this.style.borderColor=\'#8b5cf6\'; this.style.background=\'rgba(245, 240, 255, 0.95)\';" onmouseout="this.style.borderColor=\'rgba(139, 92, 246, 0.22)\'; this.style.background=\'rgba(245, 240, 255, 0.82)\';" type="button">' +
+          '<button id="btn-export-pdf" onclick="window.downloadMonthlyHistoryPDF()" class="ios-ss-delete-btn" style="color: #6d28d9; background: rgba(245, 240, 255, 0.82); border: 1px solid rgba(139, 92, 246, 0.22); height: 32px; padding: 0 12px; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s;" onmouseover="this.style.borderColor=\'#8b5cf6\'; this.style.background=\'rgba(245, 240, 255, 0.95)\';" onmouseout="this.style.borderColor=\'rgba(139, 92, 246, 0.22)\'; this.style.background=\'rgba(245, 240, 255, 0.82)\';" type="button">' +
             '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>' +
             '<span>PDF</span>' +
+          '</button>' +
+          '<button id="btn-export-excel" onclick="window.downloadMonthlyHistoryExcel()" class="ios-ss-delete-btn" style="color: #047857; background: rgba(209, 250, 229, 0.82); border: 1px solid rgba(16, 185, 129, 0.22); height: 32px; padding: 0 12px; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s; margin-left: 4px;" onmouseover="this.style.borderColor=\'#10b981\'; this.style.background=\'rgba(209, 250, 229, 0.95)\';" onmouseout="this.style.borderColor=\'rgba(16, 185, 129, 0.22)\'; this.style.background=\'rgba(209, 250, 229, 0.82)\';" type="button">' +
+            '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>' +
+            '<span>Excel</span>' +
           '</button>' +
         '</div>' +
         '<button class="ios-ss-delete-btn" onclick="window.deleteHistoryDate(\'' + historyEscapeHtml(dateStr) + '\')" type="button">' +
@@ -4541,42 +4586,23 @@ function getReportingMonthInfo(dateStr) {
 
   let repMonth = m;
   let repYear = y;
-  if (d >= 26) {
-    repMonth = m + 1;
-    if (repMonth > 12) {
-      repMonth = 1;
-      repYear = y + 1;
-    }
-  }
 
   const monthNames = [
     "", "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
 
-  let startMonth = repMonth - 1;
-  let startYear = repYear;
-  if (startMonth < 1) {
-    startMonth = 12;
-    startYear = repYear - 1;
-  }
-
-  const startMonthName = monthNames[startMonth];
-  const endMonthName = monthNames[repMonth];
+  const monthName = monthNames[repMonth];
+  const lastDay = new Date(repYear, repMonth, 0).getDate();
   
-  let rangeStr = "";
-  if (startYear === repYear) {
-    rangeStr = "26 " + startMonthName + " - 25 " + endMonthName + " " + repYear;
-  } else {
-    rangeStr = "26 " + startMonthName + " " + startYear + " - 25 " + endMonthName + " " + repYear;
-  }
-  const displayName = rangeStr + " (" + endMonthName + " Month)";
+  let rangeStr = "1 " + monthName + " - " + lastDay + " " + monthName + " " + repYear;
+  const displayName = rangeStr + " (" + monthName + " Month)";
 
   return {
     key: repYear + "-" + String(repMonth).padStart(2, '0'),
     year: repYear,
     month: repMonth,
-    monthName: endMonthName,
+    monthName: monthName,
     rangeStr: rangeStr,
     displayName: displayName
   };
@@ -4626,10 +4652,12 @@ window.downloadMonthlyHistoryPDF = function() {
     return;
   }
 
-  const btn = select.nextElementSibling;
-  const originalText = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '...';
+  const btn = document.getElementById('btn-export-pdf') || select.nextElementSibling;
+  const originalText = btn ? btn.innerHTML : 'PDF';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '...';
+  }
 
   const datesInMonth = Array.from(window.savedHistoryDates).filter(function(dateStr) {
     return getReportingMonthInfo(dateStr).key === monthKey;
@@ -4643,8 +4671,7 @@ window.downloadMonthlyHistoryPDF = function() {
 
   if (datesInMonth.length === 0) {
     alert('No dates with saved snapshots in this month.');
-    btn.disabled = false;
-    btn.innerHTML = originalText;
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
     return;
   }
 
@@ -4658,16 +4685,121 @@ window.downloadMonthlyHistoryPDF = function() {
   });
 
   Promise.all(fetchPromises).then(function(results) {
-    btn.disabled = false;
-    btn.innerHTML = originalText;
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
     generateAndPrintMonthlyReport(monthKey, results);
   }).catch(function(err) {
     console.error(err);
     alert('Error fetching data: ' + err.message);
-    btn.disabled = false;
-    btn.innerHTML = originalText;
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
   });
 };
+
+window.downloadMonthlyHistoryExcel = function() {
+  const select = document.getElementById('merged-pdf-month-select');
+  if (!select) return;
+  const monthKey = select.value;
+  if (!monthKey) {
+    alert('Please select a month first.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-export-excel');
+  const originalText = btn ? btn.innerHTML : 'Excel';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '...';
+  }
+
+  const datesInMonth = Array.from(window.savedHistoryDates).filter(function(dateStr) {
+    return getReportingMonthInfo(dateStr).key === monthKey;
+  }).sort(function(a, b) {
+    const partsA = a.split('-').map(Number);
+    const partsB = b.split('-').map(Number);
+    const dateA = new Date(partsA[0], partsA[1] - 1, partsA[2]);
+    const dateB = new Date(partsB[0], partsB[1] - 1, partsB[2]);
+    return dateA - dateB;
+  });
+
+  if (datesInMonth.length === 0) {
+    alert('No dates with saved snapshots in this month.');
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    return;
+  }
+
+  const fetchPromises = datesInMonth.map(function(dateStr) {
+    return window.firebaseDb.ref('mep_attendance_history/' + dateStr).once('value').then(function(snap) {
+      return {
+        dateStr: dateStr,
+        state: snap.val()
+      };
+    });
+  });
+
+  Promise.all(fetchPromises).then(function(results) {
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    generateAndDownloadMonthlyExcel(monthKey, results);
+  }).catch(function(err) {
+    console.error(err);
+    alert('Error fetching data: ' + err.message);
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+  });
+};
+
+function generateAndDownloadMonthlyExcel(monthKey, results) {
+  if (results.length === 0) {
+    alert("No data available for the selected month.");
+    return;
+  }
+
+  const monthInfo = getReportingMonthInfo(results[0].dateStr);
+
+  let csvContent = "\uFEFFDate,Day,Authorized,Existing,Present,Absent,Percentage\n";
+
+  let totalAuthSum = 0;
+  let totalExistSum = 0;
+  let totalPresentSum = 0;
+  let totalAbsentSum = 0;
+  const dayCount = results.length;
+
+  results.forEach(function(res) {
+    const parts = res.dateStr.split('-');
+    const dateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const dayName = dateObj.toLocaleDateString('en-GB', { weekday: 'short' });
+
+    const merged = collectFanAssembleDimmerTotals(res.state);
+    const auth = merged.totals.authorized || 0;
+    const exist = merged.totals.existing || 0;
+    const pres = merged.totals.present || 0;
+    const abs = merged.totals.absent || 0;
+    const pct = exist > 0 ? Math.round((pres / exist) * 100) : 0;
+
+    totalAuthSum += auth;
+    totalExistSum += exist;
+    totalPresentSum += pres;
+    totalAbsentSum += abs;
+
+    csvContent += `"${formattedDate}","${dayName}",${auth},${exist},${pres},${abs},"${pct}%"\n`;
+  });
+
+  const overallPct = totalExistSum > 0 ? Math.round((totalPresentSum / totalExistSum) * 100) : 0;
+  
+  csvContent += "\n";
+  const avgAuth = dayCount > 0 ? (totalAuthSum / dayCount).toFixed(1) : '0.0';
+  const avgExist = dayCount > 0 ? (totalExistSum / dayCount).toFixed(1) : '0.0';
+  
+  csvContent += `"Total / Average","Average",${avgAuth},${avgExist},${totalPresentSum},${totalAbsentSum},"${overallPct}%"\n`;
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `Worker_Attendance_${monthInfo.monthName}_${monthInfo.year}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 function generateAndPrintMonthlyReport(monthKey, results) {
   if (results.length === 0) {

@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.38';
+const APP_VERSION = '2.6.39';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -211,8 +211,8 @@ function buildCustomPeriodFromStart(startDate) {
     key: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(CUSTOM_PERIOD_CUTOFF_DAY).padStart(2, '0')}`,
     start,
     end,
-    label: start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-    monthName: start.toLocaleDateString('en-US', { month: 'long' }),
+    label: end.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    monthName: end.toLocaleDateString('en-US', { month: 'long' }),
     rangeLabel: `${start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })} to ${end.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}`
   };
 }
@@ -437,51 +437,6 @@ function getAppState() {
         // Enforce config array order
         stateToReturn[pageKey][groupName].sort((a, b) => designations.indexOf(a.designation) - designations.indexOf(b.designation));
       }
-    }
-  }
-
-  // Hardcoded Admin Authorized Values — only apply when NOT in edit-auth mode
-  // (when user is editing authorized values, skip overrides so edits are preserved)
-  if (!isEditAuthEnabled()) {
-    if (stateToReturn.anik && stateToReturn.anik["Fan Assemble"]) {
-      const w = stateToReturn.anik["Fan Assemble"].find(x => x.designation === "Worker");
-      if (w) w.authorized = 40;
-    }
-    if (stateToReturn.takbir && stateToReturn.takbir["Fan Armature"]) {
-      const w = stateToReturn.takbir["Fan Armature"].find(x => x.designation === "Worker");
-      if (w) w.authorized = 32;
-    }
-    if (stateToReturn.anik && stateToReturn.anik["Fan Dimmer & Blade"]) {
-      const w = stateToReturn.anik["Fan Dimmer & Blade"].find(x => x.designation === "Worker");
-      if (w) w.authorized = 17;
-    }
-    if (stateToReturn.takbir && stateToReturn.takbir["Fan Replace"]) {
-      const w = stateToReturn.takbir["Fan Replace"].find(x => x.designation === "Worker");
-      if (w) w.authorized = 7;
-    }
-    if (stateToReturn.monir && stateToReturn.monir["Power Press & Stamping"]) {
-      const w = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Worker");
-      if (w) w.authorized = 25;
-      const eng = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Engineer");
-      const tech = stateToReturn.monir["Power Press & Stamping"].find(x => x.designation === "Technicalman");
-      if (eng) eng.authorized = 3;
-      if (tech) tech.authorized = 2;
-    }
-    if (stateToReturn.monir && stateToReturn.monir["Fan Dalai & Die Casting"]) {
-      const w = stateToReturn.monir["Fan Dalai & Die Casting"].find(x => x.designation === "Worker");
-      if (w) w.authorized = 23;
-    }
-    if (stateToReturn.anwar && stateToReturn.anwar["Fan Lathe"]) {
-      const w = stateToReturn.anwar["Fan Lathe"].find(x => x.designation === "Worker");
-      if (w) w.authorized = 28;
-    }
-    if (stateToReturn.anwar && stateToReturn.anwar["Fan Auto Powder Coating"]) {
-      const w = stateToReturn.anwar["Fan Auto Powder Coating"].find(x => x.designation === "Worker");
-      if (w) w.authorized = 45;
-    }
-    if (stateToReturn.bikash && stateToReturn.bikash["Fan Rojonigondha"]) {
-      const w = stateToReturn.bikash["Fan Rojonigondha"].find(x => x.designation === "Worker");
-      if (w) w.authorized = 9;
     }
   }
 
@@ -1814,7 +1769,7 @@ function downloadOvertimeAttendanceJpgOriginal() {
     scrollY: 0
   }).then(canvas => {
     const link = document.createElement('a');
-    link.download = `overtime-attendance-${period.monthName.toLowerCase()}-${period.start.getFullYear()}.jpg`;
+    link.download = `overtime-attendance-${period.monthName.toLowerCase()}-${period.end.getFullYear()}.jpg`;
     link.href = canvas.toDataURL('image/jpeg', 0.98);
     link.click();
     exportNode.remove();
@@ -2041,7 +1996,7 @@ function _performDashboardRender() {
 
         <!-- History Button -->
         <div class="fab-child history-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="history-btn" class="no-print solid-fab-btn" data-tip-title="Admin" data-tip-desc="Protected attendance history" data-tip-shortcut="Pass: 12" data-tip-placement="left"
+          <button id="history-btn" class="no-print solid-fab-btn" data-tip-title="Admin" data-tip-desc="Protected attendance history"  data-tip-placement="left"
             style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
@@ -2917,6 +2872,8 @@ function applyEditAuthState(enabled) {
             // Update sum row
             const table = e.target.closest('table');
             updateGroupTotals(table, state[pageId][g]);
+            // Save immediately to Firebase
+            saveAppState(state, "Authorized manpower updated");
           }
         });
       }
@@ -3031,31 +2988,51 @@ window.openSettingsModal = function() {
   var existingPwd = document.getElementById('settings-pwd-modal');
   if (existingPwd) existingPwd.remove();
 
-  var pwdHTML = '<div id="settings-pwd-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(15,23,42,0.70);backdrop-filter:blur(14px);z-index:10001;display:flex;justify-content:center;align-items:center;opacity:0;transition:opacity 0.25s ease;">'
-    + '<div class="glass-card" style="width:88%;max-width:340px;padding:2rem 1.8rem;transform:scale(0.9) translateY(12px);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);text-align:center;">'
-    + '<div style="width:52px;height:52px;border-radius:50%;margin:0 auto 1.2rem;background:linear-gradient(135deg,#6366f1,#4f46e5);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(99,102,241,0.42);">'
+  var pwdHTML = '<div id="settings-pwd-modal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(15,23,42,0.68);backdrop-filter:blur(20px);z-index:10001;display:flex;justify-content:center;align-items:center;opacity:0;transition:opacity 0.28s ease-out;">'
+    + '<div class="glass-card" style="width:88%;max-width:350px;padding:2.2rem 2rem;transform:scale(0.92) translateY(16px);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);text-align:center;background:rgba(255,255,255,0.72);border:1px solid rgba(255,255,255,0.65);border-radius:24px;box-shadow:0 20px 50px rgba(15,23,42,0.18), inset 0 1px 0 rgba(255,255,255,0.9);">'
+    + '<div style="width:56px;height:56px;border-radius:50%;margin:0 auto 1.2rem;background:linear-gradient(135deg,#6366f1,#4f46e5);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(99,102,241,0.38);">'
     + '<svg width="24" height="24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>'
     + '</div>'
-    + '<h3 style="margin:0 0 0.3rem;font-size:1.2rem;font-weight:800;color:var(--text-dark);letter-spacing:-0.02em;">Settings Access</h3>'
-    + '<p style="margin:0 0 1.5rem;font-size:0.82rem;color:var(--text-light);font-weight:500;">Enter the settings password to continue</p>'
-    + '<input type="password" id="settings-pwd-input" placeholder="Enter password" autocomplete="off" style="width:100%;padding:0.85rem 1rem;border-radius:12px;border:2px solid rgba(99,102,241,0.25);background:rgba(99,102,241,0.05);font-size:1.05rem;font-family:Inter,sans-serif;outline:none;color:var(--text-dark);text-align:center;letter-spacing:0.18em;box-sizing:border-box;margin-bottom:0.6rem;transition:border-color 0.2s,box-shadow 0.2s;" id="settings-pwd-input-field">'
-    + '<div id="settings-pwd-err" style="font-size:0.78rem;color:#ef4444;font-weight:600;min-height:1.1rem;margin-bottom:1rem;transition:opacity 0.2s;opacity:0;">&#10005; Incorrect password. Try again.</div>'
-    + '<div style="display:flex;gap:0.75rem;">'
-    + '<button id="settings-pwd-cancel" style="flex:1;padding:0.75rem;background:#f1f5f9;border:none;border-radius:10px;color:#475569;font-weight:700;font-size:0.95rem;cursor:pointer;transition:background 0.2s;" >Cancel</button>'
-    + '<button id="settings-pwd-submit" style="flex:1.4;padding:0.75rem;background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border:none;border-radius:10px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,0.38);transition:transform 0.15s,box-shadow 0.15s;" >Unlock &#128275;</button>'
+    + '<h3 style="margin:0 0 0.4rem;font-size:1.35rem;font-weight:800;color:#1e293b;letter-spacing:-0.02em;">Settings Access</h3>'
+    + '<p style="margin:0 0 1.6rem;font-size:0.85rem;color:#64748b;font-weight:600;line-height:1.4;">Enter settings passcode to unlock configuration options.</p>'
+    + '<div style="display:flex;justify-content:center;gap:0.9rem;margin-bottom:1.1rem;" id="settings-pin-container">'
+    + '  <input type="password" maxlength="1" class="settings-pin-box" id="set-pin1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" style="width:56px;height:64px;text-align:center;font-size:1.85rem;font-weight:800;border:2.5px solid rgba(99,102,241,0.22);border-radius:14px;background:rgba(255,255,255,0.92);color:#1e293b;outline:none;transition:all 0.2s cubic-bezier(0.2,0.8,0.2,1);box-shadow:0 2px 6px rgba(99,102,241,0.04);">'
+    + '  <input type="password" maxlength="1" class="settings-pin-box" id="set-pin2" inputmode="numeric" pattern="[0-9]*" autocomplete="off" style="width:56px;height:64px;text-align:center;font-size:1.85rem;font-weight:800;border:2.5px solid rgba(99,102,241,0.22);border-radius:14px;background:rgba(255,255,255,0.92);color:#1e293b;outline:none;transition:all 0.2s cubic-bezier(0.2,0.8,0.2,1);box-shadow:0 2px 6px rgba(99,102,241,0.04);">'
+    + '</div>'
+    + '<div style="margin-bottom:1rem;display:flex;justify-content:center;">'
+    + '  <button type="button" id="toggle-settings-pin" style="background:none;border:none;color:#6366f1;font-weight:700;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;gap:6px;outline:none;padding:4px 8px;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background=\'rgba(99,102,241,0.08)\'" onmouseout="this.style.background=\'none\'">'
+    + '    <svg class="eye-open-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'
+    + '    <span>Show Passcode</span>'
+    + '  </button>'
+    + '</div>'
+    + '<div id="settings-pwd-err" style="font-size:0.82rem;color:#ef4444;font-weight:700;min-height:1.2rem;margin-bottom:1.2rem;transition:opacity 0.2s;opacity:0;">&#10005; Incorrect passcode. Try again.</div>'
+    + '<div style="display:flex;gap:0.85rem;">'
+    + '  <button id="settings-pwd-cancel" style="flex:1;padding:0.85rem;background:#f1f5f9;border:none;border-radius:12px;color:#475569;font-weight:750;font-size:0.95rem;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background=\'#e2e8f0\'" onmouseout="this.style.background=\'#f1f5f9\'">Cancel</button>'
+    + '  <button id="settings-pwd-submit" style="flex:1.35;padding:0.85rem;background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border:none;border-radius:12px;font-weight:750;font-size:0.95rem;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,0.35);transition:all 0.2s;" onmouseover="this.style.transform=\'translateY(-1px)\';this.style.boxShadow=\'0 6px 18px rgba(99,102,241,0.45)\'" onmouseout="this.style.transform=\'translateY(0)\';this.style.boxShadow=\'0 4px 14px rgba(99,102,241,0.35)\'">Unlock &#128275;</button>'
     + '</div></div></div>';
 
   document.body.insertAdjacentHTML('beforeend', pwdHTML);
   var pwdModal = document.getElementById('settings-pwd-modal');
   var pwdCard = pwdModal.querySelector('.glass-card');
-  var pwdInput = document.getElementById('settings-pwd-input');
+  var pins = pwdModal.querySelectorAll('.settings-pin-box');
   var pwdErr = document.getElementById('settings-pwd-err');
 
   setTimeout(function() {
     pwdModal.style.opacity = '1';
     pwdCard.style.transform = 'scale(1) translateY(0)';
-    pwdInput.focus();
+    pins[0].focus();
   }, 10);
+
+  pins.forEach(function(pin) {
+    pin.addEventListener('focus', function() {
+      pin.style.borderColor = '#6366f1';
+      pin.style.boxShadow = '0 0 0 4px rgba(99,102,241,0.18)';
+    });
+    pin.addEventListener('blur', function() {
+      pin.style.borderColor = 'rgba(99,102,241,0.22)';
+      pin.style.boxShadow = '0 2px 6px rgba(99,102,241,0.04)';
+    });
+  });
 
   pwdModal.addEventListener('click', function(e) {
     if (e.target === pwdModal) pwdModal.remove();
@@ -3063,29 +3040,73 @@ window.openSettingsModal = function() {
 
   document.getElementById('settings-pwd-cancel').addEventListener('click', function() { pwdModal.remove(); });
 
+  pins.forEach(function(pin, i) {
+    pin.addEventListener('input', function(e) {
+      if (e.target.value) {
+        if (i < 1) {
+          pins[i + 1].focus();
+        } else if (i === 1) {
+          attemptUnlock();
+        }
+      }
+    });
+
+    pin.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && !pin.value && i > 0) {
+        pins[i - 1].focus();
+        pins[i - 1].value = '';
+      } else if (e.key === 'Enter') {
+        attemptUnlock();
+      }
+    });
+  });
+
+  var toggleBtn = document.getElementById('toggle-settings-pin');
+  var toggleLabel = toggleBtn.querySelector('span');
+  var toggleIcon = toggleBtn.querySelector('svg');
+  toggleBtn.addEventListener('click', function() {
+    var isHidden = pins[0].type === 'password';
+    pins.forEach(function(p) {
+      p.type = isHidden ? 'text' : 'password';
+    });
+    toggleLabel.textContent = isHidden ? 'Hide Passcode' : 'Show Passcode';
+    if (isHidden) {
+      toggleIcon.innerHTML = '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.9 20.9 0 0 1 5.06-6.06M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a20.8 20.8 0 0 1-3.17 4.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+    } else {
+      toggleIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>';
+    }
+  });
+
   function attemptUnlock() {
-    if (pwdInput.value === '12') {
+    var entered = Array.from(pins).map(function(p) { return p.value; }).join('');
+    if (entered === '12') {
       sessionStorage.setItem('settings_auth', 'true');
       pwdModal.style.opacity = '0';
-      pwdCard.style.transform = 'scale(0.9) translateY(12px)';
+      pwdCard.style.transform = 'scale(0.92) translateY(16px)';
       setTimeout(function() {
         pwdModal.remove();
         _openSettingsPanel();
-      }, 260);
+      }, 280);
     } else {
       pwdErr.style.opacity = '1';
-      pwdInput.style.borderColor = '#ef4444';
-      pwdInput.style.animation = 'shake 0.4s ease';
-      pwdInput.value = '';
+      pins.forEach(function(p) {
+        p.style.borderColor = '#ef4444';
+        p.style.boxShadow = '0 0 0 4px rgba(239,68,68,0.18)';
+        p.style.animation = 'pinShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97)';
+        p.value = '';
+      });
+      pins[0].focus();
       setTimeout(function() {
-        pwdInput.style.animation = 'none';
-        pwdInput.style.borderColor = 'rgba(99,102,241,0.25)';
+        pins.forEach(function(p) {
+          p.style.animation = 'none';
+          p.style.borderColor = 'rgba(99,102,241,0.22)';
+          p.style.boxShadow = '0 2px 6px rgba(99,102,241,0.04)';
+        });
       }, 420);
     }
   }
 
   document.getElementById('settings-pwd-submit').addEventListener('click', attemptUnlock);
-  pwdInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') attemptUnlock(); });
 };
 
 function initSmoothModeToggle() {
@@ -4473,6 +4494,15 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
         '<div class="ios-ss-head-date">' + historyEscapeHtml(formatHistoryDate(dateStr)) + ' · Fan Assemble Worker + Fan Dimmer Worker</div>' +
       '</div>' +
       '<div class="ios-ss-head-actions">' +
+        '<div style="display: inline-flex; align-items: center; gap: 6px; margin-right: 4px;">' +
+          '<select id="merged-pdf-month-select" style="padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(139, 92, 246, 0.22); background: white; font-family: inherit; font-size: 0.72rem; font-weight: 700; color: #1c1134; outline: none; cursor: pointer; height: 32px; box-sizing: border-box; transition: border-color 0.2s;" onmouseover="this.style.borderColor=\'#8b5cf6\'" onmouseout="this.style.borderColor=\'rgba(139, 92, 246, 0.22)\'">' +
+            '<option value="" disabled selected>Select Month...</option>' +
+          '</select>' +
+          '<button onclick="window.downloadMonthlyHistoryPDF()" class="ios-ss-delete-btn" style="color: #6d28d9; background: rgba(245, 240, 255, 0.82); border: 1px solid rgba(139, 92, 246, 0.22); height: 32px; padding: 0 12px; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s;" onmouseover="this.style.borderColor=\'#8b5cf6\'; this.style.background=\'rgba(245, 240, 255, 0.95)\';" onmouseout="this.style.borderColor=\'rgba(139, 92, 246, 0.22)\'; this.style.background=\'rgba(245, 240, 255, 0.82)\';" type="button">' +
+            '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>' +
+            '<span>PDF</span>' +
+          '</button>' +
+        '</div>' +
         '<button class="ios-ss-delete-btn" onclick="window.deleteHistoryDate(\'' + historyEscapeHtml(dateStr) + '\')" type="button">' +
           '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>' +
           '<span>Delete Date</span>' +
@@ -4487,6 +4517,468 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
       '<div><span>Absent</span><b class="k-absent">' + merged.totals.absent + '</b></div>' +
     '</div>' +
     '<div class="ios-merge-list">' + rowCards + '</div>';
+
+  // Populate the month selection dropdown with reporting months
+  setTimeout(function() {
+    window.populatePDFMonthDropdown();
+  }, 50);
+}
+
+function getReportingMonthInfo(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string') {
+    return { key: "invalid", year: 0, month: 0, monthName: "Invalid", rangeStr: "", displayName: "Invalid Date" };
+  }
+  const parts = dateStr.trim().split('-');
+  if (parts.length !== 3) {
+    return { key: "invalid", year: 0, month: 0, monthName: "Invalid", rangeStr: "", displayName: "Invalid Date (" + dateStr + ")" };
+  }
+  const y = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  const d = parseInt(parts[2], 10);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) {
+    return { key: "invalid", year: 0, month: 0, monthName: "Invalid", rangeStr: "", displayName: "Invalid Date (" + dateStr + ")" };
+  }
+
+  let repMonth = m;
+  let repYear = y;
+  if (d >= 26) {
+    repMonth = m + 1;
+    if (repMonth > 12) {
+      repMonth = 1;
+      repYear = y + 1;
+    }
+  }
+
+  const monthNames = [
+    "", "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  let startMonth = repMonth - 1;
+  let startYear = repYear;
+  if (startMonth < 1) {
+    startMonth = 12;
+    startYear = repYear - 1;
+  }
+
+  const startMonthName = monthNames[startMonth];
+  const endMonthName = monthNames[repMonth];
+  
+  let rangeStr = "";
+  if (startYear === repYear) {
+    rangeStr = "26 " + startMonthName + " - 25 " + endMonthName + " " + repYear;
+  } else {
+    rangeStr = "26 " + startMonthName + " " + startYear + " - 25 " + endMonthName + " " + repYear;
+  }
+  const displayName = rangeStr + " (" + endMonthName + " Month)";
+
+  return {
+    key: repYear + "-" + String(repMonth).padStart(2, '0'),
+    year: repYear,
+    month: repMonth,
+    monthName: endMonthName,
+    rangeStr: rangeStr,
+    displayName: displayName
+  };
+}
+
+window.populatePDFMonthDropdown = function() {
+  const select = document.getElementById('merged-pdf-month-select');
+  if (!select) return;
+
+  if (!window.savedHistoryDates || window.savedHistoryDates.size === 0) {
+    select.innerHTML = '<option value="" disabled selected>No snapshots</option>';
+    return;
+  }
+
+  const monthsMap = new Map();
+  window.savedHistoryDates.forEach(function(dateStr) {
+    const info = getReportingMonthInfo(dateStr);
+    if (info.key === "invalid") return;
+    if (!monthsMap.has(info.key)) {
+      monthsMap.set(info.key, {
+        info: info,
+        dates: []
+      });
+    }
+    monthsMap.get(info.key).dates.push(dateStr);
+  });
+
+  const sortedMonths = Array.from(monthsMap.values()).sort(function(a, b) {
+    return b.info.key.localeCompare(a.info.key);
+  });
+
+  select.innerHTML = '<option value="" disabled selected>Select Month...</option>';
+  sortedMonths.forEach(function(m) {
+    const opt = document.createElement('option');
+    opt.value = m.info.key;
+    opt.textContent = m.info.displayName;
+    select.appendChild(opt);
+  });
+};
+
+window.downloadMonthlyHistoryPDF = function() {
+  const select = document.getElementById('merged-pdf-month-select');
+  if (!select) return;
+  const monthKey = select.value;
+  if (!monthKey) {
+    alert('Please select a month first.');
+    return;
+  }
+
+  const btn = select.nextElementSibling;
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '...';
+
+  const datesInMonth = Array.from(window.savedHistoryDates).filter(function(dateStr) {
+    return getReportingMonthInfo(dateStr).key === monthKey;
+  }).sort(function(a, b) {
+    const partsA = a.split('-').map(Number);
+    const partsB = b.split('-').map(Number);
+    const dateA = new Date(partsA[0], partsA[1] - 1, partsA[2]);
+    const dateB = new Date(partsB[0], partsB[1] - 1, partsB[2]);
+    return dateA - dateB;
+  });
+
+  if (datesInMonth.length === 0) {
+    alert('No dates with saved snapshots in this month.');
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+    return;
+  }
+
+  const fetchPromises = datesInMonth.map(function(dateStr) {
+    return window.firebaseDb.ref('mep_attendance_history/' + dateStr).once('value').then(function(snap) {
+      return {
+        dateStr: dateStr,
+        state: snap.val()
+      };
+    });
+  });
+
+  Promise.all(fetchPromises).then(function(results) {
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+    generateAndPrintMonthlyReport(monthKey, results);
+  }).catch(function(err) {
+    console.error(err);
+    alert('Error fetching data: ' + err.message);
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  });
+};
+
+function generateAndPrintMonthlyReport(monthKey, results) {
+  if (results.length === 0) {
+    alert("No data available for the selected month.");
+    return;
+  }
+
+  const monthInfo = getReportingMonthInfo(results[0].dateStr);
+
+  let totalAuthSum = 0;
+  let totalExistSum = 0;
+  let totalPresentSum = 0;
+  let totalAbsentSum = 0;
+  const dayCount = results.length;
+
+  const tableRowsHtml = results.map(function(res, index) {
+    const parts = res.dateStr.split('-');
+    const dateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const dayName = dateObj.toLocaleDateString('en-GB', { weekday: 'short' });
+
+    const merged = collectFanAssembleDimmerTotals(res.state);
+    const auth = merged.totals.authorized || 0;
+    const exist = merged.totals.existing || 0;
+    const pres = merged.totals.present || 0;
+    const abs = merged.totals.absent || 0;
+    const pct = exist > 0 ? Math.round((pres / exist) * 100) : 0;
+
+    totalAuthSum += auth;
+    totalExistSum += exist;
+    totalPresentSum += pres;
+    totalAbsentSum += abs;
+
+    const pctTone = getAttendanceTone(pct);
+    let pctClass = 'pct-mid';
+    if (pctTone === 'high') pctClass = 'pct-high';
+    if (pctTone === 'low') pctClass = 'pct-low';
+
+    return (
+      '<tr>' +
+        '<td style="text-align: center;">' + (index + 1) + '</td>' +
+        '<td><strong>' + formattedDate + '</strong> <span class="day-name">(' + dayName + ')</span></td>' +
+        '<td style="text-align: center;">' + auth + '</td>' +
+        '<td style="text-align: center;">' + exist + '</td>' +
+        '<td style="text-align: center; color: #10b981; font-weight: bold;">' + pres + '</td>' +
+        '<td style="text-align: center; color: #ef4444; font-weight: bold;">' + abs + '</td>' +
+        '<td style="text-align: center;"><span class="pct-badge ' + pctClass + '">' + pct + '%</span></td>' +
+      '</tr>'
+    );
+  }).join('');
+
+  const avgAuth = dayCount > 0 ? (totalAuthSum / dayCount).toFixed(1) : '0.0';
+  const avgExist = dayCount > 0 ? (totalExistSum / dayCount).toFixed(1) : '0.0';
+  const avgPresent = dayCount > 0 ? (totalPresentSum / dayCount).toFixed(1) : '0.0';
+  const avgAbsent = dayCount > 0 ? (totalAbsentSum / dayCount).toFixed(1) : '0.0';
+  const overallPct = totalExistSum > 0 ? Math.round((totalPresentSum / totalExistSum) * 100) : 0;
+
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    alert("Please allow popups to download/print the monthly PDF.");
+    return;
+  }
+
+  printWindow.document.write(
+    '<!DOCTYPE html>' +
+    '<html>' +
+    '<head>' +
+      '<meta charset="utf-8">' +
+      '<title>Monthly Worker Attendance Report - ' + monthInfo.monthName + ' ' + monthInfo.year + '</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
+      '<style>' +
+        '@page {' +
+          'size: A4 portrait;' +
+          'margin: 15mm;' +
+        '}' +
+        'body {' +
+          'font-family: \'Inter\', -apple-system, sans-serif;' +
+          'color: #1e293b;' +
+          'margin: 0;' +
+          'padding: 0;' +
+          'font-size: 11px;' +
+          'line-height: 1.4;' +
+          'background: #ffffff;' +
+        '}' +
+        '.header {' +
+          'display: flex;' +
+          'justify-content: space-between;' +
+          'align-items: flex-start;' +
+          'border-bottom: 2px solid #7c3aed;' +
+          'padding-bottom: 12px;' +
+          'margin-bottom: 20px;' +
+        '}' +
+        '.header-left h1 {' +
+          'font-size: 18px;' +
+          'font-weight: 800;' +
+          'color: #1c1134;' +
+          'margin: 0 0 4px 0;' +
+          'letter-spacing: -0.02em;' +
+        '}' +
+        '.header-left h2 {' +
+          'font-size: 13px;' +
+          'font-weight: 700;' +
+          'color: #7c3aed;' +
+          'margin: 0 0 6px 0;' +
+          'letter-spacing: -0.01em;' +
+        '}' +
+        '.header-left p {' +
+          'font-size: 10px;' +
+          'color: #64748b;' +
+          'margin: 0;' +
+        '}' +
+        '.header-right {' +
+          'text-align: right;' +
+        '}' +
+        '.header-right .badge {' +
+          'display: inline-block;' +
+          'background: #f5f3ff;' +
+          'color: #6d28d9;' +
+          'border: 1px solid #ddd6fe;' +
+          'font-weight: 700;' +
+          'padding: 4px 8px;' +
+          'border-radius: 6px;' +
+          'font-size: 10px;' +
+        '}' +
+        '.header-right p {' +
+          'font-size: 9px;' +
+          'color: #64748b;' +
+          'margin: 4px 0 0 0;' +
+        '}' +
+        '.kpi-container {' +
+          'display: grid;' +
+          'grid-template-columns: repeat(5, 1fr);' +
+          'gap: 10px;' +
+          'margin-bottom: 20px;' +
+        '}' +
+        '.kpi-card {' +
+          'background: #f8fafc;' +
+          'border: 1px solid #e2e8f0;' +
+          'border-radius: 8px;' +
+          'padding: 8px 10px;' +
+          'text-align: center;' +
+        '}' +
+        '.kpi-label {' +
+          'font-size: 8px;' +
+          'font-weight: 700;' +
+          'color: #64748b;' +
+          'text-transform: uppercase;' +
+          'letter-spacing: 0.05em;' +
+          'margin-bottom: 2px;' +
+        '}' +
+        '.kpi-value {' +
+          'font-size: 16px;' +
+          'font-weight: 800;' +
+          'color: #1e293b;' +
+        '}' +
+        '.kpi-value.present { color: #10b981; }' +
+        '.kpi-value.absent { color: #ef4444; }' +
+        '.kpi-value.pct { color: #7c3aed; }' +
+        '.kpi-sub {' +
+          'font-size: 8px;' +
+          'color: #94a3b8;' +
+          'margin-top: 2px;' +
+        '}' +
+        'table {' +
+          'width: 100%;' +
+          'border-collapse: collapse;' +
+          'margin-bottom: 25px;' +
+        '}' +
+        'th {' +
+          'background: #f1f5f9;' +
+          'border: 1px solid #cbd5e1;' +
+          'color: #334155;' +
+          'font-weight: 700;' +
+          'font-size: 9px;' +
+          'text-transform: uppercase;' +
+          'letter-spacing: 0.05em;' +
+          'padding: 8px 10px;' +
+          'text-align: left;' +
+        '}' +
+        'td {' +
+          'border: 1px solid #e2e8f0;' +
+          'padding: 6px 10px;' +
+          'font-size: 10px;' +
+        '}' +
+        'tr:nth-child(even) {' +
+          'background: #f8fafc;' +
+        '}' +
+        '.day-name {' +
+          'color: #94a3b8;' +
+          'font-weight: normal;' +
+          'font-size: 9px;' +
+        '}' +
+        '.pct-badge {' +
+          'display: inline-block;' +
+          'font-weight: 700;' +
+          'padding: 2px 6px;' +
+          'border-radius: 4px;' +
+          'font-size: 9px;' +
+        '}' +
+        '.pct-high { background: #d1fae5; color: #065f46; }' +
+        '.pct-mid { background: #fef3c7; color: #92400e; }' +
+        '.pct-low { background: #fee2e2; color: #991b1b; }' +
+        '.footer {' +
+          'margin-top: 40px;' +
+          'display: flex;' +
+          'justify-content: space-between;' +
+          'font-size: 9px;' +
+          'color: #64748b;' +
+        '}' +
+        '.signature-line {' +
+          'width: 150px;' +
+          'border-top: 1px solid #cbd5e1;' +
+          'margin-top: 30px;' +
+          'text-align: center;' +
+          'padding-top: 4px;' +
+          'font-weight: 600;' +
+        '}' +
+        '@media print {' +
+          'body {' +
+            '-webkit-print-color-adjust: exact;' +
+            'print-color-adjust: exact;' +
+          '}' +
+        '}' +
+      '</style>' +
+    '</head>' +
+    '<body>' +
+      '<div class="header">' +
+        '<div class="header-left">' +
+          '<h1>MEP GROUP</h1>' +
+          '<h2>Manpower Attendance Monthly Report</h2>' +
+          '<p>Component: <strong>Fan Assemble Worker & Fan Dimmer Worker (Merged)</strong></p>' +
+        '</div>' +
+        '<div class="header-right">' +
+          '<div class="badge">' + monthInfo.monthName + ' Month</div>' +
+          '<p style="font-weight: 600; color: #1e293b; margin-top: 6px;">Period: ' + monthInfo.rangeStr + ', ' + monthInfo.year + '</p>' +
+          '<p>Generated: ' + new Date().toLocaleString('en-GB') + '</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="kpi-container">' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Days Snapshotted</div>' +
+          '<div class="kpi-value">' + dayCount + '</div>' +
+          '<div class="kpi-sub">Total records</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Avg Authorized</div>' +
+          '<div class="kpi-value">' + avgAuth + '</div>' +
+          '<div class="kpi-sub">Workers / Day</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Avg Existing</div>' +
+          '<div class="kpi-value">' + avgExist + '</div>' +
+          '<div class="kpi-sub">Workers / Day</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Avg Present</div>' +
+          '<div class="kpi-value present">' + avgPresent + '</div>' +
+          '<div class="kpi-sub">Workers / Day</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Avg Present %</div>' +
+          '<div class="kpi-value pct">' + overallPct + '%</div>' +
+          '<div class="kpi-sub">Overall Rate</div>' +
+        '</div>' +
+      '</div>' +
+      '<table>' +
+        '<thead>' +
+          '<tr>' +
+            '<th style="width: 40px; text-align: center;">SL</th>' +
+            '<th>Date</th>' +
+            '<th style="width: 80px; text-align: center;">Authorized</th>' +
+            '<th style="width: 80px; text-align: center;">Existing</th>' +
+            '<th style="width: 80px; text-align: center;">Present</th>' +
+            '<th style="width: 80px; text-align: center;">Absent</th>' +
+            '<th style="width: 80px; text-align: center;">Present %</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>' +
+          tableRowsHtml +
+        '</tbody>' +
+        '<tfoot>' +
+          '<tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1;">' +
+            '<td colspan="2" style="text-align: right;">Average:</td>' +
+            '<td style="text-align: center;">' + avgAuth + '</td>' +
+            '<td style="text-align: center;">' + avgExist + '</td>' +
+            '<td style="text-align: center; color: #10b981;">' + avgPresent + '</td>' +
+            '<td style="text-align: center; color: #ef4444;">' + avgAbsent + '</td>' +
+            '<td style="text-align: center;"><span class="pct-badge pct-high" style="background: #7c3aed; color: white;">' + overallPct + '%</span></td>' +
+          '</tr>' +
+        '</tfoot>' +
+      '</table>' +
+      '<div class="footer">' +
+        '<div>' +
+          '<p>Note: This report is dynamically generated from MEP Attendance System.</p>' +
+        '</div>' +
+        '<div style="display: flex; gap: 40px;">' +
+          '<div class="signature-line">Prepared By</div>' +
+          '<div class="signature-line">Authorized Signature</div>' +
+        '</div>' +
+      '</div>' +
+      '<script>' +
+        'window.addEventListener(\'DOMContentLoaded\', function() {' +
+          'setTimeout(function() {' +
+            'window.print();' +
+          '}, 500);' +
+        '});' +
+      '</script>' +
+    '</body>' +
+    '</html>'
+  );
+  printWindow.document.close();
 }
 
 function _renderHistoryState(dateStr, state, container) {

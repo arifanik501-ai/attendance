@@ -6496,7 +6496,7 @@ body[data-theme] .btn-primary:hover {
 }
 .ios-merge-kpis {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 14px;
 }
@@ -6525,6 +6525,7 @@ body[data-theme] .btn-primary:hover {
   letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
 }
+.ios-merge-kpis .k-authorized { color: #6d28d9; }
 .ios-merge-kpis .k-existing { color: #2563eb; }
 .ios-merge-kpis .k-present { color: #059669; }
 .ios-merge-kpis .k-absent { color: #dc2626; }
@@ -6607,6 +6608,7 @@ body[data-theme] .btn-primary:hover {
   font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
+.ios-merge-pill.authorized { background: rgba(139,92,246,0.1); color: #6d28d9; }
 .ios-merge-pill.present { background: rgba(16,185,129,0.1); color: #047857; }
 .ios-merge-pill.existing { background: rgba(59,130,246,0.1); color: #1d4ed8; }
 .ios-merge-pill.absent { background: rgba(239,68,68,0.1); color: #b91c1c; }

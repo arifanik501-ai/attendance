@@ -51,7 +51,7 @@ const SECTIONS_CONFIG = {
     title: "Entry Sheet (Anwar)",
     password: "1111",
     groups: {
-      "Fan Auto Powder Coating": ["In-charge", "Engineer", "Technicalman", "Computer Operator", "Worker"],
+      "Fan Auto Powder Coating": ["In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Worker"],
       "Fan Lathe": ["Engineer", "Technicalman", "Worker"]
     }
   },
@@ -721,10 +721,10 @@ if (document.readyState === 'loading') {
 }
 
 function generateSidebar(activePage) {
-  const entrySheetIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+  const entrySheetIcon = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,88H152V32Z" opacity="0.2"/><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-32-80a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,136Zm0,32a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,168Z"/></svg>';
   const dashboardPages = [
-    { id: 'index', title: 'Dashboard', url: 'index.html', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>' },
-    { id: 'overtime-dashboard', title: 'Overtime Dashboard', url: 'index.html#overtime-dashboard', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 8h10M7 12h10M7 16h6"/><path d="M8 13l2 2 4-5"/></svg>' }
+    { id: 'index', title: 'Dashboard', url: 'index.html', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M112,56v48a8,8,0,0,1-8,8H56a8,8,0,0,1-8-8V56a8,8,0,0,1,8-8h48A8,8,0,0,1,112,56Zm88-8H152a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V56A8,8,0,0,0,200,48Zm-96,96H56a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V152A8,8,0,0,0,104,144Zm96,0H152a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V152A8,8,0,0,0,200,144Z" opacity="0.2"/><path d="M200,136H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,200,136Zm0,64H152V152h48v48ZM104,40H56A16,16,0,0,0,40,56v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,64H56V56h48v48Zm96-64H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,64H152V56h48v48Zm-96,32H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm0,64H56V152h48v48Z"/></svg>' },
+    { id: 'overtime-dashboard', title: 'Overtime Dashboard', url: 'index.html#overtime-dashboard', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,40V208H152V40Z" opacity="0.2"/><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>' }
   ];
   const entryPages = [
     { id: 'anik', title: 'Entry (Anik)', url: 'entry.html?page=anik', icon: entrySheetIcon },
@@ -1791,12 +1791,11 @@ function downloadOvertimeAttendanceJpgOriginal() {
 // Exactly mapping the structure of Excel rows
 const EXACT_DASHBOARD_ROWS = [
   // id, section (if defined, otherwise spans from above if blank, or empty), designation, how to calc
-  { id: 'R4', section: 'Section', designation: 'Manager', rowspan: 7, type: 'filter', filters: { designation: 'Manager' } },
+  { id: 'R4', section: 'Section', designation: 'Manager', rowspan: 6, type: 'filter', filters: { designation: 'Manager' } },
   { id: 'R5', designation: 'Incharge Production', type: 'filter', filters: { designation: 'In-charge' } },
   { id: 'R6', designation: 'Engineer Production', type: 'filter', filters: { designation: 'Engineer' } },
   { id: 'R7', designation: 'Senior Supervisor', type: 'filter', filters: { designation: 'Sr. Supervisor' } },
   { id: 'R8', designation: 'Jr. Officer', type: 'filter', filters: { designation: 'Jr. Officer' } },
-  { id: 'R9', designation: 'Computer Operator', type: 'filter', filters: { designation: 'Computer Operator' } },
   { id: 'R10', designation: 'Technical Man', type: 'filter', filters: { designation: 'Technicalman' } },
 
   { id: 'R11', section: 'Fan Assemble', designation: 'Worker', type: 'filter', filters: { group: 'Fan Assemble', designation: 'Worker' }, link: 'entry.html?page=anik' },
@@ -1812,7 +1811,7 @@ const EXACT_DASHBOARD_ROWS = [
 
   { id: 'R21', section: '', designation: 'Production Total', type: 'formula', formulaStr: 'SUM(R4:R20)', isTotal: true },
 
-  { id: 'R22', section: '', designation: 'S Grade', type: 'formula', formulaStr: 'R7+R9+R10+R11+R12+R13+R14+R15+R16+R17+R18+R19+R20', isTotal: true },
+  { id: 'R22', section: '', designation: 'S Grade', type: 'formula', formulaStr: 'R7+R10+R11+R12+R13+R14+R15+R16+R17+R18+R19+R20', isTotal: true },
   { id: 'R23', section: '', designation: 'M Grade', type: 'formula', formulaStr: 'R4+R5+R6+R8', isTotal: true }
 ];
 
@@ -1943,7 +1942,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(239,68,68,0.3), 0 0 0 4px rgba(239,68,68,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); const d = document.getElementById('noti-dropdown'); const r = document.getElementById('reminder-dropdown'); if(r) r.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; document.getElementById('noti-badge').style.display='none'; localStorage.removeItem('has_new_notifications');">
-            <svg class="pfab pfab-feed" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(239,68,68,0.45));"><defs><linearGradient id="g-feed-bell" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fca5a5"/><stop offset="45%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient><radialGradient id="g-feed-badge" cx="30%" cy="30%" r="80%"><stop offset="0%" stop-color="#fca5a5"/><stop offset="100%" stop-color="#dc2626"/></radialGradient></defs><g class="pf-bell"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="url(#g-feed-bell)"/><path d="M7 8.2c.6-1.9 2.5-3.3 5-3.3" stroke="rgba(255,255,255,0.55)" stroke-width="1.4" stroke-linecap="round" fill="none"/><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" fill="none"/></g><g class="pf-badge"><circle cx="18" cy="5.8" r="3.4" fill="#ffffff"/><circle cx="18" cy="5.8" r="2.2" fill="url(#g-feed-badge)"/><circle cx="17.3" cy="5.1" r="0.55" fill="#ffffff" opacity="0.85"/></g></svg>
+            <img class="pfab pfab-feed" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Bell/3D/bell_3d.png" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Feed" />
             <span style="font-size:0.52rem; font-weight:800; color:#ef4444; letter-spacing:0.04em; font-family:'Inter',sans-serif;">FEED</span>
             <span id="noti-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#ef4444; border-radius:50%; border:2px solid white; display:${hasNewNoti ? 'block' : 'none'}; box-shadow:0 0 10px rgba(239,68,68,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
           </button>
@@ -1972,7 +1971,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(234,179,8,0.35), 0 0 0 4px rgba(234,179,8,0.12)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
-            <svg class="pfab pfab-plan" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(234,179,8,0.45));"><defs><linearGradient id="g-plan-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef9c3"/><stop offset="100%" stop-color="#fde68a"/></linearGradient><linearGradient id="g-plan-ribbon" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fcd34d"/><stop offset="100%" stop-color="#d97706"/></linearGradient><radialGradient id="g-plan-today" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#fcd34d"/><stop offset="100%" stop-color="#ca8a04"/></radialGradient></defs><g class="pf-book"><rect x="3.2" y="5.5" width="17.6" height="15" rx="2.6" fill="url(#g-plan-body)" stroke="#ca8a04" stroke-width="1.4"/><rect x="3.2" y="5.5" width="17.6" height="4.8" fill="url(#g-plan-ribbon)"/><rect x="3.2" y="9.4" width="17.6" height="0.9" fill="#7c2d12" opacity="0.25"/><rect x="6.6" y="2.6" width="2.6" height="5.2" rx="1.3" fill="#78350f"/><rect x="14.8" y="2.6" width="2.6" height="5.2" rx="1.3" fill="#78350f"/><rect x="6.6" y="3.4" width="2.6" height="1.3" rx="0.6" fill="#fef3c7" opacity="0.7"/><rect x="14.8" y="3.4" width="2.6" height="1.3" rx="0.6" fill="#fef3c7" opacity="0.7"/><circle class="pf-dot pf-d1" cx="8.2" cy="13.8" r="1.4" fill="#d97706"/><circle class="pf-dot" cx="12" cy="13.8" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot" cx="15.8" cy="13.8" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot" cx="8.2" cy="17.4" r="1.4" fill="#d97706" opacity="0.38"/><circle class="pf-dot pf-today" cx="12" cy="17.4" r="1.6" fill="url(#g-plan-today)"/></g></svg>
+            <img class="pfab pfab-plan" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Tear-off%20calendar/3D/tear-off_calendar_3d.png" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Pending" />
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">PENDING</span>
             <span id="reminder-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#eab308; border-radius:50%; border:2px solid white; display:none; box-shadow:0 0 10px rgba(234,179,8,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
           </button>
@@ -1997,7 +1996,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(16,185,129,0.3), 0 0 0 4px rgba(16,185,129,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="window.forceSaveHistory()">
-            <svg class="pfab pfab-save" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(16,185,129,0.45));"><defs><linearGradient id="g-save-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6ee7b7"/><stop offset="55%" stop-color="#10b981"/><stop offset="100%" stop-color="#047857"/></linearGradient><linearGradient id="g-save-shutter" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1f2937"/><stop offset="100%" stop-color="#111827"/></linearGradient><linearGradient id="g-save-label" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d1fae5"/></linearGradient></defs><g class="pf-disk"><path d="M4.8 3.5h11.4l4.3 4.3V19a2.2 2.2 0 0 1-2.2 2.2H4.8A2.2 2.2 0 0 1 2.6 19V5.7A2.2 2.2 0 0 1 4.8 3.5z" fill="url(#g-save-body)" stroke="#047857" stroke-width="1.1"/><path d="M4.8 3.5h11.4l4.3 4.3H4.8z" fill="rgba(255,255,255,0.18)"/><rect x="6.5" y="3.5" width="9" height="4.8" rx="0.7" fill="url(#g-save-shutter)"/><rect x="12.8" y="4.4" width="1.6" height="2.9" rx="0.2" fill="#f3f4f6"/><rect x="5.6" y="12.6" width="12.8" height="8.6" rx="1.4" fill="url(#g-save-label)" stroke="#047857" stroke-width="1.1"/><path class="pf-check" d="M8.5 17l2.2 2.2 4.6-4.6" stroke="#10b981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/></g></svg>
+            <img class="pfab pfab-save" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Floppy%20disk/3D/floppy_disk_3d.png" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Save" />
             <span style="font-size:0.52rem; font-weight:800; color:#10b981; letter-spacing:0.04em; font-family:'Inter',sans-serif;">SAVE</span>
           </button>
         </div>
@@ -2012,7 +2011,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(139,92,246,0.3), 0 0 0 4px rgba(139,92,246,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="window.openAdminHistoryModal()">
-            <svg class="pfab pfab-admin" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(124,58,237,0.45));" aria-hidden="true"><defs><linearGradient id="g-admin-shield" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#c4b5fd"/><stop offset="55%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#4c1d95"/></linearGradient><radialGradient id="g-admin-face" cx="50%" cy="35%" r="68%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#ede9fe"/></radialGradient></defs><path d="M12 2.8l7 2.8v5.4c0 4.7-2.8 8.4-7 10.2-4.2-1.8-7-5.5-7-10.2V5.6l7-2.8z" fill="url(#g-admin-shield)" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/><circle cx="12" cy="9.2" r="2.6" fill="url(#g-admin-face)"/><path d="M7.9 16.8c.8-2.2 2.2-3.4 4.1-3.4s3.3 1.2 4.1 3.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M9.2 18.4h5.6" stroke="rgba(255,255,255,0.7)" stroke-width="1.2" stroke-linecap="round"/></svg>
+            <img class="pfab pfab-admin" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Shield/3D/shield_3d.png" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Admin" />
             <span style="font-size:0.52rem; font-weight:800; color:#8b5cf6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">ADMIN</span>
           </button>
         </div>
@@ -2032,7 +2031,7 @@ function _performDashboardRender() {
             onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(250,204,21,0.3), 0 0 0 4px rgba(250,204,21,0.1)';"
             onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
             onclick="event.stopPropagation(); toggleThemeDropdown();">
-            <svg class="pfab pfab-theme" width="26" height="26" viewBox="0 0 24 24" fill="none" style="filter:drop-shadow(0 3px 6px rgba(234,179,8,0.45));"><defs><linearGradient id="g-theme-brush" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fde047"/><stop offset="100%" stop-color="#ca8a04"/></linearGradient><linearGradient id="g-theme-handle" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#d97706"/></linearGradient><linearGradient id="g-theme-tip1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f472b6"/><stop offset="100%" stop-color="#db2777"/></linearGradient><linearGradient id="g-theme-tip2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#2563eb"/></linearGradient></defs><g class="pf-palette"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4z" fill="url(#g-theme-handle)" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/><path d="M7 21h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343" fill="url(#g-theme-handle)" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/><rect x="4.5" y="4.5" width="3" height="13" rx="1" fill="rgba(255,255,255,0.4)"/><g class="pf-brush"><path d="M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485" fill="url(#g-theme-brush)" stroke="#78350f" stroke-width="1.2" stroke-linejoin="round"/><circle cx="14" cy="8.5" r="1.1" fill="url(#g-theme-tip1)"/><circle cx="16.3" cy="10.8" r="1.1" fill="url(#g-theme-tip2)"/></g><circle cx="7.2" cy="18" r="0.9" fill="#78350f"/></g></svg>
+            <img class="pfab pfab-theme" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Artist%20palette/3D/artist_palette_3d.png" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Theme" />
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">THEME</span>
           </button>
         </div>
@@ -3127,10 +3126,7 @@ function initSmoothModeToggle() {
   btn.className = 'smooth-mode-toggle no-print';
   btn.innerHTML = `
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M4 13a8 8 0 0 1 14.7-4.4"></path>
-      <path d="M20 4v5h-5"></path>
-      <path d="M20 11a8 8 0 0 1-14.7 4.4"></path>
-      <path d="M4 20v-5h5"></path>
+      <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path>
     </svg>
     <span class="smooth-mode-label">Smooth</span>
   `;
@@ -3786,8 +3782,8 @@ function buildPushNotificationButton() {
         onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.boxShadow='${enabled ? '0 6px 24px rgba(16,185,129,0.5),0 0 0 4px rgba(16,185,129,0.15)' : 'var(--glass-shadow)'}'; this.style.background='${enabled ? 'linear-gradient(135deg,#10b981,#059669)' : 'var(--glass-bg)'}';"
         onclick="handlePushToggle()">
         <span class="push-icon" style="line-height:1; filter:${enabled ? 'drop-shadow(0 0 6px rgba(255,255,255,0.55))' : 'none'}; display:flex; align-items:center; justify-content:center;">${enabled
-          ? '<svg class="pfab pfab-push pfab-push-on" width="24" height="24" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="g-push-on" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d1fae5"/></linearGradient></defs><g class="pf-bell"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="url(#g-push-on)"/><path d="M7 8.2c.6-1.9 2.5-3.3 5-3.3" stroke="rgba(16,185,129,0.55)" stroke-width="1.2" stroke-linecap="round" fill="none"/><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none"/></g><g class="pf-sparkles"><path d="M19.3 4.4l1.8 1.8" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/><path d="M14.8 2.6L16.4 1" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/><circle cx="21" cy="10" r="0.9" fill="#ffffff" opacity="0.9"/></g></svg>'
-          : '<svg class="pfab pfab-push pfab-push-off" width="24" height="24" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="g-push-off" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#cbd5e1"/><stop offset="100%" stop-color="#64748b"/></linearGradient></defs><g class="pf-bell"><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" fill="url(#g-push-off)" opacity="0.28"/><path d="M12 3.2c-3.7 0-6.7 3-6.7 6.7v3.4L3.7 15.4c-.6.8-.1 2 .9 2h14.8c1 0 1.5-1.2.9-2l-1.6-2v-3.4c0-3.7-3-6.7-6.7-6.7z" stroke="#64748b" stroke-width="1.8" stroke-linejoin="round" fill="none"/><path d="M10.3 19.3a1.7 1.7 0 0 0 3.4 0" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" fill="none"/></g><line class="pf-slash-bg" x1="4.2" y1="4.2" x2="19.8" y2="19.8" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/><line class="pf-slash" x1="4.2" y1="4.2" x2="19.8" y2="19.8" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round"/></svg>'
+          ? '<img class="pfab pfab-push pfab-push-on" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Bell/3D/bell_3d.png" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Push On" />'
+          : '<img class="pfab pfab-push pfab-push-off" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Bell%20with%20slash/3D/bell_with_slash_3d.png" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)) grayscale(0.2); opacity:0.85; object-fit:contain;" alt="Push Off" />'
         }</span>
         <span class="push-label" style="font-size:0.52rem; font-weight:800; letter-spacing:0.04em; font-family:'Inter',sans-serif; color:${enabled ? 'white' : '#64748b'}; line-height:1;">${enabled ? 'ON' : 'OFF'}</span>
       </button>
@@ -4402,7 +4398,7 @@ function getAttendanceTone(pct) {
 function collectFanAssembleDimmerTotals(state) {
   const targetGroups = ["Fan Assemble", "Fan Dimmer & Blade"];
   const totals = { authorized: 0, existing: 0, present: 0, absent: 0 };
-  const workerRow = { designation: 'Worker', existing: 0, present: 0, absent: 0 };
+  const workerRow = { designation: 'Worker', authorized: 0, existing: 0, present: 0, absent: 0 };
 
   targetGroups.forEach(function(groupName) {
     getHistoryRows(state, 'anik', groupName).forEach(function(row) {
@@ -4419,6 +4415,7 @@ function collectFanAssembleDimmerTotals(state) {
       totals.existing += existing;
       totals.present += present;
       totals.absent += absent;
+      workerRow.authorized += authorized;
       workerRow.existing += existing;
       workerRow.present += present;
       workerRow.absent += absent;
@@ -4427,7 +4424,7 @@ function collectFanAssembleDimmerTotals(state) {
 
   return {
     totals: totals,
-    rows: workerRow.existing > 0 || workerRow.present > 0 || workerRow.absent > 0 ? [workerRow] : []
+    rows: workerRow.authorized > 0 || workerRow.existing > 0 || workerRow.present > 0 || workerRow.absent > 0 ? [workerRow] : []
   };
 }
 
@@ -4519,6 +4516,7 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
           '<div class="ios-merge-title">' + row.present + '/' + row.existing + ' present</div>' +
         '</div>' +
         '<div class="ios-merge-card-stats">' +
+          '<span class="ios-merge-pill authorized">Auth ' + row.authorized + '</span>' +
           '<span class="ios-merge-pill present">P ' + row.present + '</span>' +
           '<span class="ios-merge-pill existing">E ' + row.existing + '</span>' +
           '<span class="ios-merge-pill absent">A ' + row.absent + '</span>' +
@@ -4557,6 +4555,7 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
     '</div>' +
     '<div class="ios-merge-kpis">' +
       '<div><span>Type</span><b>Worker</b></div>' +
+      '<div><span>Authorized</span><b class="k-authorized">' + merged.totals.authorized + '</b></div>' +
       '<div><span>Existing</span><b class="k-existing">' + merged.totals.existing + '</b></div>' +
       '<div><span>Present</span><b class="k-present">' + merged.totals.present + '</b></div>' +
       '<div><span>Absent</span><b class="k-absent">' + merged.totals.absent + '</b></div>' +

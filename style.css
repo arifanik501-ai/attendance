@@ -22,12 +22,10 @@ html {
 }
 
 body {
-  overflow-y: scroll;
+  overflow-y: auto;
   /* Forces scrollbar to prevent layout shift */
   -webkit-overflow-scrolling: touch;
   /* Momentum scrolling on iOS */
-  will-change: scroll-position;
-  /* GPU acceleration hint */
 }
 
 * {
@@ -874,7 +872,7 @@ h4 {
   display: inline-flex;
   align-items: center;
   gap: 0.28rem;
-  margin: 0.12rem auto 0 -1.25rem;
+  margin: 0.12rem auto 0 -1.75rem;
   padding: 0.34rem 0.56rem;
   border: 1px solid rgba(245, 158, 11, 0.42);
   border-radius: 999px;
@@ -1794,9 +1792,9 @@ body.page-leaving {
 }
 
 .table-container {
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  will-change: transform, scroll-position;
   border-radius: 16px;
   border: none;
   background: rgba(255, 255, 255, 0.45);
@@ -2180,7 +2178,8 @@ input[type="number"]:focus {
   background:
     radial-gradient(circle at 30% 22%, rgba(255,255,255,0.42), transparent 32%),
     linear-gradient(135deg, #14b8a6, #0f766e);
-  margin-left: -1.15rem;
+  margin-left: 0.25rem;
+  margin-right: 0.75rem;
   padding: 0;
   line-height: 1;
   min-height: 0;

@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <title>Fan Attendance</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=73">
+  <link rel="stylesheet" href="style.css?v=75">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
 
@@ -32,8 +32,8 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <!-- Firebase Realtime Database -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="app.js?v=73"></script>
-  <script src="tooltip.js?v=73" defer></script>
+  <script src="app.js?v=75"></script>
+  <script src="tooltip.js?v=75" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       renderDashboard();
@@ -45,7 +45,7 @@
       });
       const reveal = () => {
         document.body.style.opacity = '1';
-        document.body.style.transform = 'translate3d(0, 0, 0)';
+        document.body.style.transform = 'none';
       };
       requestAnimationFrame(() => requestAnimationFrame(reveal));
     });

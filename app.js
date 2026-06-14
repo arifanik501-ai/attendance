@@ -437,6 +437,11 @@ function getAppState() {
         // Enforce config array order
         stateToReturn[pageKey][groupName].sort((a, b) => designations.indexOf(a.designation) - designations.indexOf(b.designation));
       }
+
+      // Ensure all rows are recalculated with new absent logic
+      stateToReturn[pageKey][groupName].forEach(r => {
+        r.absent = (parseInt(r.authorized) || 0) - (parseInt(r.present) || 0);
+      });
     }
   }
 
@@ -563,9 +568,10 @@ function saveAppState(state, customActionStr = null) {
 }
 
 function calculateRow(row) {
+  const authorized = parseInt(row.authorized) || 0;
   const existing = parseInt(row.existing) || 0;
   const present = parseInt(row.present) || 0;
-  row.absent = Math.max(0, existing - present);
+  row.absent = authorized - present;
   return row;
 }
 
@@ -1042,7 +1048,7 @@ function _renderEntryContent(pageId) {
               <th>Authorized</th>
               <th>Existing</th>
               <th>Present</th>
-              <th>Absent</th>
+              <th>Absent<br><span style="font-size:0.85em; font-weight:500;">(from Authorize<br>Manpower)</span></th>
             </tr>
           </thead>
           <tbody>`;
@@ -2112,7 +2118,7 @@ function _performDashboardRender() {
             <th>Authorized<br>Manpower</th>
             <th>Existing<br>Manpower</th>
             <th>Present<br>Manpower</th>
-            <th>Absent</th>
+            <th>Absent<br><span style="font-size:0.85em; font-weight:500;">(from Authorize<br>Manpower)</span></th>
           </tr>
         </thead>
         <tbody>`;
@@ -4408,8 +4414,7 @@ function collectFanAssembleDimmerTotals(state) {
       const authorized = historyToCount(row.authorized);
       const existing = historyToCount(row.existing);
       const present = historyToCount(row.present);
-      let absent = historyToCount(row.absent);
-      if (absent === 0 && present < existing) absent = existing - present;
+      let absent = authorized - present;
 
       totals.authorized += authorized;
       totals.existing += existing;
@@ -4558,7 +4563,7 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
       '<div><span>Authorized</span><b class="k-authorized">' + merged.totals.authorized + '</b></div>' +
       '<div><span>Existing</span><b class="k-existing">' + merged.totals.existing + '</b></div>' +
       '<div><span>Present</span><b class="k-present">' + merged.totals.present + '</b></div>' +
-      '<div><span>Absent</span><b class="k-absent">' + merged.totals.absent + '</b></div>' +
+      '<div><span>Absent (from Authorize Manpower)</span><b class="k-absent">' + merged.totals.absent + '</b></div>' +
     '</div>' +
     '<div class="ios-merge-list">' + rowCards + '</div>';
 
@@ -4752,7 +4757,7 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
 
   const monthInfo = getReportingMonthInfo(results[0].dateStr);
 
-  let csvContent = "\uFEFFDate,Day,Authorized,Existing,Present,Absent,Percentage\n";
+  let csvContent = "\uFEFFDate,Day,Authorized,Existing,Present,Absent (from Authorize Manpower),Percentage\n";
 
   let totalAuthSum = 0;
   let totalExistSum = 0;
@@ -5072,7 +5077,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
             '<th style="width: 80px; text-align: center;">Authorized</th>' +
             '<th style="width: 80px; text-align: center;">Existing</th>' +
             '<th style="width: 80px; text-align: center;">Present</th>' +
-            '<th style="width: 80px; text-align: center;">Absent</th>' +
+            '<th style="width: 80px; text-align: center;">Absent<br><span style="font-size:0.85em; font-weight:500;">(from Authorize<br>Manpower)</span></th>' +
             '<th style="width: 80px; text-align: center;">Present %</th>' +
           '</tr>' +
         '</thead>' +
@@ -5144,8 +5149,7 @@ function _renderHistoryState(dateStr, state, container) {
           var authorized = parseInt(row.authorized) || 0;
           var existing = parseInt(row.existing) || 0;
           var present = parseInt(row.present) || 0;
-          var absent = parseInt(row.absent) || 0;
-          if (absent === 0 && present < existing) absent = existing - present;
+          var absent = authorized - present;
           totalAuth += authorized;
           totalExist += existing; totalPresent += present; totalAbsent += absent;
           secExist += existing; secPresent += present; secAbsent += absent;
@@ -5210,7 +5214,7 @@ function _renderHistoryState(dateStr, state, container) {
         '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Authorized</div><div class="ios-ss-kpi-value k-total">' + (totalAuth || totalExist) + '</div></div>' +
         '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Existing</div><div class="ios-ss-kpi-value k-existing">' + totalExist + '</div></div>' +
         '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Present</div><div class="ios-ss-kpi-value k-present">' + totalPresent + '</div></div>' +
-        '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Absent</div><div class="ios-ss-kpi-value k-absent">' + totalAbsent + '</div></div>' +
+        '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Absent (from Authorize Manpower)</div><div class="ios-ss-kpi-value k-absent">' + totalAbsent + '</div></div>' +
       '</div>' +
       '<div class="ios-ss-sections">' + sectionsHtml + '</div>';
   } catch(e) {

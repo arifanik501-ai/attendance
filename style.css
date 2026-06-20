@@ -885,7 +885,8 @@ h4 {
   font-weight: 950;
   font-size: 0.7rem;
   line-height: 1.05;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  opacity: 0;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.3s ease;
 }
 
 .dashboard-top-export svg {
@@ -895,6 +896,7 @@ h4 {
 
 .dashboard-top-export:hover {
   transform: translateY(-1px);
+  opacity: 1;
   box-shadow: 0 14px 28px -18px rgba(180, 83, 9, 0.82), 0 0 0 3px rgba(245, 158, 11, 0.1), inset 0 1px 0 rgba(255,255,255,0.86);
 }
 
@@ -1857,16 +1859,17 @@ td {
 }
 
 th {
-  background: rgba(0, 0, 0, 0.04);
-  backdrop-filter: blur(4px);
-  font-weight: 700;
-  color: #374151;
+  background: var(--total-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-weight: 800;
+  color: var(--total-text);
   text-transform: uppercase;
   font-size: 0.7rem;
   letter-spacing: 0.05em;
   text-align: center;
   border-bottom: 2px solid var(--theme-color);
-  transition: border-color 1.5s ease-in-out;
+  transition: background 1.5s ease-in-out, border-color 1.5s ease-in-out, color 1.5s ease-in-out;
 }
 
 td:nth-child(1),
@@ -2310,22 +2313,31 @@ input[type="number"]:focus {
   text-align: center !important;
 }
 
-.branch-tick {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
+.branch-att-select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: auto;
+  min-width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(15, 118, 110, 0.25);
+  background: rgba(255,255,255,0.82);
+  padding: 0 4px;
+  color: #059669;
+  font-size: 0.85rem;
+  font-weight: 800;
   cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 8px 18px -16px rgba(15,118,110,0.8);
+  transition: all 0.2s ease;
+  text-align: center;
+  text-align-last: center;
 }
 
-.branch-tick input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
+.branch-att-select.is-ticked {
+  font-weight: 900;
+  font-size: 1rem;
 }
 
-.branch-tick-box,
 .branch-overview-mark {
   display: inline-flex;
   align-items: center;
@@ -2342,23 +2354,12 @@ input[type="number"]:focus {
   transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.branch-tick input:checked + .branch-tick-box,
 .branch-overview-mark.checked {
   border-color: rgba(15, 118, 110, 0.55);
   background: linear-gradient(135deg, #2dd4bf, #0f766e);
   box-shadow: 0 8px 18px -12px rgba(15,118,110,0.9), inset 0 1px 0 rgba(255,255,255,0.35);
 }
 
-.branch-tick input:checked + .branch-tick-box::before {
-  content: '✓';
-}
-
-.branch-tick:hover .branch-tick-box {
-  transform: scale(1.08);
-  border-color: rgba(20, 184, 166, 0.62);
-}
-
-.branch-tick input:disabled + .branch-tick-box,
 .branch-overview-mark.future-mark {
   cursor: not-allowed;
   background: rgba(226, 232, 240, 0.78);
@@ -2366,14 +2367,23 @@ input[type="number"]:focus {
   box-shadow: none;
 }
 
-.branch-tick:has(input:disabled) {
-  cursor: not-allowed;
-  opacity: 0.58;
+.branch-att-select:hover:not(:disabled) {
+  border-color: rgba(20, 184, 166, 0.62);
+  box-shadow: 0 6px 12px -4px rgba(15,118,110,0.4);
 }
 
-.branch-tick:has(input:disabled):hover .branch-tick-box {
-  transform: none;
+.branch-att-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: rgba(226, 232, 240, 0.78);
   border-color: rgba(148, 163, 184, 0.32);
+  box-shadow: none;
+}
+
+.branch-att-select:focus {
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.2);
 }
 
 .branch-modal-overlay {

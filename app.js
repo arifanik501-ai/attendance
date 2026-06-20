@@ -66,6 +66,10 @@ const SECTIONS_CONFIG = {
 };
 
 let globalAppState = null;
+try {
+  const cached = localStorage.getItem('mep_dashboard_state_cache');
+  if (cached) globalAppState = JSON.parse(cached);
+} catch(e) {}
 let currentActivePageId = null;
 const SESSION_DEVICE_ID = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 const CUSTOM_PERIOD_CUTOFF_DAY = 26;
@@ -278,7 +282,9 @@ function getBranchAttendancePeriodState(state, pageId, periodKey, createIfMissin
 }
 
 function isTickValueChecked(value) {
-  return value === true || value === 1 || value === '1' || value === 'true';
+  if (value === true || value === 1 || value === '1' || value === 'true') return true;
+  if (typeof value === 'string' && value.endsWith('hr')) return true;
+  return false;
 }
 
 const OVERTIME_EXPORT_THEME = Object.freeze({
@@ -545,6 +551,7 @@ function saveAppState(state, customActionStr = null) {
   }
 
   if (window.firebaseDb) {
+    localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(state));
     window.firebaseDb.ref('mep_dashboard_state').set(state);
 
     const sheetName = currentActivePageId ? (SECTIONS_CONFIG[currentActivePageId]?.title || 'An entry sheet') : 'The dashboard';
@@ -1357,13 +1364,22 @@ function renderBranchAttendanceCard(pageId, state) {
     }
     const checkedCount = dates.reduce((count, day) => count + (!day.isFuture && isTickValueChecked(periodState[groupName][day.key]) ? 1 : 0), 0);
     const cells = dates.map(day => {
-      const checked = !day.isFuture && isTickValueChecked(periodState[groupName][day.key]);
+      const val = !day.isFuture ? periodState[groupName][day.key] : false;
+      const isTrueTick = val === true || val === 1 || val === '1' || val === 'true';
       return `
         <td class="branch-att-cell ${day.isFriday ? 'is-friday' : ''} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
-          <label class="branch-tick" aria-label="${groupName} ${day.fullLabel}">
-            <input type="checkbox" class="branch-att-input" data-branch="${groupName}" data-date="${day.key}" ${checked ? 'checked' : ''} ${day.isFuture ? 'disabled' : ''}>
-            <span class="branch-tick-box"></span>
-          </label>
+          <select class="branch-att-select ${isTrueTick ? 'is-ticked' : ''}" data-branch="${groupName}" data-date="${day.key}" ${day.isFuture ? 'disabled' : ''} aria-label="${groupName} ${day.fullLabel}">
+            <option value="" ${!val ? 'selected' : ''}></option>
+            <option value="true" ${isTrueTick ? 'selected' : ''}>✓</option>
+            <option value="1hr" ${val === '1hr' ? 'selected' : ''}>1hr</option>
+            <option value="2hr" ${val === '2hr' ? 'selected' : ''}>2hr</option>
+            <option value="3hr" ${val === '3hr' ? 'selected' : ''}>3hr</option>
+            <option value="4hr" ${val === '4hr' ? 'selected' : ''}>4hr</option>
+            <option value="5hr" ${val === '5hr' ? 'selected' : ''}>5hr</option>
+            <option value="6hr" ${val === '6hr' ? 'selected' : ''}>6hr</option>
+            <option value="7hr" ${val === '7hr' ? 'selected' : ''}>7hr</option>
+            <option value="8hr" ${val === '8hr' ? 'selected' : ''}>8hr</option>
+          </select>
         </td>`;
     }).join('');
 
@@ -1435,8 +1451,13 @@ function bindBranchAttendanceControls(pageId, state) {
     });
   });
 
-  document.querySelectorAll('.branch-att-input').forEach(input => {
+  document.querySelectorAll('.branch-att-select').forEach(input => {
     input.addEventListener('change', e => {
+      if (e.target.value === 'true') {
+        e.target.classList.add('is-ticked');
+      } else {
+        e.target.classList.remove('is-ticked');
+      }
       const period = getCustomPeriodByOffset(getEntryBranchPeriodOffset(pageId));
       const branchName = e.target.getAttribute('data-branch');
       const dateKey = e.target.getAttribute('data-date');
@@ -1444,16 +1465,20 @@ function bindBranchAttendanceControls(pageId, state) {
       if (!periodState[branchName] || typeof periodState[branchName] !== 'object' || Array.isArray(periodState[branchName])) {
         periodState[branchName] = {};
       }
-      periodState[branchName][dateKey] = e.target.checked;
+      let val = e.target.value;
+      if (val === "true") val = true;
+      if (val === "") val = false;
+      periodState[branchName][dateKey] = val;
       const row = e.target.closest('tr');
       const sub = row?.querySelector('.branch-name-sub');
       if (sub) {
-        const checkedCount = row.querySelectorAll('.branch-att-input:checked').length;
+        const checkedCount = Array.from(row.querySelectorAll('.branch-att-select')).filter(s => s.value !== "").length;
         sub.textContent = `${checkedCount}/${getCustomPeriodDates(period).length} days ticked`;
       }
       const summary = document.querySelector('.branch-att-summary span:last-child');
       if (summary) {
-        summary.textContent = `${document.querySelectorAll('.branch-att-input:checked').length} ticks selected`;
+        const totalCount = Array.from(document.querySelectorAll('.branch-att-select')).filter(s => s.value !== "").length;
+        summary.textContent = `${totalCount} ticks selected`;
       }
     });
   });
@@ -1603,8 +1628,13 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
     const periodState = getBranchAttendancePeriodState(state, row.pageId, period.key, false) || {};
     const dayMap = periodState[row.groupName] || {};
     const dateCells = dates.map(day => {
-      const checked = !day.isFuture && isTickValueChecked(dayMap[day.key]);
-      return `<td class="${day.isFriday ? 'friday' : ''} ${day.isFuture ? 'future' : ''} ${checked ? 'checked' : ''}">${checked ? '<span class="ot-export-check">✓</span>' : ''}</td>`;
+      const val = !day.isFuture ? dayMap[day.key] : false;
+      const isTrueTick = val === true || val === 1 || val === '1' || val === 'true';
+      const hasValue = isTrueTick || (typeof val === 'string' && val.endsWith('hr'));
+      let content = '';
+      if (isTrueTick) content = '✓';
+      else if (hasValue) content = val;
+      return `<td class="${day.isFriday ? 'friday' : ''} ${day.isFuture ? 'future' : ''} ${hasValue ? 'checked' : ''}">${hasValue ? `<span class="ot-export-check">${content}</span>` : ''}</td>`;
     }).join('');
     return `
       <tr>
@@ -1670,9 +1700,24 @@ function buildOvertimeDashboardReportHtml(state, period) {
     const dayMap = periodState[row.groupName] || {};
     let rowTicks = 0;
     const cells = dates.map(day => {
-      const checked = !day.isFuture && isTickValueChecked(dayMap[day.key]);
-      if (checked) rowTicks += 1;
-      return `<td class="ot-dashboard-cell ${day.isFriday ? 'is-friday' : ''} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">${checked ? '<span>✓</span>' : ''}</td>`;
+      const val = !day.isFuture ? dayMap[day.key] : false;
+      const isTrueTick = val === true || val === 1 || val === '1' || val === 'true';
+      if (isTrueTick || (typeof val === 'string' && val.endsWith('hr'))) rowTicks += 1;
+      return `
+        <td class="ot-dashboard-cell ${day.isFriday ? 'is-friday' : ''} ${day.isToday ? 'is-today' : ''} ${day.isFuture ? 'is-future' : ''}">
+          <select class="branch-att-select ot-dashboard-select" style="pointer-events: none;" tabindex="-1" data-page="${row.pageId}" data-branch="${row.groupName}" data-date="${day.key}" ${day.isFuture ? 'disabled' : ''} aria-label="${row.groupName} ${day.fullLabel}">
+            <option value="" ${!val ? 'selected' : ''}></option>
+            <option value="true" ${isTrueTick ? 'selected' : ''}>✓</option>
+            <option value="1hr" ${val === '1hr' ? 'selected' : ''}>1hr</option>
+            <option value="2hr" ${val === '2hr' ? 'selected' : ''}>2hr</option>
+            <option value="3hr" ${val === '3hr' ? 'selected' : ''}>3hr</option>
+            <option value="4hr" ${val === '4hr' ? 'selected' : ''}>4hr</option>
+            <option value="5hr" ${val === '5hr' ? 'selected' : ''}>5hr</option>
+            <option value="6hr" ${val === '6hr' ? 'selected' : ''}>6hr</option>
+            <option value="7hr" ${val === '7hr' ? 'selected' : ''}>7hr</option>
+            <option value="8hr" ${val === '8hr' ? 'selected' : ''}>8hr</option>
+          </select>
+        </td>`;
     }).join('');
     totalTicks += rowTicks;
     return `
@@ -3257,7 +3302,44 @@ function setupFirebaseListener() {
     window.firebaseDb.ref('mep_dashboard_state').on('value', (snapshot) => {
       const data = snapshot.val();
       if (data) {
+        // --- MIGRATION BLOCK START ---
+        if (localStorage.getItem('mep_mig_ot_3hr') !== 'true') {
+           let modified = false;
+           if (data.branchAttendance) {
+             for (const pId in data.branchAttendance) {
+               const pData = data.branchAttendance[pId];
+               if (typeof pData === 'object' && !Array.isArray(pData)) {
+                 for (const pKey in pData) {
+                   const perData = pData[pKey];
+                   if (typeof perData === 'object' && !Array.isArray(perData)) {
+                     for (const gName in perData) {
+                       const gData = perData[gName];
+                       if (typeof gData === 'object' && !Array.isArray(gData)) {
+                         for (const dKey in gData) {
+                           const val = gData[dKey];
+                           if (val === true || val === 1 || val === '1' || val === 'true' || (typeof val === 'string' && val.endsWith('hr'))) {
+                             if (val !== '3hr') {
+                               gData[dKey] = '3hr';
+                               modified = true;
+                             }
+                           }
+                         }
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+           }
+           if (modified) {
+             window.firebaseDb.ref('mep_dashboard_state').set(data);
+           }
+           localStorage.setItem('mep_mig_ot_3hr', 'true');
+        }
+        // --- MIGRATION BLOCK END ---
+
         globalAppState = data;
+        localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(data));
       } else {
         globalAppState = createDefaultState();
         saveAppState(globalAppState);

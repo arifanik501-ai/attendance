@@ -7794,3 +7794,33 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
     font-size: 1.05rem;
   }
 }
+
+.dashboard-pending-wrapper {
+  position: fixed;
+  top: 1.5rem;
+  right: 7.5rem;
+  z-index: 9990;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding-right: 10px;
+  align-items: flex-end;
+}
+
+@media (max-width: 720px) {
+  .dashboard-pending-wrapper {
+    position: static !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin-bottom: 1rem !important;
+    gap: 8px !important;
+  }
+}

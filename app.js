@@ -2218,6 +2218,16 @@ function _performDashboardRender() {
       mainCard.innerHTML = html;
       container.appendChild(mainCard);
 
+      // Append dashboard-pending-container fixed to the top right of the dashboard view
+      let pendingContainer = document.getElementById('dashboard-pending-container');
+      if (!pendingContainer) {
+        pendingContainer = document.createElement('div');
+        pendingContainer.id = 'dashboard-pending-container';
+        pendingContainer.className = 'no-print dashboard-pending-wrapper';
+      }
+      // Insert before mainCard so it can be static on mobile and push content down, while fixed on PC
+      container.insertBefore(pendingContainer, mainCard);
+
       if (window.clockInterval) clearInterval(window.clockInterval);
       window.clockInterval = setInterval(updateClock, 1000);
       updateClock();
@@ -3569,6 +3579,7 @@ window.updateReminderList = function (silent = false) {
   const badge = document.getElementById('reminder-badge');
   const countSpan = document.getElementById('reminder-count');
   const list = document.getElementById('reminder-list');
+  const dashboardPendingContainer = document.getElementById('dashboard-pending-container');
 
   if (badge) {
     if (missingSections.length > 0) {
@@ -3593,6 +3604,34 @@ window.updateReminderList = function (silent = false) {
           <span style="font-size:0.75rem; font-weight:700; color:#ef4444; background:rgba(239,68,68,0.1); padding:2px 8px; border-radius:8px;">Missing</span>
         </a>
       `).join('');
+    }
+  }
+
+  if (dashboardPendingContainer) {
+    if (missingSections.length === 0) {
+      dashboardPendingContainer.innerHTML = `
+        <div style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; box-shadow: 0 8px 24px rgba(16,185,129,0.15); white-space: nowrap; backdrop-filter: blur(8px);">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Thank You
+        </div>
+      `;
+    } else {
+      let pendingHtml = '';
+      missingSections.forEach(s => {
+        pendingHtml += `
+          <div style="background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 0.6rem 1.1rem; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 12px rgba(239,68,68,0.08); white-space: nowrap; backdrop-filter: blur(8px); transition: all 0.2s;" onmouseover="this.style.transform='translateX(-4px)'; this.style.background='rgba(239,68,68,0.1)';" onmouseout="this.style.transform='none'; this.style.background='rgba(239,68,68,0.05)';">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            Pending: ${s.title}
+          </div>
+        `;
+      });
+      dashboardPendingContainer.innerHTML = pendingHtml;
     }
   }
 };

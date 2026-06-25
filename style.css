@@ -7809,6 +7809,265 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
   align-items: flex-end;
 }
 
+/* ═══════════════════════════════════════════════════
+   PREMIUM STATUS BOXES — Thank You / Pending
+   ═══════════════════════════════════════════════════ */
+
+/* ── Thank You (All Complete) Box ── */
+.status-box-complete {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.06) 50%, rgba(5, 150, 105, 0.1) 100%);
+  color: #047857;
+  border: 1.5px solid rgba(16, 185, 129, 0.35);
+  border-radius: 18px;
+  padding: 0.85rem 1.6rem 0.85rem 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 12px 36px rgba(16, 185, 129, 0.18),
+    0 4px 12px rgba(16, 185, 129, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(16, 185, 129, 0.08);
+  transform: translateY(0) scale(1);
+  transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: statusBoxEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.status-box-complete:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow:
+    0 20px 50px rgba(16, 185, 129, 0.25),
+    0 8px 20px rgba(16, 185, 129, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(16, 185, 129, 0.1);
+}
+
+/* Animated shimmer sweep */
+.status-box-complete::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 40%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0.25) 60%,
+    transparent 100%
+  );
+  animation: statusShimmer 4s ease-in-out 1s infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Pulsing glow ring behind the box */
+.status-box-complete::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 20px;
+  background: transparent;
+  border: 2px solid rgba(16, 185, 129, 0.15);
+  animation: statusGlowRing 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Animated check icon container */
+.status-icon-complete {
+  position: relative;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #10b981, #059669);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 14px rgba(16, 185, 129, 0.45),
+    0 0 0 3px rgba(16, 185, 129, 0.12);
+  animation: statusIconPulse 2.8s ease-in-out infinite;
+}
+
+.status-icon-complete svg {
+  color: white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+}
+
+/* Check draw animation */
+.status-icon-complete svg path {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: statusCheckDraw 0.8s cubic-bezier(0.65, 0, 0.35, 1) 0.3s forwards;
+}
+
+.status-text-complete {
+  text-shadow: 0 1px 3px rgba(16, 185, 129, 0.12);
+}
+
+/* ── Pending (Missing) Box ── */
+.status-box-pending {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(248, 113, 113, 0.03) 50%, rgba(220, 38, 38, 0.06) 100%);
+  color: #b91c1c;
+  border: 1.5px solid rgba(239, 68, 68, 0.25);
+  border-radius: 16px;
+  padding: 0.7rem 1.35rem 0.7rem 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow:
+    0 8px 24px rgba(239, 68, 68, 0.1),
+    0 3px 8px rgba(239, 68, 68, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(239, 68, 68, 0.05);
+  cursor: default;
+  transform: translateX(0) scale(1);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: statusBoxSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.status-box-pending:hover {
+  transform: translateX(-6px) scale(1.03);
+  box-shadow:
+    0 14px 36px rgba(239, 68, 68, 0.16),
+    0 6px 14px rgba(239, 68, 68, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(239, 68, 68, 0.08);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(248, 113, 113, 0.05) 50%, rgba(220, 38, 38, 0.08) 100%);
+}
+
+/* Subtle shimmer for pending too */
+.status-box-pending::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 40%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.15) 60%,
+    transparent 100%
+  );
+  animation: statusShimmer 5s ease-in-out 2s infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Alert icon container */
+.status-icon-pending {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.18), rgba(220, 38, 38, 0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.15);
+  animation: statusPendingPulse 2.4s ease-in-out infinite;
+}
+
+.status-icon-pending svg {
+  color: #dc2626;
+  filter: drop-shadow(0 1px 1px rgba(220, 38, 38, 0.15));
+}
+
+.status-text-pending {
+  text-shadow: 0 1px 2px rgba(239, 68, 68, 0.06);
+}
+
+/* Staggered entrance for multiple pending items */
+.status-box-pending:nth-child(1) { animation-delay: 0s; }
+.status-box-pending:nth-child(2) { animation-delay: 0.08s; }
+.status-box-pending:nth-child(3) { animation-delay: 0.16s; }
+.status-box-pending:nth-child(4) { animation-delay: 0.24s; }
+.status-box-pending:nth-child(5) { animation-delay: 0.32s; }
+.status-box-pending:nth-child(6) { animation-delay: 0.40s; }
+.status-box-pending:nth-child(7) { animation-delay: 0.48s; }
+.status-box-pending:nth-child(8) { animation-delay: 0.56s; }
+
+/* ── Keyframes ── */
+@keyframes statusBoxEntrance {
+  0%   { opacity: 0; transform: translateY(-12px) scale(0.92); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes statusBoxSlideIn {
+  0%   { opacity: 0; transform: translateX(16px) scale(0.94); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes statusShimmer {
+  0%, 100% { left: -100%; }
+  50%      { left: 150%; }
+}
+
+@keyframes statusGlowRing {
+  0%, 100% { border-color: rgba(16, 185, 129, 0.12); transform: scale(1); }
+  50%      { border-color: rgba(16, 185, 129, 0.3); transform: scale(1.02); }
+}
+
+@keyframes statusIconPulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45), 0 0 0 3px rgba(16, 185, 129, 0.12); }
+  50%      { box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55), 0 0 0 6px rgba(16, 185, 129, 0.08); }
+}
+
+@keyframes statusCheckDraw {
+  0%   { stroke-dashoffset: 30; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes statusPendingPulse {
+  0%, 100% { box-shadow: 0 3px 10px rgba(239, 68, 68, 0.15); transform: scale(1); }
+  50%      { box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25); transform: scale(1.06); }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .status-box-complete,
+  .status-box-pending,
+  .status-icon-complete,
+  .status-icon-pending,
+  .status-icon-complete svg path {
+    animation: none !important;
+    transition: none !important;
+  }
+  .status-box-complete::before,
+  .status-box-pending::before,
+  .status-box-complete::after {
+    animation: none !important;
+  }
+  .status-icon-complete svg path {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ── Responsive ── */
 @media (max-width: 720px) {
   .dashboard-pending-wrapper {
     position: static !important;
@@ -7819,8 +8078,59 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
     width: 100% !important;
     max-height: none !important;
     overflow: visible !important;
-    padding: 0 !important;
-    margin-bottom: 1rem !important;
-    gap: 8px !important;
+    padding: 0 0.5rem !important;
+    margin-bottom: 0.75rem !important;
+    gap: 6px !important;
+  }
+  .dashboard-pending-wrapper .status-box-complete,
+  .dashboard-pending-wrapper .status-box-pending {
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.78rem !important;
+    border-radius: 10px !important;
+    gap: 6px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+  }
+  .dashboard-pending-wrapper .status-icon-complete {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .dashboard-pending-wrapper .status-icon-pending {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .dashboard-pending-wrapper .status-icon-complete svg,
+  .dashboard-pending-wrapper .status-icon-pending svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+  .dashboard-pending-wrapper .status-box-complete::after {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .dashboard-pending-wrapper {
+    gap: 4px !important;
+    margin-bottom: 0.5rem !important;
+  }
+  .dashboard-pending-wrapper .status-box-complete,
+  .dashboard-pending-wrapper .status-box-pending {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.72rem !important;
+    border-radius: 8px !important;
+    gap: 4px !important;
+  }
+  .dashboard-pending-wrapper .status-icon-complete {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .dashboard-pending-wrapper .status-icon-pending {
+    width: 17px !important;
+    height: 17px !important;
+  }
+  .dashboard-pending-wrapper .status-icon-complete svg,
+  .dashboard-pending-wrapper .status-icon-pending svg {
+    width: 11px !important;
+    height: 11px !important;
   }
 }

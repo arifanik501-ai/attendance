@@ -2576,14 +2576,11 @@ function applyThemeToOvertimeExport(sheet) {
   sheet.querySelectorAll('.ot-export-check').forEach(mark => {
     setStyles(mark, {
       display: 'inline-flex',
-      width: '28px',
-      height: '28px',
       'align-items': 'center',
       'justify-content': 'center',
       background: white,
-      border: `2px solid ${black}`,
+      border: 'none',
       color: black,
-      'border-radius': '50%',
       'font-size': '20px',
       'font-weight': '900',
       'line-height': '1'
@@ -3610,24 +3607,28 @@ window.updateReminderList = function (silent = false) {
   if (dashboardPendingContainer) {
     if (missingSections.length === 0) {
       dashboardPendingContainer.innerHTML = `
-        <div style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; box-shadow: 0 8px 24px rgba(16,185,129,0.15); white-space: nowrap; backdrop-filter: blur(8px);">
-          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          Thank You
+        <div class="status-box-complete">
+          <div class="status-icon-complete">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <span class="status-text-complete">Thank You</span>
         </div>
       `;
     } else {
       let pendingHtml = '';
       missingSections.forEach(s => {
         pendingHtml += `
-          <div style="background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 0.6rem 1.1rem; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 12px rgba(239,68,68,0.08); white-space: nowrap; backdrop-filter: blur(8px); transition: all 0.2s;" onmouseover="this.style.transform='translateX(-4px)'; this.style.background='rgba(239,68,68,0.1)';" onmouseout="this.style.transform='none'; this.style.background='rgba(239,68,68,0.05)';">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            Pending: ${s.title}
+          <div class="status-box-pending">
+            <div class="status-icon-pending">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
+            <span class="status-text-pending">Pending: ${s.title}</span>
           </div>
         `;
       });

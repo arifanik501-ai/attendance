@@ -1539,6 +1539,9 @@ function buildBranchAttendanceOverviewHtml(state, period) {
         <button class="branch-period-btn branch-download-btn" onclick="window.downloadOvertimeAttendanceJpg()" type="button" aria-label="Download JPG" data-tip-title="Download JPG" data-tip-desc="Download overtime attendance as JPG" data-tip-theme="success">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M8 10.5l4 4 4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
         </button>
+        <button class="branch-period-btn branch-download-btn" onclick="window.downloadOvertimeAttendanceExcel()" type="button" aria-label="Download Excel" data-tip-title="Download Excel" data-tip-desc="Download overtime attendance as Excel" data-tip-theme="success" style="margin-left: 0.25rem;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        </button>
       </div>
     </div>
     <div class="branch-att-summary">
@@ -1672,12 +1675,7 @@ function buildOvertimeAttendanceJpgHtml(state, period) {
           })}
         </div>
       </div>
-      <div class="ot-export-meta">
-        <span>${Object.keys(SECTIONS_CONFIG).length} Entry Sheets</span>
-        <span>${rows.length} Sections</span>
-        <span>${dates.length} Days</span>
-        <span>Future dates disabled</span>
-      </div>
+
       <table class="ot-export-table">
         <thead>
           <tr>
@@ -1753,6 +1751,9 @@ function buildOvertimeDashboardReportHtml(state, period) {
           <button class="branch-period-btn branch-download-btn" onclick="window.downloadOvertimeAttendanceJpg()" type="button" aria-label="Download JPG" data-tip-title="Download JPG" data-tip-desc="Download overtime attendance as JPG" data-tip-theme="success">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M8 10.5l4 4 4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
           </button>
+          <button class="branch-period-btn branch-download-btn" onclick="window.downloadOvertimeAttendanceExcel()" type="button" aria-label="Download Excel" data-tip-title="Download Excel" data-tip-desc="Download overtime attendance as Excel" data-tip-theme="success" style="margin-left: 0.25rem;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </button>
         </div>
       </div>
       <div class="ot-dashboard-stats">
@@ -1798,6 +1799,105 @@ function scrollOvertimeDashboardToToday() {
     wrap.scrollLeft = targetLeft;
   });
 }
+
+window.downloadOvertimeAttendanceExcel = function () {
+  const periodOffset = document.getElementById('overtime-dashboard-report')
+    ? getOvertimeDashboardPeriodOffset()
+    : (window.branchAttendanceModalOffset || 0);
+  const period = getCustomPeriodByOffset(periodOffset);
+  
+  const exportNode = document.createElement('div');
+  exportNode.innerHTML = buildOvertimeAttendanceJpgHtml(getAppState(), period);
+  
+  const table = exportNode.querySelector('.ot-export-table');
+  if (!table) return;
+
+  // Apply inline styles to ensure Excel renders formatting correctly
+  table.style.borderCollapse = 'collapse';
+  table.style.fontFamily = '"Times New Roman", serif';
+  table.querySelectorAll('th, td').forEach(el => {
+    el.style.border = '1px solid #000000';
+    el.style.padding = '4px';
+    if (!el.style.textAlign) el.style.textAlign = 'center';
+  });
+  table.querySelectorAll('th').forEach(th => {
+    th.style.backgroundColor = '#e2e8f0';
+    th.style.fontWeight = 'bold';
+  });
+  table.querySelectorAll('.ot-export-name-head, .ot-export-branch').forEach(el => {
+    el.style.textAlign = 'left';
+    el.style.fontWeight = 'bold';
+  });
+  table.querySelectorAll('.friday').forEach(el => {
+    el.style.color = 'red';
+    el.style.backgroundColor = '#fee2e2';
+  });
+  table.querySelectorAll('.future').forEach(el => {
+    el.style.backgroundColor = '#f1f5f9';
+    el.style.color = '#94a3b8';
+  });
+  table.querySelectorAll('.checked').forEach(el => {
+    el.style.backgroundColor = '#ccfbf1';
+  });
+  table.querySelectorAll('.ot-export-total').forEach(el => {
+    el.style.fontWeight = 'bold';
+  });
+
+  // Calculate and append Total (Hrs) column for Excel
+  const trHead = table.querySelector('thead tr');
+  if (trHead) {
+    const th = document.createElement('th');
+    th.innerText = 'Total (Hrs)';
+    th.style.backgroundColor = '#e2e8f0';
+    th.style.fontWeight = 'bold';
+    th.style.border = '1px solid #000000';
+    th.style.padding = '4px';
+    trHead.appendChild(th);
+  }
+
+  table.querySelectorAll('tbody tr').forEach(tr => {
+    let totalHrs = 0;
+    tr.querySelectorAll('td').forEach((td, index) => {
+      if (index === 0) return; // Skip section name column
+      const text = td.innerText || '';
+      if (text.includes('hr')) {
+        const hrs = parseInt(text.replace('hr', '').trim(), 10);
+        if (!isNaN(hrs)) totalHrs += hrs;
+      }
+    });
+
+    const td = document.createElement('td');
+    td.innerText = totalHrs > 0 ? `${totalHrs}hr` : '';
+    td.style.border = '1px solid #000000';
+    td.style.padding = '4px';
+    td.style.textAlign = 'center';
+    td.style.fontWeight = 'bold';
+    td.style.backgroundColor = '#f8fafc'; // light gray for total
+    tr.appendChild(td);
+  });
+
+  const html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="utf-8" />
+    </head>
+    <body>
+      <h2 style="font-family: 'Times New Roman', serif;">Overtime Attendance - ${period.rangeLabel}</h2>
+      ${table.outerHTML}
+    </body>
+    </html>
+  `;
+  
+  const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.download = `overtime-attendance-${period.monthName.toLowerCase()}-${period.end.getFullYear()}.xls`;
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
 
 window.downloadOvertimeAttendanceJpg = function () {
   return runWithOriginalExportMotion(downloadOvertimeAttendanceJpgOriginal);
@@ -2566,9 +2666,10 @@ function applyThemeToOvertimeExport(sheet) {
     setStyles(el, { background: white, color: black });
   });
   sheet.querySelectorAll('.ot-export-table .today').forEach(el => {
-    setStyles(el, { background: white, color: black, 'box-shadow': `inset 0 0 0 2px ${black}` });
+    setStyles(el, { background: white, color: black, 'box-shadow': 'none', border: '2px solid #14b8a6' });
     el.style.setProperty('background', white, 'important');
     el.style.setProperty('color', black, 'important');
+    el.style.setProperty('border', '2px solid #14b8a6', 'important');
   });
   sheet.querySelectorAll('.ot-export-table td.checked').forEach(td => {
     setStyles(td, { background: white, color: black });
@@ -4669,9 +4770,13 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
             '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>' +
             '<span>PDF</span>' +
           '</button>' +
-          '<button id="btn-export-excel" onclick="window.downloadMonthlyHistoryExcel()" class="ios-ss-delete-btn" style="color: #047857; background: rgba(209, 250, 229, 0.82); border: 1px solid rgba(16, 185, 129, 0.22); height: 32px; padding: 0 12px; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s; margin-left: 4px;" onmouseover="this.style.borderColor=\'#10b981\'; this.style.background=\'rgba(209, 250, 229, 0.95)\';" onmouseout="this.style.borderColor=\'rgba(16, 185, 129, 0.22)\'; this.style.background=\'rgba(209, 250, 229, 0.82)\';" type="button">' +
+          '<button id="btn-export-excel" onclick="window.downloadMonthlyHistoryExcel()" class="ios-ss-delete-btn" style="color: #047857; background: rgba(209, 250, 229, 0.82); border: 1px solid rgba(16, 185, 129, 0.22); height: 32px; padding: 0 12px; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s; margin-left: 4px;" onmouseover="this.style.borderColor=\'#10b981\'; this.style.background=\'rgba(209, 250, 229, 0.95)\';" onmouseout="this.style.borderColor=\'rgba(16, 185, 129, 0.22)\'; this.style.background=\'rgba(209, 250, 229, 0.82)\';" type="button" title="Download Merged Sections Only">' +
             '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>' +
-            '<span>Excel</span>' +
+            '<span>Excel Merge</span>' +
+          '</button>' +
+          '<button id="btn-export-complete-excel" onclick="window.downloadCompleteMonthlyHistoryExcel()" class="ios-ss-delete-btn" style="color: #0369a1; background: #e0f2fe; border: 1px solid rgba(14, 165, 233, 0.22); height: 32px; padding: 0 12px; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s; margin-left: 4px;" onmouseover="this.style.borderColor=\'#0ea5e9\'; this.style.background=\'#bae6fd\';" onmouseout="this.style.borderColor=\'rgba(14, 165, 233, 0.22)\'; this.style.background=\'#e0f2fe\';" type="button" title="Download Complete Month Details">' +
+            '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>' +
+            '<span>Complete Excel</span>' +
           '</button>' +
         '</div>' +
         '<button class="ios-ss-delete-btn" onclick="window.deleteHistoryDate(\'' + historyEscapeHtml(dateStr) + '\')" type="button">' +
@@ -4820,6 +4925,371 @@ window.downloadMonthlyHistoryPDF = function() {
     if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
   });
 };
+
+window.downloadCompleteMonthlyHistoryExcel = function() {
+  const select = document.getElementById('merged-pdf-month-select');
+  if (!select) return;
+  const monthKey = select.value;
+  if (!monthKey) {
+    alert('Please select a month first.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-export-complete-excel');
+  const originalText = btn ? btn.innerHTML : 'Complete Excel';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '...';
+  }
+
+  const datesInMonth = Array.from(window.savedHistoryDates).filter(function(dateStr) {
+    return getReportingMonthInfo(dateStr).key === monthKey;
+  }).sort(function(a, b) {
+    const partsA = a.split('-').map(Number);
+    const partsB = b.split('-').map(Number);
+    const dateA = new Date(partsA[0], partsA[1] - 1, partsA[2]);
+    const dateB = new Date(partsB[0], partsB[1] - 1, partsB[2]);
+    return dateA - dateB;
+  });
+
+  if (datesInMonth.length === 0) {
+    alert('No dates with saved snapshots in this month.');
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    return;
+  }
+
+  const fetchPromises = datesInMonth.map(function(dateStr) {
+    return window.firebaseDb.ref('mep_attendance_history/' + dateStr).once('value').then(function(snap) {
+      return {
+        dateStr: dateStr,
+        state: snap.val()
+      };
+    });
+  });
+
+  Promise.all(fetchPromises).then(function(results) {
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    generateAndDownloadCompleteMonthlyExcel(monthKey, results);
+  }).catch(function(err) {
+    console.error(err);
+    alert('Error fetching data: ' + err.message);
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+  });
+};
+
+function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
+  if (results.length === 0) {
+    alert("No data available for the selected month.");
+    return;
+  }
+
+  const monthInfo = getReportingMonthInfo(results[0].dateStr);
+  
+  // 1. Get all dates and sort them
+  const dates = results.map(r => r.dateStr).sort((a, b) => new Date(a) - new Date(b));
+  
+  // 2. Build 2D map: dataMap[sectionName][designationName][dateStr] = { auth, exist, pres, abs }
+  const dataMap = {};
+  
+  results.forEach(function(res) {
+    const dStr = res.dateStr;
+    const state = res.state || {};
+    
+    Object.keys(state).forEach(function(pageId) {
+      if (pageId === 'theme' || pageId === 'lastSave') return;
+      const pageData = state[pageId];
+      if (typeof pageData !== 'object' || pageData === null) return;
+      
+      Object.keys(pageData).forEach(function(groupName) {
+        // Filter out unwanted personal names acting as sections
+        const excludedSections = ['anik', 'anwar', 'bikash', 'monir', 'takbir'];
+        if (excludedSections.includes(groupName.toLowerCase().trim())) return;
+
+        var rows = pageData[groupName];
+        if (!rows) return;
+        if (!Array.isArray(rows)) {
+          if (typeof rows === 'object') { rows = Object.values(rows); } else { return; }
+        }
+        
+        if (!dataMap[groupName]) dataMap[groupName] = {};
+        
+        rows.forEach(function(row) {
+          if (!row || typeof row !== 'object') return;
+          const desig = String(row.designation || 'N/A').trim();
+          if (!dataMap[groupName][desig]) dataMap[groupName][desig] = {};
+          
+          const authorized = parseInt(row.authorized) || 0;
+          const existing = parseInt(row.existing) || 0;
+          const present = parseInt(row.present) || 0;
+          const absent = authorized - present;
+          
+          dataMap[groupName][desig][dStr] = {
+            auth: authorized,
+            exist: existing,
+            pres: present,
+            abs: absent
+          };
+        });
+      });
+    });
+  });
+
+  // 3. Build HTML Table for Excel
+  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+  <head>
+    <meta charset="utf-8">
+    <!--[if gte mso 9]>
+    <xml>
+      <x:ExcelWorkbook>
+        <x:ExcelWorksheets>
+          <x:ExcelWorksheet>
+            <x:Name>Attendance Report</x:Name>
+            <x:WorksheetOptions>
+              <x:FreezePanes/>
+              <x:FrozenNoSplit/>
+              <x:SplitHorizontal>3</x:SplitHorizontal>
+              <x:TopRowBottomPane>3</x:TopRowBottomPane>
+              <x:SplitVertical>2</x:SplitVertical>
+              <x:LeftColumnRightPane>2</x:LeftColumnRightPane>
+              <x:ActivePane>0</x:ActivePane>
+            </x:WorksheetOptions>
+          </x:ExcelWorksheet>
+        </x:ExcelWorksheets>
+      </x:ExcelWorkbook>
+    </xml>
+    <![endif]-->
+  </head><body>
+  <table border="1" style="border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 12pt;">
+    <thead>
+      <tr>
+        <th colspan="${2 + dates.length * 4 + 5}" style="font-size: 16pt; font-weight: bold; text-align: center; padding: 10px; background-color: #f8fafc; border: 1px solid #000000;">
+          Complete Attendance Efficiency Report - ${monthInfo.displayName}
+        </th>
+      </tr>
+      <tr>
+        <th rowspan="2" style="background-color: #e2e8f0; font-weight: bold; vertical-align: middle; text-align: center; border: 1px solid #000000; padding: 4px;">Section</th>
+        <th rowspan="2" style="background-color: #e2e8f0; font-weight: bold; vertical-align: middle; text-align: center; border: 1px solid #000000; padding: 4px;">Designation</th>`;
+        
+  dates.forEach(dStr => {
+    const d = new Date(dStr);
+    const dateLabel = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    html += `<th colspan="4" style="background-color: #cbd5e1; font-weight: bold; text-align: center; border: 1px solid #000000; padding: 4px;">${dateLabel}</th>`;
+  });
+  
+  html += `<th colspan="5" style="background-color: #94a3b8; font-weight: bold; text-align: center; color: white; border: 1px solid #000000; padding: 4px;">Monthly Total / Average</th>
+      </tr>
+      <tr>`;
+      
+  dates.forEach(() => {
+    html += `<th style="background-color: #f1f5f9; text-align: center; border: 1px solid #000000; padding: 4px;">Auth</th>
+             <th style="background-color: #f1f5f9; text-align: center; border: 1px solid #000000; padding: 4px;">Exist</th>
+             <th style="background-color: #f1f5f9; text-align: center; border: 1px solid #000000; padding: 4px;">Pres</th>
+             <th style="background-color: #f1f5f9; text-align: center; border: 1px solid #000000; padding: 4px;">Abs</th>`;
+  });
+  
+  html += `<th style="background-color: #e2e8f0; text-align: center; border: 1px solid #000000; padding: 4px;">Avg Auth</th>
+           <th style="background-color: #e2e8f0; text-align: center; border: 1px solid #000000; padding: 4px;">Avg Exist</th>
+           <th style="background-color: #e2e8f0; text-align: center; border: 1px solid #000000; padding: 4px;">Avg Pres</th>
+           <th style="background-color: #e2e8f0; text-align: center; border: 1px solid #000000; padding: 4px;">Avg Abs</th>
+           <th style="background-color: #e2e8f0; text-align: center; border: 1px solid #000000; padding: 4px;">Avg Pres %</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  const dateTotals = {};
+  dates.forEach(dStr => {
+      dateTotals[dStr] = { auth: 0, exist: 0, pres: 0, abs: 0 };
+  });
+
+  Object.keys(dataMap).sort().forEach(section => {
+    const designations = Object.keys(dataMap[section]).sort();
+    const rowSpanCount = designations.length;
+    
+    designations.forEach((desig, index) => {
+      html += `<tr>`;
+      if (index === 0) {
+        html += `<td rowspan="${rowSpanCount}" style="vertical-align: middle; background-color: white; border: 1px solid #000000; padding: 4px; font-weight: bold;">${section}</td>`;
+      }
+      html += `<td style="background-color: white; border: 1px solid #000000; padding: 4px;">${desig}</td>`;
+        
+      let rowAuthSum = 0, rowExistSum = 0, rowPresSum = 0, rowAbsSum = 0;
+      let rowDaysWithData = 0;
+      
+      dates.forEach(dStr => {
+        const cell = dataMap[section][desig][dStr];
+        if (cell) {
+          html += `<td style="text-align: center; border: 1px solid #000000; padding: 4px;">${cell.auth}</td>
+                   <td style="text-align: center; border: 1px solid #000000; padding: 4px;">${cell.exist}</td>
+                   <td style="text-align: center; border: 1px solid #000000; padding: 4px; color: #047857; font-weight: bold;">${cell.pres}</td>
+                   <td style="text-align: center; border: 1px solid #000000; padding: 4px; color: #be123c;">${cell.abs}</td>`;
+          rowAuthSum += cell.auth;
+          rowExistSum += cell.exist;
+          rowPresSum += cell.pres;
+          rowAbsSum += cell.abs;
+          rowDaysWithData++;
+          
+          dateTotals[dStr].auth += cell.auth;
+          dateTotals[dStr].exist += cell.exist;
+          dateTotals[dStr].pres += cell.pres;
+          dateTotals[dStr].abs += cell.abs;
+        } else {
+          html += `<td style="text-align: center; border: 1px solid #000000;">-</td>
+                   <td style="text-align: center; border: 1px solid #000000;">-</td>
+                   <td style="text-align: center; border: 1px solid #000000;">-</td>
+                   <td style="text-align: center; border: 1px solid #000000;">-</td>`;
+        }
+      });
+      
+      const avgAuth = rowDaysWithData > 0 ? (rowAuthSum / rowDaysWithData).toFixed(1) : 0;
+      const avgExist = rowDaysWithData > 0 ? (rowExistSum / rowDaysWithData).toFixed(1) : 0;
+      const avgPres = rowDaysWithData > 0 ? (rowPresSum / rowDaysWithData).toFixed(1) : 0;
+      const avgAbs = rowDaysWithData > 0 ? (rowAbsSum / rowDaysWithData).toFixed(1) : 0;
+      const avgPct = rowExistSum > 0 ? Math.round((rowPresSum / rowExistSum) * 100) : 0;
+      
+      html += `<td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 4px; background-color: #f8fafc;">${avgAuth}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 4px; background-color: #f8fafc;">${avgExist}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 4px; background-color: #ecfdf5; color: #047857;">${avgPres}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 4px; background-color: #fff1f2; color: #be123c;">${avgAbs}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 4px; background-color: #f8fafc;">${avgPct}%</td>
+             </tr>`;
+    });
+  });
+  
+  // Daily Totals Row
+  html += `<tr>
+    <td colspan="2" style="font-weight: bold; text-align: right; border: 1px solid #000000; padding: 6px; background-color: #cbd5e1;">GRAND DAILY TOTALS</td>`;
+  
+  let overallAuth = 0, overallExist = 0, overallPres = 0, overallAbs = 0;
+  
+  dates.forEach(dStr => {
+    const t = dateTotals[dStr];
+    overallAuth += t.auth;
+    overallExist += t.exist;
+    overallPres += t.pres;
+    overallAbs += t.abs;
+    
+    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #e2e8f0;">${t.auth}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #e2e8f0;">${t.exist}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #d1fae5; color: #047857;">${t.pres}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #ffe4e6; color: #be123c;">${t.abs}</td>`;
+  });
+  
+  const numDates = dates.length;
+  const oAvgAuth = numDates > 0 ? (overallAuth / numDates).toFixed(1) : 0;
+  const oAvgExist = numDates > 0 ? (overallExist / numDates).toFixed(1) : 0;
+  const oAvgPres = numDates > 0 ? (overallPres / numDates).toFixed(1) : 0;
+  const oAvgAbs = numDates > 0 ? (overallAbs / numDates).toFixed(1) : 0;
+  const oAvgPct = overallExist > 0 ? Math.round((overallPres / overallExist) * 100) : 0;
+  
+  html += `<td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #94a3b8; color: white;">${oAvgAuth}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #94a3b8; color: white;">${oAvgExist}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #059669; color: white;">${oAvgPres}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #e11d48; color: white;">${oAvgAbs}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #94a3b8; color: white;">${oAvgPct}%</td>
+         </tr>`;
+
+  // =========================================================
+  // Second Table: Designation-Wise Daily Summary
+  // =========================================================
+  const desigTotals = {};
+  Object.keys(dataMap).forEach(section => {
+    Object.keys(dataMap[section]).forEach(desig => {
+      if (!desigTotals[desig]) {
+        desigTotals[desig] = {};
+        dates.forEach(dStr => desigTotals[desig][dStr] = {auth: 0, exist: 0, pres: 0, abs: 0});
+      }
+      dates.forEach(dStr => {
+        if (dataMap[section][desig][dStr]) {
+          desigTotals[desig][dStr].auth += dataMap[section][desig][dStr].auth;
+          desigTotals[desig][dStr].exist += dataMap[section][desig][dStr].exist;
+          desigTotals[desig][dStr].pres += dataMap[section][desig][dStr].pres;
+          desigTotals[desig][dStr].abs += dataMap[section][desig][dStr].abs;
+        }
+      });
+    });
+  });
+
+  html += `<tr><td colspan="${2 + dates.length * 4 + 5}" style="border:none; height: 30px;"></td></tr>
+           <tr><td colspan="${2 + dates.length * 4 + 5}" style="border:none; height: 30px;"></td></tr>`;
+
+  html += `<tr>
+        <td colspan="2" rowspan="2" style="background-color: #e2e8f0; font-weight: bold; vertical-align: middle; text-align: center; border: 1px solid #000000; padding: 4px;">Designation</td>`;
+        
+  dates.forEach(dStr => {
+    const d = new Date(dStr);
+    const dateLabel = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    html += `<th colspan="4" style="background-color: #cbd5e1; font-weight: bold; text-align: center; border: 1px solid #000000; padding: 4px;">${dateLabel}</th>`;
+  });
+  
+  html += `<th colspan="5" style="background-color: #94a3b8; font-weight: bold; text-align: center; color: white; border: 1px solid #000000; padding: 4px;">Monthly Total / Average</th>
+      </tr>
+      <tr>`;
+      
+  dates.forEach(() => {
+    html += `<th style="background-color: #f1f5f9; text-align: center; border: 1px solid #000000; padding: 4px;">Auth</th>
+              <th style="background-color: #f1f5f9; text-align: center; border: 1px solid #000000; padding: 4px;">Exist</th>
+              <th style="background-color: #f1f5f9; text-align: center; border: 1px solid #000000; padding: 4px;">Pres</th>
+              <th style="background-color: #f1f5f9; text-align: center; border: 1px solid #000000; padding: 4px;">Abs</th>`;
+  });
+  
+  html += `<td style="background-color: #e2e8f0; text-align: center; border: 1px solid #000000; padding: 4px;">Avg Auth</td>
+            <td style="background-color: #e2e8f0; text-align: center; border: 1px solid #000000; padding: 4px;">Avg Exist</td>
+            <td style="background-color: #e2e8f0; text-align: center; border: 1px solid #000000; padding: 4px;">Avg Pres</td>
+            <td style="background-color: #e2e8f0; text-align: center; border: 1px solid #000000; padding: 4px;">Avg Abs</td>
+            <td style="background-color: #e2e8f0; text-align: center; border: 1px solid #000000; padding: 4px;">Avg Pres %</td>
+      </tr>`;
+
+  let gtAuth = 0, gtExist = 0, gtPres = 0, gtAbs = 0;
+
+  Object.keys(desigTotals).sort().forEach(desig => {
+    html += `<tr><td colspan="2" style="background-color: white; border: 1px solid #000000; padding: 4px; font-weight: bold;">${desig}</td>`;
+    
+    let rAuth = 0, rExist = 0, rPres = 0, rAbs = 0;
+    
+    dates.forEach(dStr => {
+      const cell = desigTotals[desig][dStr];
+      html += `<td style="text-align: center; border: 1px solid #000000; padding: 4px;">${cell.auth}</td>
+                <td style="text-align: center; border: 1px solid #000000; padding: 4px;">${cell.exist}</td>
+                <td style="text-align: center; border: 1px solid #000000; padding: 4px; color: #047857; font-weight: bold;">${cell.pres}</td>
+                <td style="text-align: center; border: 1px solid #000000; padding: 4px; color: #be123c;">${cell.abs}</td>`;
+      rAuth += cell.auth;
+      rExist += cell.exist;
+      rPres += cell.pres;
+      rAbs += cell.abs;
+      
+      gtAuth += cell.auth;
+      gtExist += cell.exist;
+      gtPres += cell.pres;
+      gtAbs += cell.abs;
+    });
+    
+    const dCount = dates.length;
+    const aAuth = dCount > 0 ? (rAuth / dCount).toFixed(1) : 0;
+    const aExist = dCount > 0 ? (rExist / dCount).toFixed(1) : 0;
+    const aPres = dCount > 0 ? (rPres / dCount).toFixed(1) : 0;
+    const aAbs = dCount > 0 ? (rAbs / dCount).toFixed(1) : 0;
+    const aPct = rExist > 0 ? Math.round((rPres / rExist) * 100) : 0;
+    
+    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 4px; background-color: #f8fafc;">${aAuth}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 4px; background-color: #f8fafc;">${aExist}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 4px; background-color: #ecfdf5; color: #047857;">${aPres}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 4px; background-color: #fff1f2; color: #be123c;">${aAbs}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 4px; background-color: #f8fafc;">${aPct}%</td>
+            </tr>`;
+  });
+  
+  html += `</tbody></table></body></html>`;
+
+  const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `Complete_Attendance_Efficiency_Report_${monthInfo.monthName}_${monthInfo.year}.xls`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 window.downloadMonthlyHistoryExcel = function() {
   const select = document.getElementById('merged-pdf-month-select');

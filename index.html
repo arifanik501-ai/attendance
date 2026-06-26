@@ -12,11 +12,19 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <title>Fan Attendance</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=75">
+  <link rel="stylesheet" href="style.css?v=76">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
 
 <body style="opacity:0; transform: translate3d(14px, 0, 0); transition: opacity var(--motion-slow, 0.32s) cubic-bezier(0.2, 0.8, 0.2, 1), transform var(--motion-slow, 0.32s) cubic-bezier(0.2, 0.8, 0.2, 1);">
+  <!-- Mobile Hamburger Menu Button -->
+  <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle Menu">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+  </button>
+  
+  <!-- Mobile Sidebar Overlay Backdrop -->
+  <div id="mobile-sidebar-overlay" class="mobile-sidebar-overlay"></div>
+
   <div id="sidebar" class="sidebar"></div>
 
   <main class="main-content">
@@ -29,10 +37,31 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <!-- Firebase Realtime Database -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="app.js?v=75"></script>
-  <script src="tooltip.js?v=75" defer></script>
+  <script src="app.js?v=76"></script>
+  <script src="tooltip.js?v=76" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Mobile Menu Logic
+      const mobileBtn = document.getElementById('mobile-menu-btn');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobile-sidebar-overlay');
+
+      function toggleMobileMenu() {
+        sidebar.classList.toggle('mobile-open');
+        overlay.classList.toggle('mobile-open');
+      }
+
+      if(mobileBtn) mobileBtn.addEventListener('click', toggleMobileMenu);
+      if(overlay) overlay.addEventListener('click', toggleMobileMenu);
+
+      // Close sidebar when clicking a nav link on mobile
+      document.body.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && e.target.closest('.nav-link')) {
+          sidebar.classList.remove('mobile-open');
+          overlay.classList.remove('mobile-open');
+        }
+      });
+
       renderDashboard();
       window.addEventListener('hashchange', () => {
         if (window.location.hash === '#overtime-dashboard' && window.resetOvertimeDashboardPeriodOffset) {

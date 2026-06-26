@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <title>Fan Attendance</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=76">
+  <link rel="stylesheet" href="style.css?v=102">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
 
@@ -37,8 +37,8 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <!-- Firebase Realtime Database -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="app.js?v=76"></script>
-  <script src="tooltip.js?v=76" defer></script>
+  <script src="app.js?v=102"></script>
+  <script src="tooltip.js?v=102" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // Mobile Menu Logic
@@ -54,9 +54,10 @@
       if(mobileBtn) mobileBtn.addEventListener('click', toggleMobileMenu);
       if(overlay) overlay.addEventListener('click', toggleMobileMenu);
 
-      // Close sidebar when clicking a nav link on mobile
+      // Close sidebar when clicking a nav link on mobile (except the Entry Sheet toggle)
       document.body.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768 && e.target.closest('.nav-link')) {
+        const navLink = e.target.closest('.nav-link');
+        if (window.innerWidth <= 768 && navLink && !navLink.classList.contains('entry-sheet-toggle')) {
           sidebar.classList.remove('mobile-open');
           overlay.classList.remove('mobile-open');
         }

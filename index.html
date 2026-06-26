@@ -38,6 +38,9 @@
         if (window.location.hash === '#overtime-dashboard' && window.resetOvertimeDashboardPeriodOffset) {
           window.resetOvertimeDashboardPeriodOffset();
         }
+        if (window.location.hash === '#iom-dashboard' && window.resetIomDashboardPeriodOffset) {
+          window.resetIomDashboardPeriodOffset();
+        }
         renderDashboard();
       });
       const reveal = () => {

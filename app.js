@@ -65,6 +65,23 @@ const SECTIONS_CONFIG = {
   }
 };
 
+const IOM_STAFF_LIST = [
+  { id: '3746', name: 'Md. Saiful Islam', designation: 'Manager (Fan)', department: 'Fan Admin' },
+  { id: '15387', name: 'Arif Ahmed', designation: 'Asst. Engineer', department: 'Fan Admin' },
+  { id: '966', name: 'MD Zohirul Islam Monir', designation: 'Sr. Engineer', department: 'Fan Admin' },
+  { id: '11989', name: 'Md. Anwar Hossain', designation: 'Production Engineer', department: 'Fan Admin' },
+  { id: '18025', name: 'Md Hafijur Rahman', designation: 'Production Engineer', department: 'Fan Power Press & Stamping' },
+  { id: '7544', name: 'MD Hasan Khalifa', designation: 'Asst. Engineer', department: 'Fan Power Press & Stamping' },
+  { id: '16027', name: 'Md Sayed Hossain', designation: 'Jr. Engineer', department: 'Fan Power Press & Stamping' },
+  { id: '7620', name: 'Hossainuzzaman', designation: 'Sub-Asst. Engineer', department: 'Fan Auto Powder Coating' },
+  { id: '1032', name: 'Md. Masum Talukder', designation: 'Asst. Engineer', department: 'Fan Lathe' },
+  { id: '7520', name: 'Bikash Chand Ray', designation: 'Asst. Engineer', department: 'Fan Rojonigondha' },
+  { id: '15998', name: 'Lucky Akter', designation: 'Jr. Engineer', department: 'Fan Rojonigondha' },
+  { id: '7571', name: 'Bithi Rani Das', designation: 'Sub-Asst. Engineer', department: 'Fan Assemble' },
+  { id: '16749', name: 'Nafija Islam', designation: 'Jr.Engineer', department: 'Fan Dimmer & Blade' },
+  { id: '16976', name: 'Md Takbir Hossain', designation: 'Asst. Engineer', department: 'Fan Armature' }
+];
+
 let globalAppState = null;
 try {
   const cached = localStorage.getItem('mep_dashboard_state_cache');
@@ -73,7 +90,7 @@ try {
 let currentActivePageId = null;
 const SESSION_DEVICE_ID = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 const CUSTOM_PERIOD_CUTOFF_DAY = 26;
-const META_STATE_KEYS = ['history', 'branchAttendance'];
+const META_STATE_KEYS = ['history', 'branchAttendance', 'iom'];
 const SMOOTH_MODE_STORAGE_KEY = 'mep_smooth_mode_enabled';
 const EDIT_AUTH_STORAGE_KEY = 'mep_edit_auth_enabled';
 
@@ -215,8 +232,8 @@ function buildCustomPeriodFromStart(startDate) {
     key: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(CUSTOM_PERIOD_CUTOFF_DAY).padStart(2, '0')}`,
     start,
     end,
-    label: end.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-    monthName: end.toLocaleDateString('en-US', { month: 'long' }),
+    label: start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    monthName: start.toLocaleDateString('en-US', { month: 'long' }),
     rangeLabel: `${start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })} to ${end.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}`
   };
 }
@@ -737,7 +754,8 @@ function generateSidebar(activePage) {
   const entrySheetIcon = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,88H152V32Z" opacity="0.2"/><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-32-80a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,136Zm0,32a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,168Z"/></svg>';
   const dashboardPages = [
     { id: 'index', title: 'Dashboard', url: 'index.html', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M112,56v48a8,8,0,0,1-8,8H56a8,8,0,0,1-8-8V56a8,8,0,0,1,8-8h48A8,8,0,0,1,112,56Zm88-8H152a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V56A8,8,0,0,0,200,48Zm-96,96H56a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V152A8,8,0,0,0,104,144Zm96,0H152a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V152A8,8,0,0,0,200,144Z" opacity="0.2"/><path d="M200,136H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,200,136Zm0,64H152V152h48v48ZM104,40H56A16,16,0,0,0,40,56v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,64H56V56h48v48Zm96-64H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,64H152V56h48v48Zm-96,32H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm0,64H56V152h48v48Z"/></svg>' },
-    { id: 'overtime-dashboard', title: 'Overtime Dashboard', url: 'index.html#overtime-dashboard', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,40V208H152V40Z" opacity="0.2"/><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>' }
+    { id: 'overtime-dashboard', title: 'Overtime Dashboard', url: 'index.html#overtime-dashboard', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,40V208H152V40Z" opacity="0.2"/><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>' },
+    { id: 'iom-dashboard', title: 'IOM Report', url: 'index.html#iom-dashboard', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M40,48V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88L160,32H56A16,16,0,0,0,40,48Z" opacity="0.2"/><path d="M213.66,82.34l-48-48A8,8,0,0,0,160,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,196.69,88H160ZM200,208H56V48h88V88a8,8,0,0,0,8,8h48V208Z"/></svg>' }
   ];
   const entryPages = [
     { id: 'anik', title: 'Entry (Anik)', url: 'entry.html?page=anik', icon: entrySheetIcon },
@@ -1800,6 +1818,373 @@ function scrollOvertimeDashboardToToday() {
   });
 }
 
+window.iomDashboardPeriodOffset = 0;
+function getIomDashboardPeriodOffset() { return window.iomDashboardPeriodOffset || 0; }
+function setIomDashboardPeriodOffset(offset) { window.iomDashboardPeriodOffset = offset; }
+window.resetIomDashboardPeriodOffset = function() { window.iomDashboardPeriodOffset = 0; };
+
+function buildIomDashboardReportHtml(state, period) {
+  const iomState = state?.iom?.[period.key] || {};
+  let totalDaysAll = 0;
+  let totalHoursAll = 0;
+
+  const bodyRows = IOM_STAFF_LIST.map((staff, idx) => {
+    const s = iomState[staff.id] || {};
+    const d1 = parseInt(s['1hr']) || 0;
+    const d2 = parseInt(s['2hr']) || 0;
+    const d3 = parseInt(s['3hr']) || 0;
+    const d4 = parseInt(s['4hr']) || 0;
+    const d5 = parseInt(s['5hr']) || 0;
+    const d6 = parseInt(s['6hr']) || 0;
+    const d7 = parseInt(s['7hr']) || 0;
+    const d8 = parseInt(s['8hr']) || 0;
+    
+    const totalDay = d1 + d2 + d3 + d4 + d5 + d6 + d7 + d8;
+    const totalHour = (d1 * 1) + (d2 * 2) + (d3 * 3) + (d4 * 4) + (d5 * 5) + (d6 * 6) + (d7 * 7) + (d8 * 8);
+    
+    totalDaysAll += totalDay;
+    totalHoursAll += totalHour;
+
+    return `
+      <tr>
+        <td style="text-align:center; border: 1px solid #000;">${idx + 1}</td>
+        <td style="text-align:center; border: 1px solid #000;">${staff.id}</td>
+        <td style="font-weight: bold; border: 1px solid #000; text-align: left; padding-left: 6px;">${staff.name}</td>
+        <td style="border: 1px solid #000; text-align: left; padding-left: 6px;">${staff.designation}</td>
+        <td style="border: 1px solid #000; text-align: left; padding-left: 6px;">${staff.department}</td>
+        <td class="iom-total-day-col" style="text-align:center; font-weight:bold; border: 1px solid #000; background-color: #eef5e5;">${totalDay || ''}</td>
+        <td style="border: 1px solid #000; padding: 0;">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="1hr" value="${d1 || ''}" min="0" max="31">
+          <span class="print-only">${d1 || ''}</span>
+        </td>
+        <td style="border: 1px solid #000; padding: 0;">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="2hr" value="${d2 || ''}" min="0" max="31">
+          <span class="print-only">${d2 || ''}</span>
+        </td>
+        <td style="border: 1px solid #000; padding: 0;">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="3hr" value="${d3 || ''}" min="0" max="31">
+          <span class="print-only">${d3 || ''}</span>
+        </td>
+        <td style="border: 1px solid #000; padding: 0;">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="4hr" value="${d4 || ''}" min="0" max="31">
+          <span class="print-only">${d4 || ''}</span>
+        </td>
+        <td style="border: 1px solid #000; padding: 0;">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="5hr" value="${d5 || ''}" min="0" max="31">
+          <span class="print-only">${d5 || ''}</span>
+        </td>
+        <td style="border: 1px solid #000; padding: 0;">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="6hr" value="${d6 || ''}" min="0" max="31">
+          <span class="print-only">${d6 || ''}</span>
+        </td>
+        <td style="border: 1px solid #000; padding: 0;">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="7hr" value="${d7 || ''}" min="0" max="31">
+          <span class="print-only">${d7 || ''}</span>
+        </td>
+        <td style="border: 1px solid #000; padding: 0;">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="8hr" value="${d8 || ''}" min="0" max="31">
+          <span class="print-only">${d8 || ''}</span>
+        </td>
+        <td style="text-align:center; font-weight:bold; border: 1px solid #000;">${totalHour || ''}</td>
+        <td style="text-align:center; border: 1px solid #000;">Production</td>
+        <td class="iom-excel-only" style="border: 1px solid #000;"></td>
+      </tr>`;
+  }).join('');
+
+  return `
+    <section id="iom-dashboard-report" style="background: #ffffff; color: #000000; border-radius: 8px; padding: 20px; font-family: 'Times New Roman', Times, serif;">
+      <div class="ot-dashboard-header no-print" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 style="margin: 0; color: #333; font-family: 'Times New Roman', Times, serif;">IOM (Inter-Office Memorandum)</h2>
+          <p style="margin: 5px 0 0; color: #666;">${period.rangeLabel} · ${period.label}</p>
+        </div>
+        <div class="ot-dashboard-actions no-print" style="display: flex; gap: 8px; align-items: center;">
+          <button class="branch-period-btn" data-iom-step="-1" type="button" style="border: 1px solid #ccc; background: #f9f9f9; color: #333;">‹ Previous</button>
+          <button class="branch-period-btn" data-iom-step="0" type="button" style="border: 1px solid #ccc; background: #f9f9f9; color: #333;">Current</button>
+          <button class="branch-period-btn" data-iom-step="1" type="button" style="border: 1px solid #ccc; background: #f9f9f9; color: #333;">Next ›</button>
+          
+          <button id="iom-save-btn" type="button" style="background: #2563eb; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: 10px;">Save Data</button>
+
+          <button class="branch-period-btn branch-download-btn" onclick="window.downloadIomJpg()" type="button" aria-label="Download JPG" data-tip-title="Download JPG" data-tip-desc="Download IOM as JPG" data-tip-theme="success" style="border: 1px solid #ccc; background: #f9f9f9; color: #333; margin-left: 10px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M8 10.5l4 4 4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          </button>
+          <button class="branch-period-btn branch-download-btn" onclick="window.downloadIomExcel()" type="button" aria-label="Download Excel" data-tip-title="Download Excel" data-tip-desc="Download IOM as Excel" data-tip-theme="success" style="border: 1px solid #ccc; background: #f9f9f9; color: #333;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Excel/JPG Title -->
+      <div class="iom-export-title print-only" style="display:none; text-align:center; margin-bottom: 20px; color: #000;">
+        <h2 style="margin:0; font-size: 24px;">MEP GROUP</h2>
+        <h3 style="margin:5px 0; font-size: 18px;">For the Month of ${period.label}</h3>
+        <h4 style="margin:0; font-size: 16px;">IOM(Inter-Office Memorandum)</h4>
+      </div>
+      
+      <div class="table-container branch-table-wrap ot-dashboard-wrap" style="overflow-x: auto; max-height: none;">
+        <style>
+          .iom-input { 
+            width: 100%; height: 28px; text-align: center; font-family: inherit; font-size: 14px; color: #000;
+            border: none; background: transparent; outline: none; margin: 0; padding: 0;
+          }
+          .iom-input:focus { background: #f0f8ff; }
+          .iom-input::-webkit-outer-spin-button, .iom-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+          .iom-input[type=number] { -moz-appearance: textfield; }
+          .iom-table { width: 100%; border-collapse: collapse; font-size: 14px; color: #000; }
+          .iom-table th { background: #76933C; color: #fff; border: 1px solid #000; padding: 8px 4px; font-weight: bold; text-align: center; }
+          .iom-table td { border: 1px solid #000; padding: 4px; }
+          .print-only { display: none; }
+          .iom-excel-only { display: none !important; }
+        </style>
+        <table class="iom-table" id="iom-table-element">
+          <thead>
+            <tr>
+              <th>S/L</th>
+              <th>Staff ID</th>
+              <th style="min-width: 160px; text-align: left; padding-left: 6px;">Name</th>
+              <th style="text-align: left; padding-left: 6px;">Designation</th>
+              <th style="text-align: left; padding-left: 6px;">Department</th>
+              <th class="iom-total-day-col" style="background-color: #eef5e5; color: #000;">Total Day</th>
+              <th>1 Hr.</th>
+              <th>2 Hr.</th>
+              <th>3 Hr.</th>
+              <th>4 Hr.</th>
+              <th>5 Hr.</th>
+              <th>6 Hr.</th>
+              <th>7 Hr.</th>
+              <th>8 Hr.</th>
+              <th>Total Hour</th>
+              <th>OT Purpose</th>
+              <th class="iom-excel-only">Signature</th>
+            </tr>
+          </thead>
+          <tbody>${bodyRows}</tbody>
+          <tfoot>
+            <tr>
+              <th colspan="5" style="text-align: right; background: #fff; color: #000; border: 1px solid #000; font-weight: bold;">Grand Total:</th>
+              <th class="iom-total-day-col" style="background-color: #eef5e5; color: #000; border: 1px solid #000; text-align: center;">${totalDaysAll}</th>
+              <th colspan="8" style="background: #fff; color: #000; border: 1px solid #000;"></th>
+              <th style="background: #fff; color: #000; border: 1px solid #000; text-align: center;">${totalHoursAll}</th>
+              <th style="background: #fff; color: #000; border: 1px solid #000;"></th>
+              <th class="iom-excel-only" style="background: #fff; color: #000; border: 1px solid #000;"></th>
+            </tr>
+          </tfoot>
+        </table>
+        
+        <div class="iom-export-footer print-only" style="display:none; margin-top: 40px; justify-content: space-between; padding: 0 40px; color: #000;">
+          <div style="border-top: 1px solid #000; padding-top: 5px; font-weight: bold; width: 200px; text-align: center;">Prepared By</div>
+          <div style="border-top: 1px solid #000; padding-top: 5px; font-weight: bold; width: 250px; text-align: center;">Senior Manager (D & L SCM)</div>
+        </div>
+      </div>
+    </section>`;
+}
+
+function bindIomDashboardControls() {
+  document.querySelectorAll('[data-iom-step]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const step = parseInt(btn.getAttribute('data-iom-step'), 10) || 0;
+      const nextOffset = step === 0 ? 0 : getIomDashboardPeriodOffset() + step;
+      setIomDashboardPeriodOffset(nextOffset);
+      _performDashboardRender();
+    });
+  });
+
+  const saveBtn = document.getElementById('iom-save-btn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      const inputs = document.querySelectorAll('.iom-input');
+      const periodKey = getCustomPeriodByOffset(getIomDashboardPeriodOffset()).key;
+      
+      if (!globalAppState.iom) globalAppState.iom = {};
+      if (!globalAppState.iom[periodKey]) globalAppState.iom[periodKey] = {};
+      
+      inputs.forEach(input => {
+        const staffId = input.getAttribute('data-staff');
+        const hrKey = input.getAttribute('data-hr');
+        let val = parseInt(input.value, 10);
+        
+        if (!globalAppState.iom[periodKey][staffId]) globalAppState.iom[periodKey][staffId] = {};
+        
+        if (isNaN(val) || val <= 0) {
+          delete globalAppState.iom[periodKey][staffId][hrKey];
+        } else {
+          globalAppState.iom[periodKey][staffId][hrKey] = val;
+        }
+      });
+      
+      saveAppState(globalAppState, "IOM Data Updated");
+      alert('IOM Data Saved Successfully!');
+      _performDashboardRender(); // Re-render to update the calculated totals visually
+    });
+  }
+}
+
+window.downloadIomExcel = function() {
+  const table = document.getElementById('iom-table-element');
+  if (!table) return;
+  const period = getCustomPeriodByOffset(getIomDashboardPeriodOffset());
+  
+  // Clone to avoid breaking UI
+  const cloneNode = document.createElement('div');
+  cloneNode.innerHTML = table.outerHTML;
+  const exportTable = cloneNode.querySelector('table');
+  
+  // Clean up inputs for excel
+  exportTable.querySelectorAll('input').forEach(inp => inp.remove());
+  exportTable.querySelectorAll('.print-only').forEach(span => {
+    span.style.display = 'inline';
+  });
+  exportTable.querySelectorAll('.iom-excel-only').forEach(el => {
+    el.style.display = 'table-cell';
+  });
+
+  // Apply general excel styles FIRST
+  exportTable.style.borderCollapse = 'collapse';
+  exportTable.style.fontFamily = '"Times New Roman", serif';
+  exportTable.querySelectorAll('th, td').forEach(el => {
+    el.style.border = '.5pt solid #000000';
+    el.style.padding = '4px';
+    el.style.verticalAlign = 'middle';
+    if (!el.style.textAlign) el.style.textAlign = 'center';
+  });
+  exportTable.querySelectorAll('thead th, tfoot th, tfoot td').forEach(cell => {
+    if (!cell.classList.contains('iom-total-day-col')) {
+      cell.style.backgroundColor = '#e2e8f0';
+    }
+    cell.style.fontWeight = 'bold';
+  });
+  
+  // Set data row heights
+  exportTable.querySelectorAll('tbody tr').forEach(tr => {
+    tr.style.height = '30pt';
+  });
+  
+  // Add custom Title rows to thead
+  const thead = exportTable.querySelector('thead');
+  const titleRow1 = document.createElement('tr');
+  titleRow1.innerHTML = `<th colspan="17" style="font-size: 20px; text-align: center; font-weight: bold; background-color: #ffffff; border-top: .5pt solid #000000; border-left: .5pt solid #000000; border-right: .5pt solid #000000; border-bottom: none;">MEP GROUP</th>`;
+  const titleRow2 = document.createElement('tr');
+  titleRow2.innerHTML = `<th colspan="17" style="font-size: 16px; text-align: center; font-weight: bold; background-color: #ffffff; border-left: .5pt solid #000000; border-right: .5pt solid #000000; border-top: none; border-bottom: none;">For the Month of ${period.label}</th>`;
+  const titleRow3 = document.createElement('tr');
+  titleRow3.innerHTML = `<th colspan="17" style="font-size: 14px; text-align: center; font-weight: bold; background-color: #ffffff; border-left: .5pt solid #000000; border-right: .5pt solid #000000; border-bottom: .5pt solid #000000; border-top: none;">IOM(Inter-Office Memorandum)</th>`;
+  
+  thead.insertBefore(titleRow3, thead.firstChild);
+  thead.insertBefore(titleRow2, thead.firstChild);
+  thead.insertBefore(titleRow1, thead.firstChild);
+
+  // Add signature rows to tfoot
+  const tfoot = exportTable.querySelector('tfoot');
+  const emptyRow1 = document.createElement('tr');
+  emptyRow1.innerHTML = `<td colspan="17" style="border: none; background-color: #ffffff;"></td>`;
+  const emptyRow2 = document.createElement('tr');
+  emptyRow2.innerHTML = `<td colspan="17" style="border: none; background-color: #ffffff;"></td>`;
+  const emptyRow3 = document.createElement('tr');
+  emptyRow3.innerHTML = `<td colspan="17" style="border: none; background-color: #ffffff;"></td>`;
+  const signatureRow = document.createElement('tr');
+  signatureRow.innerHTML = `
+    <td colspan="5" style="border: none; background-color: #ffffff;"></td>
+    <td colspan="4" style="border: none; border-top: .5pt solid #000000; font-weight: bold; text-align: center; background-color: #ffffff;">Prepared By</td>
+    <td colspan="3" style="border: none; background-color: #ffffff;"></td>
+    <td colspan="5" style="border: none; border-top: .5pt solid #000000; font-weight: bold; text-align: center; background-color: #ffffff;">Senior Manager (D & L SCM)</td>
+  `;
+  tfoot.appendChild(emptyRow1);
+  tfoot.appendChild(emptyRow2);
+  tfoot.appendChild(emptyRow3);
+  tfoot.appendChild(signatureRow);
+
+  const htmlContent = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="utf-8">
+      <style>
+        @page { mso-page-orientation: landscape; }
+      </style>
+      <!--[if gte mso 9]>
+      <xml>
+        <x:ExcelWorkbook>
+          <x:ExcelWorksheets>
+            <x:ExcelWorksheet>
+              <x:Name>IOM Report</x:Name>
+              <x:WorksheetOptions>
+                <x:DisplayGridlines/>
+                <x:FitToPage/>
+                <x:Print>
+                  <x:FitWidth>1</x:FitWidth>
+                  <x:FitHeight>1</x:FitHeight>
+                  <x:ValidPrinterInfo/>
+                </x:Print>
+                <x:PageSetup>
+                  <x:Layout x:Orientation="Landscape"/>
+                </x:PageSetup>
+              </x:WorksheetOptions>
+            </x:ExcelWorksheet>
+          </x:ExcelWorksheets>
+        </x:ExcelWorkbook>
+      </xml>
+      <![endif]-->
+    </head>
+    <body>${cloneNode.innerHTML}</body>
+    </html>
+  `;
+  
+  const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `IOM_Report_${period.label.replace(/\s+/g, '_')}.xls`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+window.downloadIomJpg = function() {
+  if (typeof html2canvas === 'undefined') {
+    alert("Missing html2canvas script!");
+    return;
+  }
+  const reportSection = document.getElementById('iom-dashboard-report');
+  if (!reportSection) return;
+  
+  // Show print-only elements temporarily
+  const printTitle = reportSection.querySelector('.iom-export-title');
+  const printFooter = reportSection.querySelector('.iom-export-footer');
+  if (printTitle) printTitle.style.display = 'block';
+  if (printFooter) printFooter.style.display = 'flex';
+  
+  // Hide no-print elements
+  const noPrintEls = reportSection.querySelectorAll('.no-print');
+  noPrintEls.forEach(el => el.style.display = 'none');
+  
+  const inputs = reportSection.querySelectorAll('input');
+  inputs.forEach(inp => inp.style.display = 'none');
+  const printSpans = reportSection.querySelectorAll('.print-only');
+  printSpans.forEach(span => {
+    if (span !== printTitle && span !== printFooter) span.style.display = 'inline';
+  });
+  
+  const originalBackground = reportSection.style.background;
+  reportSection.style.background = '#ffffff';
+
+  html2canvas(reportSection, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+    // Restore
+    reportSection.style.background = originalBackground;
+    if (printTitle) printTitle.style.display = 'none';
+    if (printFooter) printFooter.style.display = 'none';
+    noPrintEls.forEach(el => el.style.display = '');
+    inputs.forEach(inp => inp.style.display = '');
+    printSpans.forEach(span => {
+      if (span !== printTitle && span !== printFooter) span.style.display = 'none';
+    });
+    
+    const period = getCustomPeriodByOffset(getIomDashboardPeriodOffset());
+    const link = document.createElement('a');
+    link.download = `IOM_Report_${period.label.replace(/\s+/g, '_')}.jpg`;
+    link.href = canvas.toDataURL('image/jpeg', 0.92);
+    link.click();
+  });
+};
+
 window.downloadOvertimeAttendanceExcel = function () {
   const periodOffset = document.getElementById('overtime-dashboard-report')
     ? getOvertimeDashboardPeriodOffset()
@@ -2030,7 +2415,7 @@ function calculateDashboardData(state) {
 }
 
 window.renderDashboard = function () {
-  currentActivePageId = window.location.hash === '#overtime-dashboard' ? 'overtime-dashboard' : 'index';
+  currentActivePageId = window.location.hash === '#overtime-dashboard' ? 'overtime-dashboard' : (window.location.hash === '#iom-dashboard' ? 'iom-dashboard' : 'index');
   if (globalAppState) {
     _performDashboardRender();
   }
@@ -2038,7 +2423,7 @@ window.renderDashboard = function () {
 
 function _performDashboardRender() {
   try {
-    const activeDashboardPage = window.location.hash === '#overtime-dashboard' ? 'overtime-dashboard' : 'index';
+    const activeDashboardPage = window.location.hash === '#overtime-dashboard' ? 'overtime-dashboard' : (window.location.hash === '#iom-dashboard' ? 'iom-dashboard' : 'index');
     currentActivePageId = activeDashboardPage;
     document.getElementById('sidebar').innerHTML = generateSidebar(activeDashboardPage);
 
@@ -2203,6 +2588,17 @@ function _performDashboardRender() {
         return;
       }
 
+      if (activeDashboardPage === 'iom-dashboard') {
+        const iomCard = document.createElement('div');
+        iomCard.className = 'glass-card';
+        iomCard.id = 'export-content';
+        iomCard.innerHTML = buildIomDashboardReportHtml(state, getCustomPeriodByOffset(getIomDashboardPeriodOffset()));
+        container.appendChild(iomCard);
+        bindIomDashboardControls();
+        updateReminderList(true);
+        return;
+      }
+
       const mainCard = document.createElement('div');
       mainCard.className = 'glass-card';
       mainCard.id = 'export-content';
@@ -2318,16 +2714,7 @@ function _performDashboardRender() {
       mainCard.innerHTML = html;
       container.appendChild(mainCard);
 
-      // Append dashboard-pending-container fixed to the top right of the dashboard view
-      let pendingContainer = document.getElementById('dashboard-pending-container');
-      if (!pendingContainer) {
-        pendingContainer = document.createElement('div');
-        pendingContainer.id = 'dashboard-pending-container';
-        pendingContainer.className = 'no-print dashboard-pending-wrapper';
-      }
-      // Insert before mainCard so it can be static on mobile and push content down, while fixed on PC
-      container.insertBefore(pendingContainer, mainCard);
-
+      // Pending container removed per user request
       if (window.clockInterval) clearInterval(window.clockInterval);
       window.clockInterval = setInterval(updateClock, 1000);
       updateClock();
@@ -3455,7 +3842,7 @@ function setupFirebaseListener() {
       }
 
       // Re-trigger visual rendering without reload
-      if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard') {
+      if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard' || currentActivePageId === 'iom-dashboard') {
         _performDashboardRender();
       } else if (currentActivePageId) {
         const authed = sessionStorage.getItem('auth_' + currentActivePageId);
@@ -3507,6 +3894,10 @@ function setupFirebaseListener() {
 
       const lastSeenStr = localStorage.getItem('mep_last_seen_broadcast');
       const lastSeen = lastSeenStr ? parseInt(lastSeenStr) : 0;
+
+      if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard' || currentActivePageId === 'iom-dashboard') {
+        window.scrollTo(0, 0);
+      }
 
       // Ensure Broadcast is newer than what user has seen, and limit it to past 24 hours
       const isNew = data.timestamp > lastSeen;
@@ -3705,37 +4096,7 @@ window.updateReminderList = function (silent = false) {
     }
   }
 
-  if (dashboardPendingContainer) {
-    if (missingSections.length === 0) {
-      dashboardPendingContainer.innerHTML = `
-        <div class="status-box-complete">
-          <div class="status-icon-complete">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </div>
-          <span class="status-text-complete">Thank You</span>
-        </div>
-      `;
-    } else {
-      let pendingHtml = '';
-      missingSections.forEach(s => {
-        pendingHtml += `
-          <div class="status-box-pending">
-            <div class="status-icon-pending">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
-            </div>
-            <span class="status-text-pending">Pending: ${s.title}</span>
-          </div>
-        `;
-      });
-      dashboardPendingContainer.innerHTML = pendingHtml;
-    }
-  }
+  // Dashboard pending container logic removed
 };
 
 // ═══════════════════════════════════════════════════
@@ -4330,16 +4691,15 @@ window.openHistoryModal = function() {
           <div>
             <h2 id="ios-hm-title" class="ios-hm-title">
               Admin
-              <span id="history-count-badge" class="ios-hm-count-badge" aria-hidden="true">
-                <span class="ios-hm-count-dot"></span>
-                <span class="ios-hm-count-num">\u2014</span>
-                <span class="ios-hm-count-lbl">snapshots</span>
-              </span>
             </h2>
             <div class="ios-hm-sub">Protected attendance history</div>
           </div>
         </div>
         <div class="ios-hm-header-actions">
+          <button id="btn-admin-compile-excel" class="admin-premium-btn" onclick="window.downloadCompleteMonthlyHistoryExcel()" type="button" title="Compile Excel for current month">
+            <svg class="admin-premium-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span>Compile Excel</span>
+          </button>
           <button id="fan-merge-history-btn" class="ios-hm-merge-btn" onclick="window.showFanAssembleDimmerMergedHistory()" type="button">
             <span class="ios-hm-merge-icon" aria-hidden="true">↔</span>
             <span>Fan Assemble + Dimmer</span>
@@ -4927,16 +5287,21 @@ window.downloadMonthlyHistoryPDF = function() {
 };
 
 window.downloadCompleteMonthlyHistoryExcel = function() {
+  let monthKey;
   const select = document.getElementById('merged-pdf-month-select');
-  if (!select) return;
-  const monthKey = select.value;
+  if (select && select.value) {
+    monthKey = select.value;
+  } else if (window.historyCurrentDate) {
+    monthKey = window.historyCurrentDate.getFullYear() + '-' + String(window.historyCurrentDate.getMonth() + 1).padStart(2, '0');
+  }
+
   if (!monthKey) {
     alert('Please select a month first.');
     return;
   }
 
-  const btn = document.getElementById('btn-export-complete-excel');
-  const originalText = btn ? btn.innerHTML : 'Complete Excel';
+  const btn = document.getElementById('btn-export-complete-excel') || document.getElementById('btn-admin-compile-excel');
+  const originalText = btn ? btn.innerHTML : 'Compile Excel';
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = '...';

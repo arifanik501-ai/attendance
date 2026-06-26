@@ -1611,7 +1611,7 @@ window.openBranchAttendanceModal = function () {
         </button>
       </div>
       <div id="branch-modal-content" class="branch-modal-content">
-        ${buildBranchAttendanceOverviewHtml(getAppState(), period)}
+        ${buildBranchAttendanceOverviewHtml((localDashboardState || getAppState()), period)}
       </div>
     </div>
   `;
@@ -1630,7 +1630,7 @@ window.closeBranchAttendanceModal = function () {
 function renderBranchAttendanceModalContent() {
   const content = document.getElementById('branch-modal-content');
   if (!content) return;
-  content.innerHTML = buildBranchAttendanceOverviewHtml(getAppState(), getCustomPeriodByOffset(window.branchAttendanceModalOffset || 0));
+  content.innerHTML = buildBranchAttendanceOverviewHtml((localDashboardState || getAppState()), getCustomPeriodByOffset(window.branchAttendanceModalOffset || 0));
   bindBranchAttendanceModalControls();
 }
 
@@ -1908,6 +1908,9 @@ function buildIomDashboardReportHtml(state, period) {
           <button class="branch-period-btn" data-iom-step="1" type="button" style="border: 1px solid #ccc; background: #f9f9f9; color: #333;">Next ›</button>
           
           <button id="iom-save-btn" type="button" style="background: #2563eb; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: 10px;">Save Data</button>
+          <button class="branch-period-btn branch-download-btn" onclick="publishDashboardUpdates()" type="button" aria-label="Publish Live Data" data-tip-title="Update Dashboard" data-tip-desc="Publish live data to all users" data-tip-theme="info" style="border: 1px solid #f59e0b; background: #f59e0b; color: #fff; margin-left: 10px;">
+            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+          </button>
 
           <button class="branch-period-btn branch-download-btn" onclick="window.downloadIomJpg()" type="button" aria-label="Download JPG" data-tip-title="Download JPG" data-tip-desc="Download IOM as JPG" data-tip-theme="success" style="border: 1px solid #ccc; background: #f9f9f9; color: #333; margin-left: 10px;">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M8 10.5l4 4 4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
@@ -2263,7 +2266,7 @@ window.downloadOvertimeAttendanceExcel = function () {
   const period = getCustomPeriodByOffset(periodOffset);
   
   const exportNode = document.createElement('div');
-  exportNode.innerHTML = buildOvertimeAttendanceJpgHtml(getAppState(), period);
+  exportNode.innerHTML = buildOvertimeAttendanceJpgHtml((localDashboardState || getAppState()), period);
   
   const table = exportNode.querySelector('.ot-export-table');
   if (!table) return;
@@ -2366,7 +2369,7 @@ function downloadOvertimeAttendanceJpgOriginal() {
   const period = getCustomPeriodByOffset(periodOffset);
   const exportNode = document.createElement('div');
   exportNode.className = 'ot-export-canvas';
-  exportNode.innerHTML = buildOvertimeAttendanceJpgHtml(getAppState(), period);
+  exportNode.innerHTML = buildOvertimeAttendanceJpgHtml((localDashboardState || getAppState()), period);
   document.body.appendChild(exportNode);
   applyThemeToOvertimeExport(exportNode.querySelector('.ot-export-sheet'));
 
@@ -2732,12 +2735,11 @@ function _performDashboardRender() {
       </div>
 
       <div style="display:flex; flex-direction:column; gap:0.5rem; margin: auto 1.5rem; align-self: center;" class="no-print">
-        <button class="btn glass-btn glass-btn-amber" type="button" onclick="publishDashboardUpdates()" data-tip-title="Update Dashboard" data-tip-desc="Publish latest data to all Dashboards" data-tip-theme="info" data-tip-placement="bottom">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <button class="btn glass-btn glass-btn-amber" type="button" onclick="publishDashboardUpdates()" data-tip-title="Update Dashboard" data-tip-desc="Publish latest data to all Dashboards" data-tip-theme="info" data-tip-placement="bottom" style="padding: 10px;">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
             <path d="M3 3v5h5" />
           </svg>
-          <span>Update Data</span>
         </button>
         <button class="btn glass-btn glass-btn-amber" type="button" onclick="exportReport()" data-tip-title="Download JPG" data-tip-desc="Download dashboard report as JPG" data-tip-theme="warning" data-tip-placement="bottom">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
@@ -2872,10 +2874,69 @@ function exportReport() {
 }
 
 function publishDashboardUpdates() {
-  if (window.firebaseDb) {
-    window.firebaseDb.ref('mep_dashboard_publish_trigger').set(Date.now());
-    alert("Live Data published to all Dashboards successfully.");
-  }
+  const overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+  overlay.style.display = 'flex';
+  overlay.style.justifyContent = 'center';
+  overlay.style.alignItems = 'center';
+  overlay.style.zIndex = '999999';
+
+  const modal = document.createElement('div');
+  modal.style.background = '#fff';
+  modal.style.padding = '20px 30px';
+  modal.style.borderRadius = '12px';
+  modal.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
+  modal.style.textAlign = 'center';
+
+  const title = document.createElement('h3');
+  title.innerText = 'Enter Password';
+  title.style.margin = '0 0 15px 0';
+  title.style.color = '#333';
+  title.style.fontFamily = 'sans-serif';
+
+  const input = document.createElement('input');
+  input.type = 'password';
+  input.style.padding = '10px';
+  input.style.fontSize = '18px';
+  input.style.border = '2px solid #ddd';
+  input.style.borderRadius = '6px';
+  input.style.width = '150px';
+  input.style.textAlign = 'center';
+  input.style.outline = 'none';
+
+  input.addEventListener('focus', () => input.style.borderColor = '#3b82f6');
+  input.addEventListener('blur', () => input.style.borderColor = '#ddd');
+
+  modal.appendChild(title);
+  modal.appendChild(input);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  input.focus();
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      document.body.removeChild(overlay);
+    }
+  });
+
+  input.addEventListener('input', (e) => {
+    if (e.target.value === 'a') {
+      document.body.removeChild(overlay);
+      if (window.firebaseDb) {
+        window.firebaseDb.ref('mep_dashboard_publish_trigger').set(Date.now());
+        // Use setTimeout to ensure the DOM is cleared before the alert blocks the thread
+        setTimeout(() => {
+          alert("Live Data published to all Dashboards successfully.");
+        }, 50);
+      }
+    }
+  });
 }
 
 function exportReportOriginal() {
@@ -4798,13 +4859,63 @@ function _saveAttendanceHistory(state) {
 }
 
 window.openAdminHistoryModal = function() {
-  const pass = prompt('Enter Admin Password');
-  if (pass === null) return;
-  if (pass !== '12') {
-    alert('Wrong admin password');
-    return;
-  }
-  window.openHistoryModal();
+  const overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+  overlay.style.display = 'flex';
+  overlay.style.justifyContent = 'center';
+  overlay.style.alignItems = 'center';
+  overlay.style.zIndex = '999999';
+
+  const modal = document.createElement('div');
+  modal.style.background = '#fff';
+  modal.style.padding = '20px 30px';
+  modal.style.borderRadius = '12px';
+  modal.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
+  modal.style.textAlign = 'center';
+
+  const title = document.createElement('h3');
+  title.innerText = 'Admin Password';
+  title.style.margin = '0 0 15px 0';
+  title.style.color = '#333';
+  title.style.fontFamily = 'sans-serif';
+
+  const input = document.createElement('input');
+  input.type = 'password';
+  input.style.padding = '10px';
+  input.style.fontSize = '18px';
+  input.style.border = '2px solid #ddd';
+  input.style.borderRadius = '6px';
+  input.style.width = '150px';
+  input.style.textAlign = 'center';
+  input.style.outline = 'none';
+
+  input.addEventListener('focus', () => input.style.borderColor = '#3b82f6');
+  input.addEventListener('blur', () => input.style.borderColor = '#ddd');
+
+  modal.appendChild(title);
+  modal.appendChild(input);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  input.focus();
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      document.body.removeChild(overlay);
+    }
+  });
+
+  input.addEventListener('input', (e) => {
+    if (e.target.value === '12') {
+      document.body.removeChild(overlay);
+      window.openHistoryModal();
+    }
+  });
 };
 
 window.openHistoryModal = function() {

@@ -8384,4 +8384,33 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
     background: rgba(0,0,0,0.2) !important;
     border-radius: 4px !important;
   }
+
+  /* Compact Clock Widget */
+  .clock-widget {
+    min-width: unset !important;
+    width: 100% !important;
+    max-width: 160px !important;
+    padding: 0.5rem !important;
+    border-radius: 16px !important;
+    margin: 0 auto 1rem auto !important;
+  }
+  .analog-clock {
+    width: 70px !important;
+    height: 70px !important;
+    --clock-hour-hand: 20px !important;
+    --clock-min-hand: 26px !important;
+    --clock-second-hand: 28px !important;
+    margin-bottom: 0.3rem !important;
+  }
+  .clock-premium-badge {
+    font-size: 0.45rem !important;
+    padding: 0.15rem 0.4rem !important;
+    margin-bottom: 0.4rem !important;
+  }
+  .digital-clock {
+    font-size: 1.1rem !important;
+  }
+  .date-display {
+    font-size: 0.65rem !important;
+  }
 }

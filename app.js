@@ -83,9 +83,12 @@ const IOM_STAFF_LIST = [
 ];
 
 let globalAppState = null;
+let localDashboardState = null;
 try {
   const cached = localStorage.getItem('mep_dashboard_state_cache');
   if (cached) globalAppState = JSON.parse(cached);
+  const cachedLive = localStorage.getItem('mep_dashboard_live_cache');
+  if (cachedLive) localDashboardState = JSON.parse(cachedLive);
 } catch(e) {}
 let currentActivePageId = null;
 const SESSION_DEVICE_ID = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
@@ -569,6 +572,8 @@ function saveAppState(state, customActionStr = null) {
 
   if (window.firebaseDb) {
     localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(state));
+    localDashboardState = JSON.parse(JSON.stringify(state));
+    localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
     window.firebaseDb.ref('mep_dashboard_state').set(state);
 
     const sheetName = currentActivePageId ? (SECTIONS_CONFIG[currentActivePageId]?.title || 'An entry sheet') : 'The dashboard';
@@ -1195,8 +1200,7 @@ function _renderEntryContent(pageId) {
       // Re-lock the authorize manpower edit mode after saving
       localStorage.setItem(EDIT_AUTH_STORAGE_KEY, 'false');
 
-      alert('Entry Updated & Saved to Dashboard Successfully!');
-      window.location.href = 'index.html';
+      alert('Thank you.');
     };
 
   }, 10); // End setTimeout macro task
@@ -2524,7 +2528,7 @@ function _performDashboardRender() {
 
     // Yield to browser main thread so CSS animations can start instantly
     setTimeout(() => {
-      const state = getAppState();
+      const state = localDashboardState || getAppState();
       const calculatedData = calculateDashboardData(state);
 
       const hasNewNoti = localStorage.getItem('has_new_notifications') === 'true';
@@ -2727,10 +2731,19 @@ function _performDashboardRender() {
         <p style="font-weight:600; font-size: 1.05rem; color:#475569; letter-spacing: 0.15em; font-family: 'Inter', sans-serif; text-transform: uppercase;">ATTENDANCE REPORT</p>
       </div>
 
-      <button class="btn glass-btn glass-btn-amber no-print" type="button" onclick="exportReport()" style="margin: auto 1.5rem; align-self: center;" data-tip-title="Download JPG" data-tip-desc="Download dashboard report as JPG" data-tip-theme="warning" data-tip-placement="bottom">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-        <span>Download JPG</span>
-      </button>
+      <div style="display:flex; flex-direction:column; gap:0.5rem; margin: auto 1.5rem; align-self: center;" class="no-print">
+        <button class="btn glass-btn glass-btn-amber" type="button" onclick="publishDashboardUpdates()" data-tip-title="Update Dashboard" data-tip-desc="Publish latest data to all Dashboards" data-tip-theme="info" data-tip-placement="bottom">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+          <span>Update Data</span>
+        </button>
+        <button class="btn glass-btn glass-btn-amber" type="button" onclick="exportReport()" data-tip-title="Download JPG" data-tip-desc="Download dashboard report as JPG" data-tip-theme="warning" data-tip-placement="bottom">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          <span>Download JPG</span>
+        </button>
+      </div>
 
         <div class="clock-widget" id="clock-widget">
         <div class="clock-premium-badge">Live Standard Time</div>
@@ -2856,6 +2869,13 @@ function updateClock() {
 
 function exportReport() {
   return runWithOriginalExportMotion(exportReportOriginal);
+}
+
+function publishDashboardUpdates() {
+  if (window.firebaseDb) {
+    window.firebaseDb.ref('mep_dashboard_publish_trigger').set(Date.now());
+    alert("Live Data published to all Dashboards successfully.");
+  }
 }
 
 function exportReportOriginal() {
@@ -3953,13 +3973,25 @@ function setupFirebaseListener() {
         saveAppState(globalAppState);
       }
 
-      // Re-trigger visual rendering without reload
-      if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard' || currentActivePageId === 'iom-dashboard') {
-        _performDashboardRender();
-      } else if (currentActivePageId) {
-        const authed = sessionStorage.getItem('auth_' + currentActivePageId);
-        if (authed === 'true') {
-          _renderEntryContent(currentActivePageId);
+      // The state updates silently in the background (globalAppState is always fresh).
+      // We intentionally do NOT re-trigger visual rendering here.
+      // The user must click the "Refresh" (Update) button on the dashboard to see new changes.
+      // And if they are editing a sheet, their own save will push to Firebase without interrupting their typing.
+    });
+
+    // Listen for publish trigger to update live dashboard globally
+    let initialPublishLoad = true;
+    window.firebaseDb.ref('mep_dashboard_publish_trigger').on('value', (snapshot) => {
+      if (initialPublishLoad) {
+        initialPublishLoad = false;
+        return;
+      }
+      const trigger = snapshot.val();
+      if (trigger) {
+        localDashboardState = JSON.parse(JSON.stringify(globalAppState));
+        localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+        if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard' || currentActivePageId === 'iom-dashboard') {
+          _performDashboardRender();
         }
       }
     });

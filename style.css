@@ -269,21 +269,20 @@ html.smooth-mode {
 }
 
 html.smooth-mode body {
-  background:
-    linear-gradient(135deg, rgba(255, 247, 237, 0.96) 0%, rgba(254, 243, 199, 0.9) 48%, rgba(209, 250, 229, 0.92) 100%) !important;
+  background: #e0e7ff !important;
   background-attachment: scroll !important;
   transition: none !important;
+  animation: none !important;
   will-change: auto !important;
 }
 
 html.smooth-mode *,
 html.smooth-mode *::before,
 html.smooth-mode *::after {
-  animation-duration: 0.001s !important;
-  animation-delay: 0s !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.001s !important;
-  transition-delay: 0s !important;
+  animation: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
   scroll-behavior: auto !important;
   will-change: auto !important;
 }
@@ -331,7 +330,8 @@ html.smooth-mode .theme-dropdown,
 html.smooth-mode .clock-widget,
 html.smooth-mode .ios-hm-card,
 html.smooth-mode .branch-att-card {
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
 }
 
 html.smooth-mode .clock-widget::before,
@@ -441,10 +441,12 @@ html.smooth-mode .smooth-mode-toggle.active {
 
 body {
   background:
-    radial-gradient(circle at 16% 14%, rgba(255, 255, 255, 0.72) 0%, transparent 38%),
-    radial-gradient(circle at 84% 82%, rgba(52, 211, 153, 0.28) 0%, transparent 42%),
-    radial-gradient(circle at 72% 18%, rgba(251, 191, 36, 0.26) 0%, transparent 34%),
-    linear-gradient(135deg, #fff7ed 0%, #fef3c7 48%, #d1fae5 100%);
+    radial-gradient(circle at 0% 0%, rgba(124, 58, 237, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 100% 0%, rgba(14, 165, 233, 0.18) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(244, 63, 94, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+    linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   background-attachment: fixed;
   color: var(--text-dark);
   min-height: 100vh;
@@ -8412,5 +8414,150 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
   }
   .date-display {
     font-size: 0.65rem !important;
+  }
+}
+
+/* --- Mobile Performance Optimization --- */
+/* Reduce animation, glass blur and heavy effects for max smoothness on mobile */
+@media (max-width: 768px) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    scroll-behavior: auto !important;
+    will-change: auto !important;
+  }
+
+  /* Disable expensive backdrops, filters, and shadows */
+  .high-refresh-motion,
+  .glass-card,
+  .page-header,
+  .table-container,
+  .sidebar,
+  .nav-link,
+  .btn,
+  .theme-fab,
+  .theme-dropdown,
+  .theme-backdrop,
+  .theme-studio-hero,
+  .theme-option,
+  .theme-fab-btn,
+  .fab-child,
+  .solid-fab-btn,
+  .smooth-mode-toggle,
+  .clock-widget,
+  .analog-clock,
+  .ios-hm-overlay,
+  .ios-hm-card,
+  .branch-att-card,
+  .branch-att-table th,
+  .branch-att-table td,
+  .ot-dashboard-wrap,
+  .ot-dashboard-stats div,
+  .ot-dashboard-table th,
+  .ot-dashboard-table td,
+  .entry-input,
+  .pin-box {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Solid fallback backgrounds for glass elements */
+  .glass-card,
+  .page-header,
+  .table-container,
+  .theme-dropdown,
+  .clock-widget,
+  .ios-hm-card,
+  .branch-att-card {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  
+  .sidebar {
+    background-color: #f8fafc !important;
+  }
+
+  /* Hide decorative pseudo-elements to reduce rendering load */
+  .clock-widget::before,
+  .clock-widget::after,
+  .analog-clock::before,
+  .analog-clock::after,
+  .branch-att-card::before,
+  .branch-modal-card::before,
+  .theme-swatch-sheen,
+  .theme-ripple,
+  .glass-btn-ripple,
+  .nav-link-ripple,
+  .page-title-halo,
+  .page-title-stars,
+  .ios-hm-aurora,
+  .glass-lock-halo,
+  .glass-lock-ring,
+  .glass-lock-glint,
+  .glass-lock-burst,
+  .glass-lock-sparkle,
+  .nav-link::before,
+  .entry-sheet-chevron::before {
+    display: none !important;
+  }
+
+  /* Remove filter/shadows from specific items */
+  .clock-premium-badge::before,
+  .hour-hand,
+  .min-hand,
+  .second-hand,
+  .clock-center,
+  .push-icon,
+  .page-title-name,
+  .page-title-letter,
+  .branch-overview-mark.checked,
+  .ot-dashboard-cell span {
+    filter: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Transform & Opacity Resets */
+  .scroll-reveal,
+  tbody tr {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .nav-link,
+  .btn.glass-btn,
+  .theme-fab,
+  .fab-child,
+  .glass-card {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Keep sidebar mechanics working */
+  .sidebar {
+    transform: translateX(-100%) !important;
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0) !important;
+  }
+
+  /* Optimize layout containment */
+  .analog-clock,
+  .clock-widget,
+  .nav-link,
+  .btn,
+  .solid-fab-btn,
+  .smooth-mode-toggle,
+  .entry-input,
+  .pin-box {
+    contain: layout paint;
+  }
+  
+  /* Disable smooth mode completely on mobile */
+  .smooth-mode-toggle {
+    display: none !important;
   }
 }

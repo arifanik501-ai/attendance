@@ -43,7 +43,7 @@ const SECTIONS_CONFIG = {
     title: "Entry Sheet (Monir)",
     password: "2222",
     groups: {
-      "Power Press & Stamping": ["In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Worker"],
+      "Fan Power Press & Stamping": ["In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Worker"],
       "Fan Dalai & Die Casting": ["Jr. Officer", "Worker"]
     }
   },
@@ -431,6 +431,11 @@ function getAppState() {
   for (const [pageKey, pageData] of Object.entries(SECTIONS_CONFIG)) {
     if (!stateToReturn[pageKey]) {
       stateToReturn[pageKey] = {};
+    }
+
+    // Handle section rename migration to retain data
+    if (pageKey === 'monir' && stateToReturn[pageKey]["Power Press & Stamping"] && !stateToReturn[pageKey]["Fan Power Press & Stamping"]) {
+      stateToReturn[pageKey]["Fan Power Press & Stamping"] = stateToReturn[pageKey]["Power Press & Stamping"];
     }
 
     // 1. Remove deleted groups
@@ -2416,7 +2421,7 @@ const EXACT_DASHBOARD_ROWS = [
   { id: 'R16', section: 'Fan Auto Powder Coating', designation: 'Worker', type: 'filter', filters: { group: 'Fan Auto Powder Coating', designation: 'Worker' }, link: 'entry.html?page=anwar' },
   { id: 'R17', section: 'Fan Rojonigondha', designation: 'Worker', type: 'filter', filters: { group: 'Fan Rojonigondha', designation: 'Worker' }, link: 'entry.html?page=bikash' },
   { id: 'R18', section: 'Fan Sada Shapla', designation: 'Worker', type: 'filter', filters: { group: 'Fan Sada Shapla', designation: 'Worker' }, link: 'entry.html?page=bikash' },
-  { id: 'R19', section: 'Fan Power Press', designation: 'Worker', type: 'filter', filters: { group: 'Power Press & Stamping', designation: 'Worker' }, link: 'entry.html?page=monir' },
+  { id: 'R19', section: 'Fan Power Press & Stamping', designation: 'Worker', type: 'filter', filters: { group: 'Fan Power Press & Stamping', designation: 'Worker' }, link: 'entry.html?page=monir' },
   { id: 'R20', section: 'Fan Die Casting', designation: 'Worker', type: 'filter', filters: { group: 'Fan Dalai & Die Casting', designation: 'Worker' }, link: 'entry.html?page=monir' },
 
   { id: 'R21', section: '', designation: 'Production Total', type: 'formula', formulaStr: 'SUM(R4:R20)', isTotal: true },
@@ -3159,9 +3164,14 @@ function getActiveTheme() {
 
 function getThemeBackground(theme, accentAlpha = 0.34) {
   const main = theme.palette[1];
+  const deep = theme.palette[2];
+  
   return `
-    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.62) 0%, transparent 40%),
-    radial-gradient(circle at 85% 85%, ${rgbaFromHex(main, accentAlpha)} 0%, transparent 40%),
+    radial-gradient(circle at 0% 0%, ${rgbaFromHex(main, accentAlpha + 0.15)} 0%, transparent 45%),
+    radial-gradient(circle at 100% 0%, ${rgbaFromHex(deep, accentAlpha + 0.05)} 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, ${rgbaFromHex(main, accentAlpha + 0.1)} 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, ${rgbaFromHex(deep, accentAlpha - 0.05)} 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
     linear-gradient(135deg, ${theme.bg[0]} 0%, ${theme.bg[1]} 50%, ${theme.bg[2]} 100%)`;
 }
 
@@ -3548,6 +3558,7 @@ function initHighRefreshMotion() {
 }
 
 function isSmoothModeEnabled() {
+  if (window.innerWidth <= 768) return true;
   return localStorage.getItem(SMOOTH_MODE_STORAGE_KEY) === 'true';
 }
 
@@ -3577,6 +3588,7 @@ function applySmoothModeState(enabled = isSmoothModeEnabled()) {
 }
 
 function toggleSmoothMode() {
+  if (window.innerWidth <= 768) return;
   const enabled = !isSmoothModeEnabled();
   localStorage.setItem(SMOOTH_MODE_STORAGE_KEY, String(enabled));
   applySmoothModeState(enabled);
@@ -5645,7 +5657,13 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
         
         rows.forEach(function(row) {
           if (!row || typeof row !== 'object') return;
-          const desig = String(row.designation || 'N/A').trim();
+          let desig = String(row.designation || 'N/A').trim();
+          
+          // Merge Computer Operator into Sr. Supervisor for Fan Auto Powder Coating
+          if (groupName === 'Fan Auto Powder Coating' && desig.toLowerCase() === 'computer operator') {
+            desig = 'Sr. Supervisor';
+          }
+          
           if (!dataMap[groupName][desig]) dataMap[groupName][desig] = {};
           
           const authorized = parseInt(row.authorized) || 0;
@@ -5653,12 +5671,19 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
           const present = parseInt(row.present) || 0;
           const absent = authorized - present;
           
-          dataMap[groupName][desig][dStr] = {
-            auth: authorized,
-            exist: existing,
-            pres: present,
-            abs: absent
-          };
+          if (!dataMap[groupName][desig][dStr]) {
+            dataMap[groupName][desig][dStr] = {
+              auth: 0,
+              exist: 0,
+              pres: 0,
+              abs: 0
+            };
+          }
+          
+          dataMap[groupName][desig][dStr].auth += authorized;
+          dataMap[groupName][desig][dStr].exist += existing;
+          dataMap[groupName][desig][dStr].pres += present;
+          dataMap[groupName][desig][dStr].abs += absent;
         });
       });
     });

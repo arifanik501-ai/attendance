@@ -374,7 +374,8 @@ window.toggleIomLock = function() {
   if (pass === "a") {
     const currentState = (localDashboardState || getAppState())?.iom_locked === true;
     window.firebaseDb.ref('mep_dashboard_state/iom_locked').set(!currentState).then(() => {
-      publishDashboardUpdates();
+      // Instant sync for all without another password
+      window.firebaseDb.ref('mep_dashboard_publish_trigger').set(Date.now());
     });
   } else if (pass !== null) {
     alert("Incorrect Password!");

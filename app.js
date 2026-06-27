@@ -369,6 +369,18 @@ function getBranchAttendanceStatsForPage(state, pageId, periodKey) {
   return { checkedCount, activeBranches, totalSlots };
 }
 
+window.toggleIomLock = function() {
+  const pass = prompt("Enter Password to Lock/Unlock IOM:");
+  if (pass === "a") {
+    const currentState = (localDashboardState || getAppState())?.iom_locked === true;
+    window.firebaseDb.ref('mep_dashboard_state/iom_locked').set(!currentState).then(() => {
+      publishDashboardUpdates();
+    });
+  } else if (pass !== null) {
+    alert("Incorrect Password!");
+  }
+};
+
 window.playAlertSoundAndVibrate = function () {
   if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
   try {
@@ -794,8 +806,16 @@ function generateSidebar(activePage) {
     let specialClass = '';
     if (isMainDashboard) specialClass = 'main-dashboard-link';
     if (p.id === 'overtime-dashboard') specialClass = 'overtime-dashboard-link';
+    
+    let clickHandler = '';
+    if (p.id === 'index') {
+      clickHandler = `onclick="if(window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname.endsWith('.app')) { event.preventDefault(); history.pushState(null, '', window.location.pathname); if(typeof window.renderDashboard === 'function') window.renderDashboard(); }"`;
+    } else {
+      const hashVal = p.id;
+      clickHandler = `onclick="if(window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname.endsWith('.app')) { event.preventDefault(); window.location.hash = '${hashVal}'; }"`;
+    }
 
-    html += `<a href="${p.url}" class="nav-link ${specialClass} ${activePage === p.id ? 'active' : ''}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+    html += `<a href="${p.url}" ${clickHandler} class="nav-link ${specialClass} ${activePage === p.id ? 'active' : ''}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
       ${p.icon} <span>${p.title}</span>
     </a>`;
   });
@@ -1834,6 +1854,8 @@ window.resetIomDashboardPeriodOffset = function() { window.iomDashboardPeriodOff
 
 function buildIomDashboardReportHtml(state, period) {
   const iomState = state?.iom?.[period.key] || {};
+  const isLocked = state?.iom_locked === true;
+  const lockAttr = isLocked ? 'disabled style="background:#eee; cursor:not-allowed;"' : '';
   let totalDaysAll = 0;
   let totalHoursAll = 0;
 
@@ -1863,31 +1885,31 @@ function buildIomDashboardReportHtml(state, period) {
         <td style="border: 1px solid #000; text-align: left; padding-left: 6px;">${staff.department}</td>
         <td class="iom-total-day-col" style="text-align:center; font-weight:bold; border: 1px solid #000; background-color: #eef5e5;">${totalDay || ''}</td>
         <td style="border: 1px solid #000; padding: 0;">
-          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="1hr" value="${d1 || ''}" min="0" max="31">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="1hr" value="${d1 || ''}" min="0" max="31" ${lockAttr}>
           <span class="print-only">${d1 || ''}</span>
         </td>
         <td style="border: 1px solid #000; padding: 0;">
-          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="2hr" value="${d2 || ''}" min="0" max="31">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="2hr" value="${d2 || ''}" min="0" max="31" ${lockAttr}>
           <span class="print-only">${d2 || ''}</span>
         </td>
         <td style="border: 1px solid #000; padding: 0;">
-          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="3hr" value="${d3 || ''}" min="0" max="31">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="3hr" value="${d3 || ''}" min="0" max="31" ${lockAttr}>
           <span class="print-only">${d3 || ''}</span>
         </td>
         <td style="border: 1px solid #000; padding: 0;">
-          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="4hr" value="${d4 || ''}" min="0" max="31">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="4hr" value="${d4 || ''}" min="0" max="31" ${lockAttr}>
           <span class="print-only">${d4 || ''}</span>
         </td>
         <td style="border: 1px solid #000; padding: 0;">
-          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="5hr" value="${d5 || ''}" min="0" max="31">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="5hr" value="${d5 || ''}" min="0" max="31" ${lockAttr}>
           <span class="print-only">${d5 || ''}</span>
         </td>
         <td style="border: 1px solid #000; padding: 0;">
-          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="6hr" value="${d6 || ''}" min="0" max="31">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="6hr" value="${d6 || ''}" min="0" max="31" ${lockAttr}>
           <span class="print-only">${d6 || ''}</span>
         </td>
         <td style="border: 1px solid #000; padding: 0;">
-          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="7hr" value="${d7 || ''}" min="0" max="31">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="7hr" value="${d7 || ''}" min="0" max="31" ${lockAttr}>
           <span class="print-only">${d7 || ''}</span>
         </td>
         <td style="border: 1px solid #000; padding: 0;">
@@ -1911,8 +1933,12 @@ function buildIomDashboardReportHtml(state, period) {
           <button class="branch-period-btn" data-iom-step="-1" type="button" style="border: 1px solid #ccc; background: #f9f9f9; color: #333;">‹ Previous</button>
           <button class="branch-period-btn" data-iom-step="0" type="button" style="border: 1px solid #ccc; background: #f9f9f9; color: #333;">Current</button>
           <button class="branch-period-btn" data-iom-step="1" type="button" style="border: 1px solid #ccc; background: #f9f9f9; color: #333;">Next ›</button>
+          <button id="iom-save-btn" type="button" style="background: ${isLocked ? '#9ca3af' : '#2563eb'}; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; cursor: ${isLocked ? 'not-allowed' : 'pointer'}; margin-left: 10px;" ${isLocked ? 'disabled' : ''}>Save Data</button>
           
-          <button id="iom-save-btn" type="button" style="background: #2563eb; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: 10px;">Save Data</button>
+          <button class="branch-period-btn branch-download-btn" onclick="window.toggleIomLock()" type="button" aria-label="${isLocked ? 'Unlock' : 'Lock'}" data-tip-title="${isLocked ? 'Unlock IOM' : 'Lock IOM'}" data-tip-theme="${isLocked ? 'error' : 'success'}" style="border: 1px solid ${isLocked ? '#dc2626' : '#16a34a'}; background: ${isLocked ? '#fee2e2' : '#dcfce7'}; color: ${isLocked ? '#dc2626' : '#16a34a'}; margin-left: 10px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${isLocked ? '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>' : '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path>'}</svg>
+          </button>
+          
           <button class="branch-period-btn branch-download-btn" onclick="publishDashboardUpdates()" type="button" aria-label="Publish Live Data" data-tip-title="Update Dashboard" data-tip-desc="Publish live data to all users" data-tip-theme="info" style="border: 1px solid #f59e0b; background: #f59e0b; color: #fff; margin-left: 10px;">
             <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
           </button>
@@ -4877,7 +4903,8 @@ window.openAdminHistoryModal = function() {
   overlay.style.left = '0';
   overlay.style.width = '100vw';
   overlay.style.height = '100vh';
-  overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+  overlay.style.backgroundColor = 'rgba(15, 23, 42, 0.6)';
+  overlay.style.backdropFilter = 'blur(4px)';
   overlay.style.display = 'flex';
   overlay.style.justifyContent = 'center';
   overlay.style.alignItems = 'center';
@@ -4885,49 +4912,75 @@ window.openAdminHistoryModal = function() {
 
   const modal = document.createElement('div');
   modal.style.background = '#fff';
-  modal.style.padding = '20px 30px';
-  modal.style.borderRadius = '12px';
+  modal.style.padding = '25px 30px';
+  modal.style.borderRadius = '16px';
   modal.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
   modal.style.textAlign = 'center';
+  modal.style.display = 'flex';
+  modal.style.flexDirection = 'column';
+  modal.style.gap = '15px';
 
   const title = document.createElement('h3');
-  title.innerText = 'Admin Password';
-  title.style.margin = '0 0 15px 0';
-  title.style.color = '#333';
-  title.style.fontFamily = 'sans-serif';
+  title.innerText = 'Admin Access';
+  title.style.margin = '0';
+  title.style.color = '#1e293b';
+  title.style.fontFamily = 'Inter, sans-serif';
 
   const input = document.createElement('input');
   input.type = 'password';
-  input.style.padding = '10px';
+  input.placeholder = 'Enter PIN';
+  input.style.padding = '12px';
   input.style.fontSize = '18px';
-  input.style.border = '2px solid #ddd';
-  input.style.borderRadius = '6px';
-  input.style.width = '150px';
+  input.style.border = '2px solid #e2e8f0';
+  input.style.borderRadius = '8px';
+  input.style.width = '180px';
   input.style.textAlign = 'center';
   input.style.outline = 'none';
-
+  input.style.transition = 'border-color 0.2s';
   input.addEventListener('focus', () => input.style.borderColor = '#3b82f6');
-  input.addEventListener('blur', () => input.style.borderColor = '#ddd');
+  input.addEventListener('blur', () => input.style.borderColor = '#e2e8f0');
 
+  const btn = document.createElement('button');
+  btn.innerText = 'Unlock Archive';
+  btn.style.padding = '12px';
+  btn.style.background = '#3b82f6';
+  btn.style.color = '#fff';
+  btn.style.border = 'none';
+  btn.style.borderRadius = '8px';
+  btn.style.fontSize = '15px';
+  btn.style.fontWeight = 'bold';
+  btn.style.cursor = 'pointer';
+  
   modal.appendChild(title);
   modal.appendChild(input);
+  modal.appendChild(btn);
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
   input.focus();
 
   overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      document.body.removeChild(overlay);
-    }
+    if (e.target === overlay) document.body.removeChild(overlay);
   });
 
-  input.addEventListener('input', (e) => {
-    if (e.target.value === '12') {
+  const checkPass = () => {
+    if (input.value.trim() === '12') {
       document.body.removeChild(overlay);
       window.openHistoryModal();
+    } else {
+      input.style.borderColor = '#ef4444';
+      input.value = '';
+      input.placeholder = 'Wrong PIN';
     }
+  };
+
+  input.addEventListener('input', (e) => {
+    if (e.target.value.trim() === '12') checkPass();
   });
+  input.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') checkPass();
+  });
+  btn.addEventListener('click', checkPass);
 };
 
 window.openHistoryModal = function() {
@@ -4966,6 +5019,10 @@ window.openHistoryModal = function() {
           <button id="btn-admin-compile-excel" class="admin-premium-btn" onclick="window.downloadCompleteMonthlyHistoryExcel()" type="button" title="Compile Excel for current month">
             <svg class="admin-premium-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             <span>Compile Excel</span>
+          </button>
+          <button id="btn-admin-monthly-chart" class="admin-premium-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #047857;" onclick="window.generateMonthlyChart()" type="button" title="View Monthly Pie Chart">
+            <svg class="admin-premium-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            <span>Pie Chart</span>
           </button>
           <button id="fan-merge-history-btn" class="ios-hm-merge-btn" onclick="window.showFanAssembleDimmerMergedHistory()" type="button">
             <span class="ios-hm-merge-icon" aria-hidden="true">↔</span>
@@ -5553,6 +5610,177 @@ window.downloadMonthlyHistoryPDF = function() {
   });
 };
 
+window.generateMonthlyChart = function() {
+  if (typeof window.syncLiveDataToAppState === 'function') window.syncLiveDataToAppState();
+
+  let monthKey;
+  const select = document.getElementById('merged-pdf-month-select');
+  if (select && select.value) {
+    monthKey = select.value;
+  } else if (window.historyCurrentDate) {
+    monthKey = window.historyCurrentDate.getFullYear() + '-' + String(window.historyCurrentDate.getMonth() + 1).padStart(2, '0');
+  }
+
+  if (!monthKey) {
+    alert('Please select a month first.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-admin-monthly-chart');
+  const originalText = btn ? btn.innerHTML : 'Pie Chart';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '...';
+  }
+
+  const datesInMonth = Array.from(window.savedHistoryDates).filter(function(dateStr) {
+    return getReportingMonthInfo(dateStr).key === monthKey;
+  }).sort(function(a, b) {
+    const partsA = a.split('-').map(Number);
+    const partsB = b.split('-').map(Number);
+    const dateA = new Date(partsA[0], partsA[1] - 1, partsA[2]);
+    const dateB = new Date(partsB[0], partsB[1] - 1, partsB[2]);
+    return dateA - dateB;
+  });
+
+  if (datesInMonth.length === 0) {
+    alert('No dates with saved snapshots in this month.');
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    return;
+  }
+
+  const fetchPromises = datesInMonth.map(function(dateStr) {
+    return window.firebaseDb.ref('mep_attendance_history/' + dateStr).once('value').then(function(snap) {
+      return {
+        dateStr: dateStr,
+        state: snap.val()
+      };
+    });
+  });
+
+  Promise.all(fetchPromises).then(function(results) {
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    window.renderMonthlyChartModal(monthKey, results);
+  }).catch(function(err) {
+    console.error(err);
+    alert('Error fetching data: ' + err.message);
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+  });
+};
+
+window.renderMonthlyChartModal = function(monthKey, results) {
+  let totalAuth = 0;
+  let totalExist = 0;
+  let totalPresent = 0;
+  let totalAbsent = 0;
+
+  results.forEach(res => {
+    const state = res.state;
+    if (!state) return;
+    Object.keys(state).forEach(pageId => {
+      const pageData = state[pageId];
+      if (typeof pageData !== 'object' || pageData === null) return;
+      
+      Object.keys(pageData).forEach(originalGroupName => {
+        let groupName = originalGroupName;
+        const excludedSections = ['anik', 'anwar', 'bikash', 'monir', 'takbir'];
+        if (excludedSections.includes(groupName.toLowerCase().trim())) return;
+
+        let rows = pageData[originalGroupName];
+        if (!rows) return;
+        if (!Array.isArray(rows)) {
+          if (typeof rows === 'object') { rows = Object.values(rows); } else { return; }
+        }
+
+        rows.forEach(row => {
+          if (!row || typeof row !== 'object') return;
+          const authorized = parseInt(row.authorized) || 0;
+          const existing = parseInt(row.existing) || 0;
+          const present = parseInt(row.present) || 0;
+          const absent = authorized - present; 
+
+          totalAuth += authorized;
+          totalExist += existing;
+          totalPresent += present;
+          totalAbsent += absent;
+        });
+      });
+    });
+  });
+
+  if (totalExist === 0) {
+    alert("No data available to chart for this month.");
+    return;
+  }
+
+  const numDates = results.length;
+  const avgPresent = numDates > 0 ? Math.round(totalPresent / numDates) : 0;
+  const avgAbsent = numDates > 0 ? Math.round(totalAbsent / numDates) : 0;
+
+  const oAvgPct = Math.round((totalPresent / totalExist) * 100);
+  const oAbsPct = Math.round((totalAbsent / totalExist) * 100);
+
+  const pieTotal = totalPresent + totalAbsent;
+  let presentSlicePct = pieTotal > 0 ? (totalPresent / pieTotal) * 100 : 0;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'ios-hm-overlay';
+  overlay.style.display = 'flex';
+  overlay.style.justifyContent = 'center';
+  overlay.style.alignItems = 'center';
+  overlay.style.zIndex = '9999999';
+  overlay.style.backgroundColor = 'rgba(15,23,42,0.85)';
+  overlay.style.backdropFilter = 'blur(8px)';
+  overlay.style.opacity = '1';
+  
+  const monthParts = monthKey.split('-');
+  const dateObj = new Date(monthParts[0], monthParts[1] - 1);
+  const monthName = dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  overlay.innerHTML = `
+    <div style="background: #ffffff; width: 92%; max-width: 420px; border-radius: 28px; padding: 35px 25px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; animation: chartPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+      <h2 style="margin: 0 0 5px 0; color: #0f172a; font-weight: 800; font-size: 1.6rem; letter-spacing: -0.02em;">Monthly Overview</h2>
+      <div style="color: #64748b; margin-bottom: 35px; font-weight: 600; font-size: 1.05rem;">${monthName}</div>
+      
+      <div style="position: relative; width: 220px; height: 220px; margin: 0 auto 40px auto; border-radius: 50%; background: conic-gradient(#10b981 0% ${presentSlicePct}%, #ef4444 ${presentSlicePct}% 100%); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2), inset 0 0 20px rgba(0,0,0,0.05); transition: all 0.3s ease;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 145px; height: 145px; background: #ffffff; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: inset 0 4px 15px rgba(0,0,0,0.08), 0 0 0 12px rgba(255,255,255,0.3);">
+          <span style="font-size: 2.8rem; font-weight: 900; color: #10b981; letter-spacing: -0.03em; line-height: 1;">${oAvgPct}<span style="font-size: 1.5rem;">%</span></span>
+          <span style="font-size: 0.85rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px;">Present</span>
+        </div>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; gap: 15px; margin-bottom: 30px;">
+        <div style="flex: 1; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 16px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; font-weight: 700; color: #166534; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">
+            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span> Present
+          </div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #14532d;">${oAvgPct}%</div>
+          <div style="font-size: 0.85rem; color: #166534; font-weight: 600; opacity: 0.8; margin-top: 4px;">${avgPresent.toLocaleString()} avg/day</div>
+        </div>
+        <div style="flex: 1; background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 16px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; font-weight: 700; color: #991b1b; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">
+            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></span> Absent
+          </div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #7f1d1d;">${oAbsPct}%</div>
+          <div style="font-size: 0.85rem; color: #991b1b; font-weight: 600; opacity: 0.8; margin-top: 4px;">${avgAbsent.toLocaleString()} avg/day</div>
+        </div>
+      </div>
+      
+      <button onclick="this.closest('.ios-hm-overlay').remove()" style="width: 100%; padding: 16px; background: #0f172a; color: #fff; border: none; border-radius: 14px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+        Close Dashboard
+      </button>
+    </div>
+    <style>
+      @keyframes chartPopIn {
+        0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
+      }
+    </style>
+  `;
+
+  document.body.appendChild(overlay);
+};
+
 window.downloadCompleteMonthlyHistoryExcel = function() {
   if (typeof window.syncLiveDataToAppState === 'function') window.syncLiveDataToAppState();
   // Force SW unregister to bypass stubborn cache during development/updates
@@ -5801,14 +6029,10 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
       dates.forEach(dStr => {
         const cell = dataMap[section][desig][dStr];
         if (cell) {
-          const authFmt = cell.auth === 0 ? '-' : cell.auth;
-          const existFmt = cell.exist === 0 ? '-' : cell.exist;
-          const presFmt = cell.pres === 0 ? '-' : cell.pres;
-          const absFmt = cell.abs === 0 ? '-' : cell.abs;
-          html += `<td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #ffffff; mso-number-format:'0';">${authFmt}</td>
-                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #f8fafc; mso-number-format:'0';">${existFmt}</td>
-                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #166534; font-weight: bold; background-color: #f0fdf4; mso-number-format:'0';">${presFmt}</td>
-                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #991b1b; font-weight: bold; background-color: #fef2f2; mso-number-format:'0';">${absFmt}</td>`;
+          html += `<td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #ffffff; mso-number-format:'0';">${cell.auth}</td>
+                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #f8fafc; mso-number-format:'0';">${cell.exist}</td>
+                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #166534; font-weight: bold; background-color: #f0fdf4; mso-number-format:'0';">${cell.pres}</td>
+                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #991b1b; font-weight: bold; background-color: #fef2f2; mso-number-format:'0';">${cell.abs}</td>`;
           rowAuthSum += cell.auth;
           rowExistSum += cell.exist;
           rowPresSum += cell.pres;
@@ -5832,20 +6056,20 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
         }
       });
       
-      const avgAuth = rowDaysWithData > 0 ? (rowAuthSum / rowDaysWithData).toFixed(1) : 0;
-      const avgExist = rowDaysWithData > 0 ? (rowExistSum / rowDaysWithData).toFixed(1) : 0;
-      const avgPres = rowDaysWithData > 0 ? (rowPresSum / rowDaysWithData).toFixed(1) : 0;
-      const avgAbs = rowDaysWithData > 0 ? (rowAbsSum / rowDaysWithData).toFixed(1) : 0;
+      const avgAuth = rowDaysWithData > 0 ? Math.round(rowAuthSum / rowDaysWithData) : 0;
+      const avgExist = rowDaysWithData > 0 ? Math.round(rowExistSum / rowDaysWithData) : 0;
+      const avgPres = rowDaysWithData > 0 ? Math.round(rowPresSum / rowDaysWithData) : 0;
+      const avgAbs = rowDaysWithData > 0 ? Math.round(rowAbsSum / rowDaysWithData) : 0;
       const avgPct = rowExistSum > 0 ? Math.round((rowPresSum / rowExistSum) * 100) : 0;
       const absPct = rowExistSum > 0 ? Math.round((rowAbsSum / rowExistSum) * 100) : 0;
       
       const rawAvgPct = rowExistSum > 0 ? (rowPresSum / rowExistSum) : 0;
       const rawAbsPct = rowExistSum > 0 ? (rowAbsSum / rowExistSum) : 0;
       
-      html += `<td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #000000; background-color: #e0e7ff; mso-number-format:'0.0';">${avgAuth == 0 ? '-' : avgAuth}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #000000; background-color: #c7d2fe; mso-number-format:'0.0';">${avgExist == 0 ? '-' : avgExist}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #14532d; background-color: #bbf7d0; mso-number-format:'0.0';">${avgPres == 0 ? '-' : avgPres}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #7f1d1d; background-color: #fecaca; mso-number-format:'0.0';">${avgAbs == 0 ? '-' : avgAbs}</td>
+      html += `<td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #000000; background-color: #e0e7ff; mso-number-format:'0';">${avgAuth}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #000000; background-color: #c7d2fe; mso-number-format:'0';">${avgExist}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #14532d; background-color: #bbf7d0; mso-number-format:'0';">${avgPres}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #7f1d1d; background-color: #fecaca; mso-number-format:'0';">${avgAbs}</td>
                <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #ffffff; background-color: ${avgPct >= 90 ? '#10b981' : avgPct >= 75 ? '#f59e0b' : '#ef4444'}; mso-number-format:'0%';">${rawAvgPct}</td>
                <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #ffffff; background-color: ${absPct >= 20 ? '#ef4444' : absPct >= 10 ? '#f59e0b' : '#10b981'}; mso-number-format:'0%';">${rawAbsPct}</td>
              </tr>`;
@@ -5858,10 +6082,10 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     let secAuthTotal = 0, secExistTotal = 0, secPresTotal = 0, secAbsTotal = 0;
     dates.forEach(dStr => {
       const t = sectionTotals[dStr];
-      html += `<td style="text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; font-weight: bold; background-color: #f1f5f9; color: #000000; mso-number-format:'0';">${t.auth == 0 ? '-' : t.auth}</td>
-               <td style="text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; font-weight: bold; background-color: #e2e8f0; color: #000000; mso-number-format:'0';">${t.exist == 0 ? '-' : t.exist}</td>
-               <td style="text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; font-weight: bold; background-color: #d1fae5; color: #065f46; mso-number-format:'0';">${t.pres == 0 ? '-' : t.pres}</td>
-               <td style="text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; font-weight: bold; background-color: #fee2e2; color: #991b1b; mso-number-format:'0';">${t.abs == 0 ? '-' : t.abs}</td>`;
+      html += `<td style="text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; font-weight: bold; background-color: #f1f5f9; color: #000000; mso-number-format:'0';">${t.auth}</td>
+               <td style="text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; font-weight: bold; background-color: #e2e8f0; color: #000000; mso-number-format:'0';">${t.exist}</td>
+               <td style="text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; font-weight: bold; background-color: #d1fae5; color: #065f46; mso-number-format:'0';">${t.pres}</td>
+               <td style="text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; font-weight: bold; background-color: #fee2e2; color: #991b1b; mso-number-format:'0';">${t.abs}</td>`;
       secAuthTotal += t.auth;
       secExistTotal += t.exist;
       secPresTotal += t.pres;
@@ -5869,18 +6093,18 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     });
 
     const numDates = dates.length;
-    const sAvgAuth = numDates > 0 ? (secAuthTotal / numDates).toFixed(1) : 0;
-    const sAvgExist = numDates > 0 ? (secExistTotal / numDates).toFixed(1) : 0;
-    const sAvgPres = numDates > 0 ? (secPresTotal / numDates).toFixed(1) : 0;
-    const sAvgAbs = numDates > 0 ? (secAbsTotal / numDates).toFixed(1) : 0;
+    const sAvgAuth = numDates > 0 ? Math.round(secAuthTotal / numDates) : 0;
+    const sAvgExist = numDates > 0 ? Math.round(secExistTotal / numDates) : 0;
+    const sAvgPres = numDates > 0 ? Math.round(secPresTotal / numDates) : 0;
+    const sAvgAbs = numDates > 0 ? Math.round(secAbsTotal / numDates) : 0;
     
     const sRawPct = secExistTotal > 0 ? (secPresTotal / secExistTotal) : 0;
     const sRawAbsPct = secExistTotal > 0 ? (secAbsTotal / secExistTotal) : 0;
 
-    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; color: #000000; background-color: #e0e7ff; mso-number-format:'0.0';">${sAvgAuth == 0 ? '-' : sAvgAuth}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; color: #000000; background-color: #c7d2fe; mso-number-format:'0.0';">${sAvgExist == 0 ? '-' : sAvgExist}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; color: #14532d; background-color: #bbf7d0; mso-number-format:'0.0';">${sAvgPres == 0 ? '-' : sAvgPres}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; color: #7f1d1d; background-color: #fecaca; mso-number-format:'0.0';">${sAvgAbs == 0 ? '-' : sAvgAbs}</td>
+    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; color: #000000; background-color: #e0e7ff; mso-number-format:'0';">${sAvgAuth}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; color: #000000; background-color: #c7d2fe; mso-number-format:'0';">${sAvgExist}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; color: #14532d; background-color: #bbf7d0; mso-number-format:'0';">${sAvgPres}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; color: #7f1d1d; background-color: #fecaca; mso-number-format:'0';">${sAvgAbs}</td>
              <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; color: #ffffff; background-color: #000000; mso-number-format:'0%';">${sRawPct}</td>
              <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; border-bottom: 2px solid #0f172a; padding: 5px; color: #ffffff; background-color: #000000; mso-number-format:'0%';">${sRawAbsPct}</td>
            </tr>`;
@@ -5909,19 +6133,19 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
   });
   
   const numDates = dates.length;
-  const oAvgAuth = numDates > 0 ? (overallAuth / numDates).toFixed(1) : 0;
-  const oAvgExist = numDates > 0 ? (overallExist / numDates).toFixed(1) : 0;
-  const oAvgPres = numDates > 0 ? (overallPres / numDates).toFixed(1) : 0;
-  const oAvgAbs = numDates > 0 ? (overallAbs / numDates).toFixed(1) : 0;
+  const oAvgAuth = numDates > 0 ? Math.round(overallAuth / numDates) : 0;
+  const oAvgExist = numDates > 0 ? Math.round(overallExist / numDates) : 0;
+  const oAvgPres = numDates > 0 ? Math.round(overallPres / numDates) : 0;
+  const oAvgAbs = numDates > 0 ? Math.round(overallAbs / numDates) : 0;
   const oAvgPct = overallExist > 0 ? Math.round((overallPres / overallExist) * 100) : 0;
   const oAbsPct = overallExist > 0 ? Math.round((overallAbs / overallExist) * 100) : 0;
   
-  html += `<td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #94a3b8; color: white;">${oAvgAuth}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #94a3b8; color: white;">${oAvgExist}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #059669; color: white;">${oAvgPres}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #e11d48; color: white;">${oAvgAbs}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #94a3b8; color: white;">${oAvgPct}%</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #94a3b8; color: white;">${oAbsPct}%</td>
+  html += `<td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #94a3b8; color: white; mso-number-format:'0';">${oAvgAuth}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #94a3b8; color: white; mso-number-format:'0';">${oAvgExist}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #059669; color: white; mso-number-format:'0';">${oAvgPres}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #e11d48; color: white; mso-number-format:'0';">${oAvgAbs}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #94a3b8; color: white; mso-number-format:'0%';">${oAvgPct/100}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 6px; background-color: #94a3b8; color: white; mso-number-format:'0%';">${oAbsPct/100}</td>
          </tr>`;
 
   // =========================================================
@@ -5995,14 +6219,10 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     
     dates.forEach(dStr => {
       const cell = desigTotals[desig][dStr];
-      const authFmt = cell.auth === 0 ? '-' : cell.auth;
-      const existFmt = cell.exist === 0 ? '-' : cell.exist;
-      const presFmt = cell.pres === 0 ? '-' : cell.pres;
-      const absFmt = cell.abs === 0 ? '-' : cell.abs;
-      html += `<td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #ffffff; mso-number-format:'0';">${authFmt}</td>
-                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #f8fafc; mso-number-format:'0';">${existFmt}</td>
-                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #166534; font-weight: bold; background-color: #f0fdf4; mso-number-format:'0';">${presFmt}</td>
-                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #991b1b; font-weight: bold; background-color: #fef2f2; mso-number-format:'0';">${absFmt}</td>`;
+      html += `<td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #ffffff; mso-number-format:'0';">${cell.auth}</td>
+                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #f8fafc; mso-number-format:'0';">${cell.exist}</td>
+                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #166534; font-weight: bold; background-color: #f0fdf4; mso-number-format:'0';">${cell.pres}</td>
+                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #991b1b; font-weight: bold; background-color: #fef2f2; mso-number-format:'0';">${cell.abs}</td>`;
       rAuth += cell.auth;
       rExist += cell.exist;
       rPres += cell.pres;
@@ -6015,17 +6235,17 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     });
     
     const dCount = dates.length;
-    const aAuth = dCount > 0 ? (rAuth / dCount).toFixed(1) : 0;
-    const aExist = dCount > 0 ? (rExist / dCount).toFixed(1) : 0;
-    const aPres = dCount > 0 ? (rPres / dCount).toFixed(1) : 0;
-    const aAbs = dCount > 0 ? (rAbs / dCount).toFixed(1) : 0;
+    const aAuth = dCount > 0 ? Math.round(rAuth / dCount) : 0;
+    const aExist = dCount > 0 ? Math.round(rExist / dCount) : 0;
+    const aPres = dCount > 0 ? Math.round(rPres / dCount) : 0;
+    const aAbs = dCount > 0 ? Math.round(rAbs / dCount) : 0;
     const rawPct = rExist > 0 ? (rPres / rExist) : 0;
     const rawAbsPct = rExist > 0 ? (rAbs / rExist) : 0;
     
-    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #000000; background-color: #e0e7ff; mso-number-format:'0.0';">${aAuth == 0 ? '-' : aAuth}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #000000; background-color: #c7d2fe; mso-number-format:'0.0';">${aExist == 0 ? '-' : aExist}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #14532d; background-color: #bbf7d0; mso-number-format:'0.0';">${aPres == 0 ? '-' : aPres}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #7f1d1d; background-color: #fecaca; mso-number-format:'0.0';">${aAbs == 0 ? '-' : aAbs}</td>
+    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #000000; background-color: #e0e7ff; mso-number-format:'0';">${aAuth}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #000000; background-color: #c7d2fe; mso-number-format:'0';">${aExist}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #14532d; background-color: #bbf7d0; mso-number-format:'0';">${aPres}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #7f1d1d; background-color: #fecaca; mso-number-format:'0';">${aAbs}</td>
               <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #ffffff; background-color: ${(rawPct*100) >= 90 ? '#10b981' : (rawPct*100) >= 75 ? '#f59e0b' : '#ef4444'}; mso-number-format:'0%';">${rawPct}</td>
               <td style="font-weight:bold; text-align: center; border: 1px solid #94a3b8; padding: 5px; color: #ffffff; background-color: ${(rawAbsPct*100) >= 20 ? '#ef4444' : (rawAbsPct*100) >= 10 ? '#f59e0b' : '#10b981'}; mso-number-format:'0%';">${rawAbsPct}</td>
             </tr>`;

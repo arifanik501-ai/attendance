@@ -8420,6 +8420,19 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
 /* --- Mobile Performance Optimization --- */
 /* Reduce animation, glass blur and heavy effects for max smoothness on mobile */
 @media (max-width: 768px) {
+  /* --- Deep Mobile Performance Optimizations --- */
+  html, body {
+    overscroll-behavior-y: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    text-rendering: optimizeSpeed !important;
+    background: #e0e7ff !important;
+    background-attachment: scroll !important;
+  }
+
+  button, a, input, select, .nav-link, .btn, .theme-fab, .ios-hm-card, .branch-att-card {
+    touch-action: manipulation !important;
+  }
+
   *, *::before, *::after {
     animation: none !important;
     transition: none !important;

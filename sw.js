@@ -3,18 +3,21 @@
 // Daily 8:00 AM & 1:00 PM Attendance Notifications
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-dashboard-cache-v109';
+const CACHE_NAME = 'mep-dashboard-cache-v110';
 const NOTIFICATION_HOUR_AM = 8; // 8:00 AM
 const NOTIFICATION_HOUR_PM = 13; // 1:00 PM
 const NOTIFICATION_MINUTE = 0;
 
-const ASSET_VERSION = 'v=73';
+const ASSET_VERSION = 'v=74';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './entry.html',
-  `./app.js?${ASSET_VERSION}`,
-  `./style.css?${ASSET_VERSION}`,
+  `./config.min.js?${ASSET_VERSION}`,
+  `./app.min.js?${ASSET_VERSION}`,
+  `./dashboard-render.min.js?${ASSET_VERSION}`,
+  `./history.min.js?${ASSET_VERSION}`,
+  `./style.min.css?${ASSET_VERSION}`,
   `./tooltip.js?${ASSET_VERSION}`,
   './firebase-init.js',
   './manifest.json',

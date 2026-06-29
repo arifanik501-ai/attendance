@@ -1,0 +1,138 @@
+99: function isMetaStateKey(key) {
+103: function toIsoDate(date) {
+107: function getOrdinalSuffix(n) {
+117: function getClockSnapshot(date = new Date()) {
+134: function buildExportAnalogClockSvg(snapshot = getClockSnapshot(), theme = getAct
+185: function buildExportClockMarkup(snapshot = getClockSnapshot(), theme = getActive
+215: function applyClockSnapshot(root, snapshot = getClockSnapshot(), ids = {}) {
+230: function buildCustomPeriodFromStart(startDate) {
+243: function getCustomPeriodForDate(dateLike) {
+249: function getCustomPeriodByOffset(offset = 0) {
+254: function getCustomPeriodDates(period) {
+273: function getEntryBranchPeriodOffset(pageId) {
+277: function setEntryBranchPeriodOffset(pageId, offset) {
+281: function getBranchAttendanceRoot(state, createIfMissing = false) {
+289: function getBranchAttendancePeriodState(state, pageId, periodKey, createIfMissin
+303: function isTickValueChecked(value) {
+316: function getAllBranchAttendanceRows() {
+330: function getOvertimeDashboardPeriodOffset() {
+334: function setOvertimeDashboardPeriodOffset(offset) {
+338: function resetOvertimeDashboardPeriodOffset() {
+345: function getBranchAttendanceStatsForPage(state, pageId, periodKey) {
+371: window.toggleIomLock = function() {
+375: window.playAlertSoundAndVibrate = function () {
+394: function createDefaultState() {
+420: function getAppState() {
+488: window.sendAdminBroadcast = function () {
+574: function saveAppState(state, customActionStr = null) {
+607: function calculateRow(row) {
+625: function spawnRipple(el, e, className) {
+637: function installSmoothNav() {
+716: function reloadForFreshServiceWorker() {
+722: function registerFreshServiceWorker() {
+751: function installServiceWorkerRefresh() {
+766: function generateSidebar(activePage) {
+851: function _loadAndDisplayChangeCount() {
+862: function renderEntryPage(pageId) {
+1075: function _renderEntryContent(pageId) {
+1225: function exportEntryReport(pageId, title) {
+1229: function exportEntryReportOriginal(pageId, title) {
+1376: function updateGroupTotals(table, rows) {
+1391: function renderBranchAttendanceCard(pageId, state) {
+1482: function bindBranchAttendanceControls(pageId, state) {
+1526: function scrollBranchAttendanceToToday(root = document) {
+1538: function buildBranchAttendanceOverviewHtml(state, period) {
+1604: window.openBranchAttendanceModal = function () {
+1639: window.closeBranchAttendanceModal = function () {
+1646: function renderBranchAttendanceModalContent() {
+1653: function bindBranchAttendanceModalControls() {
+1664: function buildOvertimeAttendanceJpgHtml(state, period) {
+1729: function buildOvertimeDashboardReportHtml(state, period) {
+1818: function bindOvertimeDashboardControls() {
+1830: function scrollOvertimeDashboardToToday() {
+1842: function getIomDashboardPeriodOffset() { return window.iomDashboardPeriodOffset 
+1843: function setIomDashboardPeriodOffset(offset) { window.iomDashboardPeriodOffset =
+1844: window.resetIomDashboardPeriodOffset = function() { window.iomDashboardPeriodOff
+1846: function buildIomDashboardReportHtml(state, period) {
+2012: function bindIomDashboardControls() {
+2052: window.syncLiveDataToAppState = function() {
+2104: window.downloadIomExcel = function() {
+2237: window.downloadIomJpg = function() {
+2284: window.downloadOvertimeAttendanceExcel = function () {
+2384: window.downloadOvertimeAttendanceJpg = function () {
+2388: function downloadOvertimeAttendanceJpgOriginal() {
+2451: function calculateDashboardData(state) {
+2514: window.renderDashboard = function () {
+2521: function _performDashboardRender() {
+2893: function updateClock() {
+2899: function exportReport() {
+2903: function publishDashboardUpdates() {
+2969: function exportReportOriginal() {
+3173: function rgbaFromHex(hex, alpha) {
+3182: function getActiveTheme() {
+3187: function getThemeBackground(theme, accentAlpha = 0.34) {
+3200: function applyThemeToExportRoot(root, theme) {
+3211: function applyThemeToOvertimeExport(sheet) {
+3304: function applyThemeSurface(theme) {
+3316: function setTheme(themeId) {
+3379: function pickRandomTheme() {
+3392: function closeThemeDropdown() {
+3403: function toggleThemeDropdown() {
+3416: function initThemePicker() {
+3563: function lockMobilePortraitOrientation() {
+3570: function initHighRefreshMotion() {
+3582: function isSmoothModeEnabled() {
+3587: function applySmoothModeState(enabled = isSmoothModeEnabled()) {
+3612: function toggleSmoothMode() {
+3623: function isEditAuthEnabled() {
+3627: function applyEditAuthState(enabled) {
+3695: function _openSettingsPanel() {
+3763: window.openSettingsModal = function() {
+3893: function initSmoothModeToggle() {
+3915: function initRefreshButton() {
+3939: function runWithOriginalExportMotion(task) {
+3969: function nextMotionFrame(callback) {
+3973: function initScrollReveal() {
+4022: function setupFirebaseListener() {
+4253: window.clearHistory = function () {
+4291: window.updateReminderList = function (silent = false) {
+4600: function buildPushNotificationButton() {
+4643: function showNotificationModal() {
+4730: function showInstallBanner() {
+4791: function hideInstallBanner() {
+4817: window.dismissInstallBanner = function () {
+4827: window.toggleFabMenu = function() {
+4868: window.forceSaveHistory = function(silent) {
+4884: function _saveAttendanceHistory(state) {
+4902: window.openAdminHistoryModal = function() {
+4989: window.openHistoryModal = function() {
+5098: window._updateHistoryCountBadge = function() {
+5110: window.closeHistoryModal = function() {
+5123: window._fetchSavedHistoryDates = function(callback) {
+5143: window.changeHistoryMonth = function(delta) {
+5148: window._renderHistoryCalendar = function() {
+5196: window._loadHistoryForDate = function(dateStr) {
+5227: window.deleteHistoryDate = function(dateStr) {
+5274: function updateMergedHistoryButtonState() {
+5280: function historyEscapeHtml(value) {
+5286: function historyToCount(value) {
+5290: function getHistoryRows(state, pageId, groupName) {
+5297: function formatHistoryDate(dateStr) {
+5305: function getAttendancePct(present, existing) {
+5309: function getAttendanceTone(pct) {
+5315: function collectFanAssembleDimmerTotals(state) {
+5347: window.showFanAssembleDimmerMergedHistory = function() {
+5379: window.renderFanAssembleDimmerMergedForDate = function(dateStr) {
+5418: function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
+5491: function getReportingMonthInfo(dateStr) {
+5530: window.populatePDFMonthDropdown = function() {
+5565: window.downloadMonthlyHistoryPDF = function() {
+5616: window.generateMonthlyChart = function() {
+5674: window.renderMonthlyChartModal = function(monthKey, results) {
+5787: window.downloadCompleteMonthlyHistoryExcel = function() {
+5851: function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
+6272: window.downloadMonthlyHistoryExcel = function() {
+6323: function generateAndDownloadMonthlyExcel(monthKey, results) {
+6379: function generateAndPrintMonthlyReport(monthKey, results) {
+6691: function _renderHistoryState(dateStr, state, container) {
+6797: window.openIomConfigModal = function() {

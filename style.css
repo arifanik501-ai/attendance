@@ -21,12 +21,7 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
-body {
-  overflow-y: auto;
-  /* Forces scrollbar to prevent layout shift */
-  -webkit-overflow-scrolling: touch;
-  /* Momentum scrolling on iOS */
-}
+body { }
 
 * {
   box-sizing: border-box;
@@ -415,7 +410,7 @@ html.smooth-mode .theme-dropdown,
 html.smooth-mode .branch-table-wrap,
 html.smooth-mode .ot-dashboard-wrap,
 html.smooth-mode .table-container {
-  overscroll-behavior: contain;
+  /* removed overscroll-behavior: contain */
 }
 
 html.smooth-mode .smooth-mode-toggle,
@@ -1797,7 +1792,7 @@ body.page-leaving {
 
 .table-container {
   overflow-x: auto;
-  overflow-y: hidden;
+  /* removed overflow-y: hidden */
   -webkit-overflow-scrolling: touch;
   border-radius: 16px;
   border: none;
@@ -3648,7 +3643,7 @@ body.theme-picker-open {
   width: min(820px, calc(100vw - 3rem));
   max-height: min(86vh, 820px);
   overflow: hidden;
-  overscroll-behavior: contain;
+  /* removed overscroll-behavior: contain */
   touch-action: pan-y;
   isolation: isolate;
   transform-origin: bottom left;
@@ -3957,7 +3952,7 @@ body.theme-picker-open {
   gap: 11px;
   padding: 4px 18px 16px;
   overflow-y: auto;
-  overscroll-behavior: contain;
+  /* removed overscroll-behavior: contain */
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: rgba(99,102,241,0.35) transparent;
@@ -8422,7 +8417,7 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
 @media (max-width: 768px) {
   /* --- Deep Mobile Performance Optimizations --- */
   html, body {
-    overscroll-behavior-y: none !important;
+    /* removed overscroll-behavior-y */
     -webkit-tap-highlight-color: transparent !important;
     text-rendering: optimizeSpeed !important;
     background: #e0e7ff !important;

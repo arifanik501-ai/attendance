@@ -539,9 +539,9 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
     return;
   }
 
-  const totalPct = getAttendancePct(merged.totals.present, merged.totals.existing);
+  const totalPct = getAttendancePct(merged.totals.present, merged.totals.authorized);
   const rowCards = merged.rows.map(function(row) {
-    const rowPct = getAttendancePct(row.present, row.existing);
+    const rowPct = getAttendancePct(row.present, row.authorized);
     return (
       '<article class="ios-merge-card">' +
         '<div class="ios-merge-card-main">' +
@@ -837,10 +837,10 @@ window.renderMonthlyChartModal = function(monthKey, results) {
   const avgPresent = numDates > 0 ? Math.round(totalPresent / numDates) : 0;
   const avgAbsent = numDates > 0 ? Math.round(totalAbsent / numDates) : 0;
 
-  const oAvgPct = Math.round((totalPresent / totalExist) * 100);
-  const oAbsPct = Math.round((totalAbsent / totalExist) * 100);
-
   const pieTotal = totalPresent + totalAbsent;
+  const oAvgPct = pieTotal > 0 ? Math.round((totalPresent / pieTotal) * 100) : 0;
+  const oAbsPct = pieTotal > 0 ? Math.round((totalAbsent / pieTotal) * 100) : 0;
+
   let presentSlicePct = pieTotal > 0 ? (totalPresent / pieTotal) * 100 : 0;
 
   const overlay = document.createElement('div');
@@ -1186,8 +1186,8 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
       const avgPres = rowDaysWithData > 0 ? Math.round(rowPresSum / rowDaysWithData) : 0;
       const avgAbs = rowDaysWithData > 0 ? Math.round(rowAbsSum / rowDaysWithData) : 0;
       
-      const rawAvgPct = rowExistSum > 0 ? (rowPresSum / rowExistSum) : 0;
-      const rawAbsPct = rowExistSum > 0 ? (rowAbsSum / rowExistSum) : 0;
+      const rawAvgPct = rowAuthSum > 0 ? (rowPresSum / rowAuthSum) : 0;
+      const rawAbsPct = rowAuthSum > 0 ? (rowAbsSum / rowAuthSum) : 0;
       
       html += `<td style="font-weight:bold; text-align: center; border: 1px solid #000000; border-left: 2px solid #000000; padding: 5px; color: #000000; background-color: #B7DEE8; mso-number-format:'0';">${avgAuth}</td>
                <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 5px; color: #000000; background-color: #92CDDC; mso-number-format:'0';">${avgExist}</td>
@@ -1224,8 +1224,8 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     const sAvgPres = numDates > 0 ? Math.round(secPresTotal / numDates) : 0;
     const sAvgAbs = numDates > 0 ? Math.round(secAbsTotal / numDates) : 0;
     
-    const sRawPct = secExistTotal > 0 ? (secPresTotal / secExistTotal) : 0;
-    const sRawAbsPct = secExistTotal > 0 ? (secAbsTotal / secExistTotal) : 0;
+    const sRawPct = secAuthTotal > 0 ? (secPresTotal / secAuthTotal) : 0;
+    const sRawAbsPct = secAuthTotal > 0 ? (secAbsTotal / secAuthTotal) : 0;
 
     html += `<td style="font-weight:bold; text-align: center; border: 1px solid #000000; border-left: 2px solid #000000; border-top: 2px solid #000000; border-bottom: 2px solid #000000; padding: 5px; color: #000000; background-color: #B7DEE8; mso-number-format:'0';">${sAvgAuth}</td>
              <td style="font-weight:bold; text-align: center; border: 1px solid #000000; border-top: 2px solid #000000; border-bottom: 2px solid #000000; padding: 5px; color: #000000; background-color: #92CDDC; mso-number-format:'0';">${sAvgExist}</td>
@@ -1341,8 +1341,8 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     const aExist = numDates > 0 ? Math.round(rExist / numDates) : 0;
     const aPres = numDates > 0 ? Math.round(rPres / numDates) : 0;
     const aAbs = numDates > 0 ? Math.round(rAbs / numDates) : 0;
-    const rawPct = rExist > 0 ? (rPres / rExist) : 0;
-    const rawAbsPct = rExist > 0 ? (rAbs / rExist) : 0;
+    const rawPct = rAuth > 0 ? (rPres / rAuth) : 0;
+    const rawAbsPct = rAuth > 0 ? (rAbs / rAuth) : 0;
     
     html += `<td style="font-weight:bold; text-align: center; border: 1px solid #000000; border-left: 2px solid #000000; padding: 5px; color: #000000; background-color: #B7DEE8; mso-number-format:'0';">${aAuth}</td>
               <td style="font-weight:bold; text-align: center; border: 1px solid #000000; padding: 5px; color: #000000; background-color: #92CDDC; mso-number-format:'0';">${aExist}</td>
@@ -1446,7 +1446,7 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
     const exist = merged.totals.existing || 0;
     const pres = merged.totals.present || 0;
     const abs = merged.totals.absent || 0;
-    const pct = exist > 0 ? Math.round((pres / exist) * 100) : 0;
+    const pct = auth > 0 ? Math.round((pres / auth) * 100) : 0;
 
     totalAuthSum += auth;
     totalExistSum += exist;
@@ -1456,7 +1456,7 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
     csvContent += `"${formattedDate}","${dayName}",${auth},${exist},${pres},${abs},"${pct}%"\n`;
   });
 
-  const overallPct = totalExistSum > 0 ? Math.round((totalPresentSum / totalExistSum) * 100) : 0;
+  const overallPct = totalAuthSum > 0 ? Math.round((totalPresentSum / totalAuthSum) * 100) : 0;
   
   csvContent += "\n";
   const avgAuth = dayCount > 0 ? (totalAuthSum / dayCount).toFixed(1) : '0.0';
@@ -1500,7 +1500,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
     const exist = merged.totals.existing || 0;
     const pres = merged.totals.present || 0;
     const abs = merged.totals.absent || 0;
-    const pct = exist > 0 ? Math.round((pres / exist) * 100) : 0;
+    const pct = auth > 0 ? Math.round((pres / auth) * 100) : 0;
 
     totalAuthSum += auth;
     totalExistSum += exist;
@@ -1529,7 +1529,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
   const avgExist = dayCount > 0 ? (totalExistSum / dayCount).toFixed(1) : '0.0';
   const avgPresent = dayCount > 0 ? (totalPresentSum / dayCount).toFixed(1) : '0.0';
   const avgAbsent = dayCount > 0 ? (totalAbsentSum / dayCount).toFixed(1) : '0.0';
-  const overallPct = totalExistSum > 0 ? Math.round((totalPresentSum / totalExistSum) * 100) : 0;
+  const overallPct = totalAuthSum > 0 ? Math.round((totalPresentSum / totalAuthSum) * 100) : 0;
 
   const printWindow = window.open('', '_blank');
   if (!printWindow) {

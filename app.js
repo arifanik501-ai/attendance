@@ -1116,6 +1116,7 @@ function _renderEntryContent(pageId) {
       localStorage.setItem(EDIT_AUTH_STORAGE_KEY, 'false');
 
       alert('Thank you.');
+      window.location.href = 'index.html';
     };
 
   }, 10); // End setTimeout macro task
@@ -2464,6 +2465,11 @@ function setupFirebaseListener() {
       } else {
         globalAppState = createDefaultState();
         saveAppState(globalAppState);
+      }
+
+      // Update the "Pending Today" button automatically in the background
+      if (typeof window.updateReminderList === 'function') {
+        window.updateReminderList(false);
       }
 
       // The state updates silently in the background (globalAppState is always fresh).

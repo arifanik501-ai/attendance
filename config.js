@@ -25,7 +25,7 @@ if (typeof firebase !== 'undefined') {
 const SECTIONS_CONFIG = {
   anik: {
     title: "Entry Sheet (Anik)",
-    password: "2645",
+    password: "8250",
     groups: {
       "Fan Assemble": ["Manager", "In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Worker"],
       "Fan Dimmer & Blade": ["Engineer", "Worker"]

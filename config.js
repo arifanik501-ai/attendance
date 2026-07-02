@@ -27,7 +27,7 @@ const SECTIONS_CONFIG = {
     title: "Entry Sheet (Anik)",
     password: "8250",
     groups: {
-      "Fan Assemble": ["Manager", "In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Worker"],
+      "Fan Assemble": ["Manager", "In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Jr. Officer", "Worker"],
       "Fan Dimmer & Blade": ["Engineer", "Worker"]
     }
   },
@@ -60,7 +60,7 @@ const SECTIONS_CONFIG = {
     password: "0011",
     groups: {
       "Fan Rojonigondha": ["In-charge", "Engineer", "Technicalman", "Worker"],
-      "Fan Sada Shapla": ["Worker"]
+      "Fan Sada Shapla": ["Supervisor", "Worker"]
     }
   }
 };

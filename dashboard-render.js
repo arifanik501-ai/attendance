@@ -1034,11 +1034,12 @@ function downloadOvertimeAttendanceJpgOriginal() {
 // Exactly mapping the structure of Excel rows
 const EXACT_DASHBOARD_ROWS = [
   // id, section (if defined, otherwise spans from above if blank, or empty), designation, how to calc
-  { id: 'R4', section: 'Section', designation: 'Manager', rowspan: 6, type: 'filter', filters: { designation: 'Manager' } },
+  { id: 'R4', section: 'Section', designation: 'Manager', rowspan: 7, type: 'filter', filters: { designation: 'Manager' } },
   { id: 'R5', designation: 'Incharge Production', type: 'filter', filters: { designation: 'In-charge' } },
   { id: 'R6', designation: 'Engineer Production', type: 'filter', filters: { designation: 'Engineer' } },
   { id: 'R7', designation: 'Senior Supervisor', type: 'filter', filters: { designation: 'Sr. Supervisor' } },
   { id: 'R8', designation: 'Jr. Officer', type: 'filter', filters: { designation: 'Jr. Officer' } },
+  { id: 'R9', designation: 'Supervisor', type: 'filter', filters: { designation: 'Supervisor' } },
   { id: 'R10', designation: 'Technical Man', type: 'filter', filters: { designation: 'Technicalman' } },
 
   { id: 'R11', section: 'Fan Assemble', designation: 'Worker', type: 'filter', filters: { group: 'Fan Assemble', designation: 'Worker' }, link: 'entry.html?page=anik' },
@@ -1054,7 +1055,7 @@ const EXACT_DASHBOARD_ROWS = [
 
   { id: 'R21', section: '', designation: 'Production Total', type: 'formula', formulaStr: 'SUM(R4:R20)', isTotal: true },
 
-  { id: 'R22', section: '', designation: 'S Grade', type: 'formula', formulaStr: 'R7+R10+R11+R12+R13+R14+R15+R16+R17+R18+R19+R20', isTotal: true },
+  { id: 'R22', section: '', designation: 'S Grade', type: 'formula', formulaStr: 'R7+R9+R10+R11+R12+R13+R14+R15+R16+R17+R18+R19+R20', isTotal: true },
   { id: 'R23', section: '', designation: 'M Grade', type: 'formula', formulaStr: 'R4+R5+R6+R8', isTotal: true }
 ];
 

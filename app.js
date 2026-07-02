@@ -2694,8 +2694,14 @@ window.updateReminderList = function (silent = false) {
 
   // Find which sections have been updated today
   const updatedTodayMap = {};
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const cleanTodayStr = todayStr.replace(/[\u200E\u200F]/g, '').trim();
+
   history.forEach(h => {
-    if (h.date === todayStr) {
+    const cleanDate = h.date ? h.date.replace(/[\u200E\u200F]/g, '').trim() : '';
+    if (h.timestamp && h.timestamp >= startOfToday) {
+      updatedTodayMap[h.page] = true;
+    } else if (cleanDate === cleanTodayStr) {
       updatedTodayMap[h.page] = true;
     }
   });

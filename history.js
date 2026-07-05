@@ -51,14 +51,14 @@ window.openAdminHistoryModal = function() {
   input.placeholder = 'Enter PIN';
   input.style.padding = '12px';
   input.style.fontSize = '18px';
-  input.style.border = '2px solid #e2e8f0';
+  input.style.border = '2px solid #f1f5f9';
   input.style.borderRadius = '8px';
   input.style.width = '180px';
   input.style.textAlign = 'center';
   input.style.outline = 'none';
   input.style.transition = 'border-color 0.2s';
   input.addEventListener('focus', () => input.style.borderColor = '#3b82f6');
-  input.addEventListener('blur', () => input.style.borderColor = '#e2e8f0');
+  input.addEventListener('blur', () => input.style.borderColor = '#f1f5f9');
 
   const btn = document.createElement('button');
   btn.innerText = 'Unlock Archive';
@@ -347,6 +347,8 @@ window._loadHistoryForDate = function(dateStr) {
     window.firebaseDb.ref(`mep_attendance_history/${dateStr}`).once('value').then(snapshot => {
       if (snapshot.exists()) {
         const state = snapshot.val();
+        window.currentHistoryState = state;
+        window.historyEditMode = false;
         _renderHistoryState(dateStr, state, viewer);
       } else {
         viewer.innerHTML = `<div class="ios-hm-empty"><div class="ios-hm-empty-text">No snapshot found for ${dateStr}.</div></div>`;
@@ -405,13 +407,10 @@ window.deleteHistoryDate = function(dateStr) {
 };
 
 function updateMergedHistoryButtonState() {
-  const btnDef = document.getElementById('fan-merge-history-btn-default');
-  const btnAsm = document.getElementById('fan-merge-history-btn');
-  const btnRoj = document.getElementById('fan-roj-shapla-merge-history-btn');
-  
-  if (btnDef) btnDef.classList.toggle('is-active', !window.historyMergedMode);
-  if (btnAsm) btnAsm.classList.toggle('is-active', window.historyMergedMode === 'assemble_dimmer');
-  if (btnRoj) btnRoj.classList.toggle('is-active', window.historyMergedMode === 'roj_shapla');
+  const btn = document.getElementById('fan-merge-history-btn');
+  const btn2 = document.getElementById('fan-roj-shapla-merge-history-btn');
+  if (btn) btn.classList.toggle('is-active', window.historyMergedMode === 'assemble_dimmer');
+  if (btn2) btn2.classList.toggle('is-active', window.historyMergedMode === 'roj_shapla');
 }
 
 function historyEscapeHtml(value) {
@@ -1002,208 +1001,14 @@ window.renderMonthlyChartModal = function(monthKey, results) {
 
         let rows = pageData[originalGroupName];
         if (!rows) return;
-        if (!Array.isArray(rows)) {
-          if (typeof rows === 'object') { rows = Object.values(rows); } else { return; }
-        }
+        var rowsObj = pageData[groupName];
+        if (!rowsObj || typeof rowsObj !== 'object') return;
 
-        rows.forEach(row => {
-          if (!row || typeof row !== 'object') return;
-          const authorized = parseInt(row.authorized) || 0;
-          const existing = parseInt(row.existing) || 0;
-          const present = parseInt(row.present) || 0;
-          const absent = authorized - present; 
-
-          totalAuth += authorized;
-          totalExist += existing;
-          totalPresent += present;
-          totalAbsent += absent;
-        });
-      });
-    });
-  });
-
-  if (totalExist === 0) {
-    alert("No data available to chart for this month.");
-    return;
-  }
-
-  const numDates = results.length;
-  const avgPresent = numDates > 0 ? Math.round(totalPresent / numDates) : 0;
-  const avgAbsent = numDates > 0 ? Math.round(totalAbsent / numDates) : 0;
-
-  const pieTotal = totalPresent + totalAbsent;
-  const oAvgPct = pieTotal > 0 ? Math.round((totalPresent / pieTotal) * 100) : 0;
-  const oAbsPct = pieTotal > 0 ? Math.round((totalAbsent / pieTotal) * 100) : 0;
-
-  let presentSlicePct = pieTotal > 0 ? (totalPresent / pieTotal) * 100 : 0;
-
-  const overlay = document.createElement('div');
-  overlay.className = 'ios-hm-overlay';
-  overlay.style.display = 'flex';
-  overlay.style.justifyContent = 'center';
-  overlay.style.alignItems = 'center';
-  overlay.style.zIndex = '9999999';
-  overlay.style.backgroundColor = 'rgba(15,23,42,0.85)';
-  overlay.style.backdropFilter = 'blur(8px)';
-  overlay.style.opacity = '1';
-  
-  const monthParts = monthKey.split('-');
-  const dateObj = new Date(monthParts[0], monthParts[1] - 1);
-  const monthName = dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-  overlay.innerHTML = `
-    <div style="background: #ffffff; width: 92%; max-width: 420px; border-radius: 28px; padding: 35px 25px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; animation: chartPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
-      <h2 style="margin: 0 0 5px 0; color: #0f172a; font-weight: 800; font-size: 1.6rem; letter-spacing: -0.02em;">Monthly Overview</h2>
-      <div style="color: #64748b; margin-bottom: 35px; font-weight: 600; font-size: 1.05rem;">${monthName}</div>
-      
-      <div style="position: relative; width: 220px; height: 220px; margin: 0 auto 40px auto; border-radius: 50%; background: conic-gradient(#10b981 0% ${presentSlicePct}%, #ef4444 ${presentSlicePct}% 100%); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2), inset 0 0 20px rgba(0,0,0,0.05); transition: all 0.3s ease;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 145px; height: 145px; background: #ffffff; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: inset 0 4px 15px rgba(0,0,0,0.08), 0 0 0 12px rgba(255,255,255,0.3);">
-          <span style="font-size: 2.8rem; font-weight: 900; color: #10b981; letter-spacing: -0.03em; line-height: 1;">${oAvgPct}<span style="font-size: 1.5rem;">%</span></span>
-          <span style="font-size: 0.85rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px;">Present</span>
-        </div>
-      </div>
-      
-      <div style="display: flex; justify-content: space-between; gap: 15px; margin-bottom: 30px;">
-        <div style="flex: 1; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 16px;">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; font-weight: 700; color: #166534; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">
-            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span> Present
-          </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: #14532d;">${oAvgPct}%</div>
-          <div style="font-size: 0.85rem; color: #166534; font-weight: 600; opacity: 0.8; margin-top: 4px;">${avgPresent.toLocaleString()} avg/day</div>
-        </div>
-        <div style="flex: 1; background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 16px;">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; font-weight: 700; color: #991b1b; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">
-            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></span> Absent
-          </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: #7f1d1d;">${oAbsPct}%</div>
-          <div style="font-size: 0.85rem; color: #991b1b; font-weight: 600; opacity: 0.8; margin-top: 4px;">${avgAbsent.toLocaleString()} avg/day</div>
-        </div>
-      </div>
-      
-      <button onclick="this.closest('.ios-hm-overlay').remove()" style="width: 100%; padding: 16px; background: #0f172a; color: #fff; border: none; border-radius: 14px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
-        Close Dashboard
-      </button>
-    </div>
-    <style>
-      @keyframes chartPopIn {
-        0% { opacity: 0; transform: scale(0.9) translateY(20px); }
-        100% { opacity: 1; transform: scale(1) translateY(0); }
-      }
-    </style>
-  `;
-
-  document.body.appendChild(overlay);
-};
-
-window.downloadCompleteMonthlyHistoryExcel = function() {
-  if (typeof window.syncLiveDataToAppState === 'function') window.syncLiveDataToAppState();
-  // Force SW unregister to bypass stubborn cache during development/updates
-  if (navigator.serviceWorker) {
-    navigator.serviceWorker.getRegistrations().then(regs => {
-      for (let reg of regs) { reg.unregister(); }
-    });
-  }
-
-  let monthKey;
-  const select = document.getElementById('merged-pdf-month-select');
-  if (select && select.value) {
-    monthKey = select.value;
-  } else if (window.historyCurrentDate) {
-    monthKey = window.historyCurrentDate.getFullYear() + '-' + String(window.historyCurrentDate.getMonth() + 1).padStart(2, '0');
-  }
-
-  if (!monthKey) {
-    alert('Please select a month first.');
-    return;
-  }
-
-  const btn = document.getElementById('btn-export-complete-excel') || document.getElementById('btn-admin-compile-excel');
-  const originalText = btn ? btn.innerHTML : 'Compile Excel';
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '...';
-  }
-
-  const datesInMonth = Array.from(window.savedHistoryDates).filter(function(dateStr) {
-    return getReportingMonthInfo(dateStr).key === monthKey;
-  }).sort(function(a, b) {
-    const partsA = a.split('-').map(Number);
-    const partsB = b.split('-').map(Number);
-    const dateA = new Date(partsA[0], partsA[1] - 1, partsA[2]);
-    const dateB = new Date(partsB[0], partsB[1] - 1, partsB[2]);
-    return dateA - dateB;
-  });
-
-  if (datesInMonth.length === 0) {
-    alert('No dates with saved snapshots in this month.');
-    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
-    return;
-  }
-
-  const fetchPromises = datesInMonth.map(function(dateStr) {
-    return window.firebaseDb.ref('mep_attendance_history/' + dateStr).once('value').then(function(snap) {
-      return {
-        dateStr: dateStr,
-        state: snap.val()
-      };
-    });
-  });
-
-  Promise.all(fetchPromises).then(function(results) {
-    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
-    generateAndDownloadCompleteMonthlyExcel(monthKey, results);
-  }).catch(function(err) {
-    console.error(err);
-    alert('Error fetching data: ' + err.message);
-    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
-  });
-};
-function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
-  if (results.length === 0) {
-    alert("No data available for the selected month.");
-    return;
-  }
-
-  const monthInfo = getReportingMonthInfo(results[0].dateStr);
-  
-  // 1. Get all dates and sort them
-  const dates = results.map(r => r.dateStr).sort((a, b) => new Date(a) - new Date(b));
-  const numDates = dates.length;
-  
-  // 2. Build 2D map: dataMap[sectionName][designationName][dateStr] = { auth, exist, pres, abs }
-  const dataMap = {};
-  
-  results.forEach(function(res) {
-    const dStr = res.dateStr;
-    const state = res.state || {};
-    
-    Object.keys(state).forEach(function(pageId) {
-      // Only process valid attendance sheets (keys in SECTIONS_CONFIG)
-      if (typeof SECTIONS_CONFIG === 'undefined' || !SECTIONS_CONFIG[pageId]) return;
-
-      const pageData = state[pageId];
-      if (typeof pageData !== 'object' || pageData === null) return;
-      
-      Object.keys(pageData).forEach(function(originalGroupName) {
-        let groupName = originalGroupName;
-        // Filter out unwanted personal names acting as sections
-        const excludedSections = ['anik', 'anwar', 'bikash', 'monir', 'takbir'];
-        if (excludedSections.includes(groupName.toLowerCase().trim())) return;
-
-        // Merge historical "Power Press & Stamping" into "Fan Power Press & Stamping"
-        if (groupName.trim().toLowerCase() === 'power press & stamping') {
-          groupName = 'Fan Power Press & Stamping';
-        }
-
-        var rows = pageData[originalGroupName];
-        if (!rows) return;
-        if (!Array.isArray(rows)) {
-          if (typeof rows === 'object') { rows = Object.values(rows); } else { return; }
-        }
+        var groupRows = [];
+        var secExist = 0, secPresent = 0, secAbsent = 0;
         
-        if (!dataMap[groupName]) dataMap[groupName] = {};
-        
-        rows.forEach(function(row) {
+        Object.keys(rowsObj).forEach(function(rKey) {
+          var row = rowsObj[rKey];
           if (!row || typeof row !== 'object') return;
           let desig = String(row.designation || 'N/A').trim();
           
@@ -1237,6 +1042,24 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     });
   });
 
+  // --- START INJECTION: Force specific designations from July 2024 onwards ---
+  dates.forEach(function(dStr) {
+    if (dStr >= '2024-07-01') {
+      if (!dataMap['Fan Sada Shapla']) dataMap['Fan Sada Shapla'] = {};
+      if (!dataMap['Fan Sada Shapla']['Supervisor']) dataMap['Fan Sada Shapla']['Supervisor'] = {};
+      if (!dataMap['Fan Sada Shapla']['Supervisor'][dStr]) {
+        dataMap['Fan Sada Shapla']['Supervisor'][dStr] = { auth: 0, exist: 0, pres: 0, abs: 0 };
+      }
+
+      if (!dataMap['Fan Assemble']) dataMap['Fan Assemble'] = {};
+      if (!dataMap['Fan Assemble']['Jr. Officer']) dataMap['Fan Assemble']['Jr. Officer'] = {};
+      if (!dataMap['Fan Assemble']['Jr. Officer'][dStr]) {
+        dataMap['Fan Assemble']['Jr. Officer'][dStr] = { auth: 0, exist: 0, pres: 0, abs: 0 };
+      }
+    }
+  });
+  // --- END INJECTION ---
+
   // 3. Build HTML Table for Excel
   let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
   <head>
@@ -1263,47 +1086,47 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     </xml>
     <![endif]-->
   </head><body>
-  <table border="1" style="border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 10pt; border: 1px solid #94a3b8;">
+  <table border="1" style="border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 11pt; border: 1px solid #94a3b8;">
     <thead>
       <tr>
-        <th colspan="${2 + dates.length * 4 + 6}" style="font-size: 18pt; font-weight: bold; text-align: center; padding: 12px; background-color: #064e3b; color: #ffffff; border: 1px solid #94a3b8;">
+        <th colspan="${2 + dates.length * 4 + 6}" style="font-size: 24pt; font-weight: 900; text-align: center; padding: 24px; background-color: #020617; color: #ffffff; border: 1px solid #0f172a; text-transform: uppercase; letter-spacing: 3px;">
           Complete Attendance Efficiency Report - ${monthInfo.displayName}
         </th>
       </tr>
       <tr>
-        <th rowspan="2" style="background-color: #064e3b; color: #ffffff; font-weight: bold; vertical-align: middle; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 6px;">Section</th>
-        <th rowspan="2" style="background-color: #064e3b; color: #ffffff; font-weight: bold; vertical-align: middle; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 6px;">Designation</th>`;
+        <th rowspan="2" style="background-color: #1e293b; color: #ffffff; font-weight: 800; vertical-align: middle; text-align: center; border: 1px solid #334155; border-bottom: 4px solid #d97706; padding: 10px; border-left: 2px solid #94a3b8; padding: 10px;">Section</th>
+        <th rowspan="2" style="background-color: #1e293b; color: #ffffff; font-weight: 800; vertical-align: middle; text-align: center; border: 1px solid #334155; border-bottom: 4px solid #d97706; padding: 10px; border-right: 2px solid #94a3b8; padding: 10px;">Designation</th>`;
         
   dates.forEach(dStr => {
     const d = new Date(dStr);
     const dateLabel = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     const isFriday = d.getDay() === 5;
-    const bgColor = isFriday ? '#991b1b' : '#047857';
-    html += `<th colspan="4" style="background-color: ${bgColor}; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 6px;">${dateLabel}</th>`;
+    const bgColor = isFriday ? '#be123c' : '#334155';
+    html += `<th colspan="4" style="background-color: ${bgColor}; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px;">${dateLabel}</th>`;
   });
   
-  html += `<th colspan="6" style="background-color: #0f766e; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 6px;">Monthly Total / Average</th>
+  html += `<th colspan="6" style="background-color: #1e293b; color: #ffffff; font-weight: 800; text-align: center; border: 1px solid #334155; border-left: 2px solid #475569; border-right: 2px solid #475569; padding: 10px;">MONTHLY PERFORMANCE SUMMARY</th>
       </tr>
       <tr>`;
       
   dates.forEach((dStr) => {
     const isFriday = new Date(dStr).getDay() === 5;
-    const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
-    const existBg = isFriday ? '#fecaca' : '#d1fae5';
+    const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
+    const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
     const presBg = '#a7f3d0';
     const absBg = '#ffedd5';
-    html += `<th style="background-color: ${authBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Auth</th>
-             <th style="background-color: ${existBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Exist</th>
-             <th style="background-color: ${presBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Pres</th>
-             <th style="background-color: ${absBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Abs</th>`;
+    html += `<th style="background-color: ${authBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Auth</th>
+             <th style="background-color: ${existBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Exist</th>
+             <th style="background-color: ${presBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Pres</th>
+             <th style="background-color: ${absBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Abs</th>`;
   });
   
-  html += `<th style="background-color: #e2e8f0; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Auth</th>
-           <th style="background-color: #cbd5e1; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Exist</th>
-           <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Pres</th>
-           <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Abs</th>
-           <th style="background-color: #064e3b; color: #ffffff; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Pres %</th>
-           <th style="background-color: #064e3b; color: #ffffff; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Abs %</th>
+  html += `<th style="background-color: #f1f5f9; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Auth</th>
+           <th style="background-color: #e2e8f0; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Exist</th>
+           <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Pres</th>
+           <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Abs</th>
+           <th style="background-color: #059669; color: #ffffff; text-align: center; border: 1px solid #e2e8f0; border-bottom: 3px solid #047857; padding: 10px; font-size: 11pt; font-weight: 900; text-transform: uppercase;">Pres %</th>
+           <th style="background-color: #e11d48; color: #ffffff; text-align: center; border: 1px solid #e2e8f0; border-bottom: 3px solid #be123c; border-right: 2px solid #94a3b8; padding: 10px; font-size: 11pt; font-weight: 900; text-transform: uppercase;">Abs %</th>
       </tr>
     </thead>
     <tbody>`;
@@ -1316,6 +1139,14 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
   Object.keys(dataMap).sort().forEach(section => {
     // 3. Remove Empty Rows: Skip designations that have 0 auth/exist across all dates
     const designations = Object.keys(dataMap[section]).sort().filter(desig => {
+      // Force include these from July 1st
+      if (section === 'Fan Sada Shapla' && desig === 'Supervisor') {
+        if (dates.some(d => d >= '2024-07-01')) return true;
+      }
+      if (section === 'Fan Assemble' && desig === 'Jr. Officer') {
+        if (dates.some(d => d >= '2024-07-01')) return true;
+      }
+
       let totalData = 0;
       dates.forEach(dStr => {
         if (dataMap[section][desig][dStr]) totalData += dataMap[section][desig][dStr].auth + dataMap[section][desig][dStr].exist;
@@ -1334,9 +1165,9 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     designations.forEach((desig, index) => {
       html += `<tr>`;
       if (index === 0) {
-        html += `<td rowspan="${rowSpanCount}" style="vertical-align: middle; background-color: #f8fafc; color: #000000; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; font-size: 10pt;">${section}</td>`;
+        html += `<td rowspan="${rowSpanCount}" style="vertical-align: middle; background-color: #f8fafc; color: #000000; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; border-bottom: 2px solid #94a3b8; padding: 10px; font-weight: 900; font-size: 13pt; text-transform: uppercase; color: #1e293b;">${section}</td>`;
       }
-      html += `<td style="background-color: #ffffff; color: #000000; border: 1px solid #cbd5e1; border-right: 2px solid #94a3b8; padding: 5px; font-weight: 500;">${desig}</td>`;
+      html += `<td style="background-color: #ffffff; color: #000000; border: 1px solid #e2e8f0; border-right: 2px solid #94a3b8; padding: 10px; font-weight: 700; font-size: 11pt; color: #334155;">${desig}</td>`;
         
       let rowAuthSum = 0, rowExistSum = 0, rowPresSum = 0, rowAbsSum = 0;
       let rowDaysWithData = 0;
@@ -1344,14 +1175,14 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
       dates.forEach(dStr => {
         const cell = dataMap[section][desig][dStr];
         const isFriday = new Date(dStr).getDay() === 5;
-        const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
-        const existBg = isFriday ? '#fecaca' : '#d1fae5';
+        const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
+        const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
         
         if (cell) {
-          html += `<td style="text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 4px; color: #000000; background-color: ${authBg}; mso-number-format:'0';">${cell.auth}</td>
-                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: ${existBg}; mso-number-format:'0';">${cell.exist}</td>
-                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${cell.pres}</td>
-                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${cell.abs}</td>`;
+          html += `<td style="text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: ${authBg}; mso-number-format:'0';">${cell.auth}</td>
+                   <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: ${existBg}; mso-number-format:'0';">${cell.exist}</td>
+                   <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${cell.pres}</td>
+                   <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${cell.abs}</td>`;
           rowAuthSum += cell.auth;
           rowExistSum += cell.exist;
           rowPresSum += cell.pres;
@@ -1368,10 +1199,10 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
           sectionTotals[dStr].pres += cell.pres;
           sectionTotals[dStr].abs += cell.abs;
         } else {
-          html += `<td style="text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; color: #7F7F7F; background-color: ${authBg};">-</td>
-                   <td style="text-align: center; border: 1px solid #cbd5e1; color: #7F7F7F; background-color: ${existBg};">-</td>
-                   <td style="text-align: center; border: 1px solid #cbd5e1; color: #7F7F7F; background-color: #a7f3d0;">-</td>
-                   <td style="text-align: center; border: 1px solid #cbd5e1; color: #7F7F7F; background-color: #ffedd5;">-</td>`;
+          html += `<td style="text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; color: #7F7F7F; background-color: ${authBg};">-</td>
+                   <td style="text-align: center; border: 1px solid #e2e8f0; color: #7F7F7F; background-color: ${existBg};">-</td>
+                   <td style="text-align: center; border: 1px solid #e2e8f0; color: #7F7F7F; background-color: #a7f3d0;">-</td>
+                   <td style="text-align: center; border: 1px solid #e2e8f0; color: #7F7F7F; background-color: #ffedd5;">-</td>`;
         }
       });
       
@@ -1383,29 +1214,29 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
       const rawAvgPct = rowAuthSum > 0 ? (rowPresSum / rowAuthSum) : 0;
       const rawAbsPct = rowAuthSum > 0 ? (rowAbsSum / rowAuthSum) : 0;
       
-      html += `<td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${avgAuth}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #000000; background-color: #cbd5e1; mso-number-format:'0';">${avgExist}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${avgPres}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${avgAbs}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${rawAvgPct}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-right: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${rawAbsPct}</td>
+      html += `<td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #f1f5f9; mso-number-format:'0';">${avgAuth}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${avgExist}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${avgPres}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${avgAbs}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #ffffff; background-color: #059669; mso-number-format:'0%'; font-size: 11pt;">${rawAvgPct}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-right: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #e11d48; mso-number-format:'0%'; font-size: 11pt;">${rawAbsPct}</td>
              </tr>`;
     });
 
     // Section Total Row with thick border
     html += `<tr>`;
-    html += `<td style="background-color: #f8fafc; color: #000000; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 5px; font-weight: bold; font-style: italic; text-align: right;">Total</td>`;
+    html += `<td style="background-color: #f8fafc; color: #000000; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 10px; font-weight: 900; text-transform: uppercase; text-align: right; background-color: #f1f5f9; color: #0f172a;">TOTAL</td>`;
     
     let secAuthTotal = 0, secExistTotal = 0, secPresTotal = 0, secAbsTotal = 0;
     dates.forEach(dStr => {
       const t = sectionTotals[dStr];
       const isFriday = new Date(dStr).getDay() === 5;
-      const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
-      const existBg = isFriday ? '#fecaca' : '#d1fae5';
-      html += `<td style="text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; background-color: ${authBg}; color: #000000; mso-number-format:'0';">${t.auth}</td>
-               <td style="text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; background-color: ${existBg}; color: #000000; mso-number-format:'0';">${t.exist}</td>
-               <td style="text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; background-color: #a7f3d0; color: #000000; mso-number-format:'0';">${t.pres}</td>
-               <td style="text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; background-color: #ffedd5; color: #9a3412; mso-number-format:'0';">${t.abs}</td>`;
+      const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
+      const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
+      html += `<td style="text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; font-weight: bold; background-color: ${authBg}; color: #000000; mso-number-format:'0';">${t.auth}</td>
+               <td style="text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; font-weight: bold; background-color: ${existBg}; color: #000000; mso-number-format:'0';">${t.exist}</td>
+               <td style="text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; font-weight: bold; background-color: #a7f3d0; color: #000000; mso-number-format:'0';">${t.pres}</td>
+               <td style="text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; font-weight: bold; background-color: #ffedd5; color: #9a3412; mso-number-format:'0';">${t.abs}</td>`;
       secAuthTotal += t.auth;
       secExistTotal += t.exist;
       secPresTotal += t.pres;
@@ -1421,31 +1252,31 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     const sRawPct = secAuthTotal > 0 ? (secPresTotal / secAuthTotal) : 0;
     const sRawAbsPct = secAuthTotal > 0 ? (secAbsTotal / secAuthTotal) : 0;
 
-    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${sAvgAuth}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #cbd5e1; mso-number-format:'0';">${sAvgExist}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${sAvgPres}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${sAvgAbs}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${sRawPct}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${sRawAbsPct}</td>
+    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #f1f5f9; mso-number-format:'0';">${sAvgAuth}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${sAvgExist}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${sAvgPres}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${sAvgAbs}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #059669; mso-number-format:'0%'; font-size: 11pt;">${sRawPct}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #e11d48; mso-number-format:'0%'; font-size: 11pt;">${sRawAbsPct}</td>
            </tr>`;
            
     // 5. Visual Spacing: Add empty row separator
-    html += `<tr><td colspan="${2 + dates.length * 4 + 6}" style="border:none; height: 16px; background-color: #f1f5f9;"></td></tr>`;
+    html += `<tr><td colspan="${2 + dates.length * 4 + 6}" style="border:none; height: 24px; background-color: #f1f5f9;"></td></tr>`;
   });
   
   // Daily Totals Row
   html += `<tr>
-    <td colspan="2" style="font-weight: bold; text-align: right; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 8px; color: #ffffff; background-color: #0f766e;">GRAND DAILY TOTALS</td>`;
+    <td colspan="2" style="font-weight: bold; text-align: right; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #312e81; font-size: 13pt; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">GRAND DAILY TOTALS</td>`;
   
   dates.forEach(dStr => {
     const t = dateTotals[dStr];
     const isFriday = new Date(dStr).getDay() === 5;
-    const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
-    const existBg = isFriday ? '#fecaca' : '#d1fae5';
-    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 6px; color: #000000; background-color: ${authBg};">${t.auth}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 6px; color: #000000; background-color: ${existBg};">${t.exist}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 6px; color: #000000; background-color: #a7f3d0;">${t.pres}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 6px; color: #9a3412; background-color: #ffedd5;">${t.abs}</td>`;
+    const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
+    const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
+    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: ${authBg};">${t.auth}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: ${existBg};">${t.exist}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #a7f3d0;">${t.pres}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #9a3412; background-color: #ffedd5;">${t.abs}</td>`;
   });
   
   let gTotalAuth = 0, gTotalExist = 0, gTotalPres = 0, gTotalAbs = 0;
@@ -1467,12 +1298,12 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
   const gPct = gTotalAuth > 0 ? Math.round((gTotalPres / gTotalAuth) * 100) + '%' : '0%';
   const gAbsPct = gTotalAuth > 0 ? Math.round((gTotalAbs / gTotalAuth) * 100) + '%' : '0%';
 
-  html += `<td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${gAvgAuth}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #cbd5e1; mso-number-format:'0';">${gAvgExist}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${gAvgPres}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${gAvgAbs}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${gPct}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${gAbsPct}</td></tr>`;
+  html += `<td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #f1f5f9; mso-number-format:'0';">${gAvgAuth}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${gAvgExist}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${gAvgPres}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${gAvgAbs}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #059669; mso-number-format:'0%'; font-size: 11pt;">${gPct}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #e11d48; mso-number-format:'0%'; font-size: 11pt;">${gAbsPct}</td></tr>`;
 
   
   // =========================================================
@@ -1500,36 +1331,36 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
            <tr><td colspan="${2 + dates.length * 4 + 6}" style="border:none; height: 30px;"></td></tr>`;
 
   html += `<tr>
-        <td colspan="2" rowspan="2" style="background-color: #064e3b; color: #ffffff; font-weight: bold; vertical-align: middle; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 6px;">Designation</td>`;
+        <td colspan="2" rowspan="2" style="background-color: #1e293b; color: #ffffff; font-weight: 800; vertical-align: middle; text-align: center; border: 1px solid #334155; border-bottom: 4px solid #d97706; padding: 10px; border-right: 2px solid #94a3b8; padding: 10px;">Designation</td>`;
         
   dates.forEach(dStr => {
     const d = new Date(dStr);
     const dateLabel = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     const isFriday = d.getDay() === 5;
-    const bgColor = isFriday ? '#991b1b' : '#047857';
-    html += `<th colspan="4" style="background-color: ${bgColor}; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 6px;">${dateLabel}</th>`;
+    const bgColor = isFriday ? '#be123c' : '#334155';
+    html += `<th colspan="4" style="background-color: ${bgColor}; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px;">${dateLabel}</th>`;
   });
   
-  html += `<th colspan="6" style="background-color: #0f766e; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 6px;">Monthly Total / Average</th>
+  html += `<th colspan="6" style="background-color: #1e293b; color: #ffffff; font-weight: 800; text-align: center; border: 1px solid #334155; border-left: 2px solid #475569; border-right: 2px solid #475569; padding: 10px;">MONTHLY PERFORMANCE SUMMARY</th>
       </tr>
       <tr>`;
       
   dates.forEach((dStr) => {
     const isFriday = new Date(dStr).getDay() === 5;
-    const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
-    const existBg = isFriday ? '#fecaca' : '#d1fae5';
-    html += `<th style="background-color: ${authBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Auth</th>
-              <th style="background-color: ${existBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Exist</th>
-              <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Pres</th>
-              <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Abs</th>`;
+    const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
+    const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
+    html += `<th style="background-color: ${authBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Auth</th>
+              <th style="background-color: ${existBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Exist</th>
+              <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Pres</th>
+              <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Abs</th>`;
   });
   
-  html += `<th style="background-color: #e2e8f0; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Auth</th>
-            <th style="background-color: #cbd5e1; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Exist</th>
-            <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Pres</th>
-            <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Abs</th>
-            <th style="background-color: #064e3b; color: #ffffff; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Pres %</th>
-            <th style="background-color: #064e3b; color: #ffffff; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Abs %</th>
+  html += `<th style="background-color: #f1f5f9; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Auth</th>
+            <th style="background-color: #e2e8f0; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Exist</th>
+            <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Pres</th>
+            <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Abs</th>
+            <th style="background-color: #059669; color: #ffffff; text-align: center; border: 1px solid #e2e8f0; border-bottom: 3px solid #047857; padding: 10px; font-size: 11pt; font-weight: 900; text-transform: uppercase;">Pres %</th>
+            <th style="background-color: #e11d48; color: #ffffff; text-align: center; border: 1px solid #e2e8f0; border-bottom: 3px solid #be123c; border-right: 2px solid #94a3b8; padding: 10px; font-size: 11pt; font-weight: 900; text-transform: uppercase;">Abs %</th>
       </tr>`;
 
   Object.keys(desigTotals).sort().forEach(desig => {
@@ -1537,19 +1368,19 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     dates.forEach(dStr => checkData += desigTotals[desig][dStr].auth + desigTotals[desig][dStr].exist);
     if (checkData === 0) return; // Skip empty rows
 
-    html += `<tr><td colspan="2" style="background-color: #ffffff; color: #000000; border: 1px solid #cbd5e1; border-right: 2px solid #94a3b8; padding: 5px; font-weight: bold; font-size: 10pt;">${desig}</td>`;
+    html += `<tr><td colspan="2" style="background-color: #ffffff; color: #000000; border: 1px solid #e2e8f0; border-right: 2px solid #94a3b8; padding: 10px; font-weight: bold; font-size: 10pt;">${desig}</td>`;
     
     let rAuth = 0, rExist = 0, rPres = 0, rAbs = 0;
     
     dates.forEach(dStr => {
       const cell = desigTotals[desig][dStr];
       const isFriday = new Date(dStr).getDay() === 5;
-      const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
-      const existBg = isFriday ? '#fecaca' : '#d1fae5';
-      html += `<td style="text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 4px; color: #000000; background-color: ${authBg}; mso-number-format:'0';">${cell.auth}</td>
-                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: ${existBg}; mso-number-format:'0';">${cell.exist}</td>
-                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${cell.pres}</td>
-                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${cell.abs}</td>`;
+      const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
+      const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
+      html += `<td style="text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: ${authBg}; mso-number-format:'0';">${cell.auth}</td>
+                <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: ${existBg}; mso-number-format:'0';">${cell.exist}</td>
+                <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${cell.pres}</td>
+                <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${cell.abs}</td>`;
       
       rAuth += cell.auth;
       rExist += cell.exist;
@@ -1564,12 +1395,12 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     const rawPct = rAuth > 0 ? (rPres / rAuth) : 0;
     const rawAbsPct = rAuth > 0 ? (rAbs / rAuth) : 0;
     
-    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${aAuth}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #000000; background-color: #cbd5e1; mso-number-format:'0';">${aExist}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${aPres}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${aAbs}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${rawPct}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-right: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${rawAbsPct}</td>
+    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #f1f5f9; mso-number-format:'0';">${aAuth}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${aExist}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${aPres}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${aAbs}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #ffffff; background-color: #059669; mso-number-format:'0%'; font-size: 11pt;">${rawPct}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-right: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #e11d48; mso-number-format:'0%'; font-size: 11pt;">${rawAbsPct}</td>
             </tr>`;
   });
   
@@ -1668,18 +1499,18 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
   <table border="1" style="border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 11pt; border: 1px solid #94a3b8;">
     <thead>
       <tr>
-        <th colspan="7" style="font-size: 18pt; font-weight: bold; text-align: center; padding: 12px; background-color: #064e3b; color: #ffffff; border: 1px solid #94a3b8; border-bottom: 2px solid #94a3b8;">
+        <th colspan="7" style="font-size: 24pt; font-weight: 900; text-align: center; padding: 24px; background-color: #020617; color: #ffffff; border: 1px solid #0f172a; text-transform: uppercase; letter-spacing: 3px; border-bottom: 2px solid #94a3b8;">
           Worker Attendance - ${monthInfo.displayName}
         </th>
       </tr>
       <tr>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Date</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Day</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Authorized</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Existing</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Present</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; white-space: normal; word-wrap: break-word;">Absent<br>(from Authorize Manpower)</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Percentage</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Date</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Day</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Authorized</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Existing</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Present</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; white-space: normal; word-wrap: break-word;">Absent<br>(from Authorize Manpower)</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Percentage</th>
       </tr>
     </thead>
     <tbody>
@@ -1698,8 +1529,8 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
     const dayName = dateObj.toLocaleDateString('en-GB', { weekday: 'short' });
 
     const isFriday = dateObj.getDay() === 5;
-    const rowBg = isFriday ? '#fee2e2' : '#ffffff';
-    const cellBorder = "1px solid #cbd5e1";
+    const rowBg = isFriday ? '#fff1f2' : '#ffffff';
+    const cellBorder = "1px solid #e2e8f0";
 
     const merged = window.historyMergedMode === 'roj_shapla' ? collectFanRojonigondhaShaplaTotals(res.state) : collectFanAssembleDimmerTotals(res.state);
     const auth = merged.totals.authorized || 0;
@@ -1714,13 +1545,13 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
     totalAbsentSum += abs;
 
     html += `<tr>
-      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${rowBg};">${formattedDate}</td>
-      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${rowBg};">${dayName}</td>
-      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${isFriday ? '#fecaca' : '#ecfdf5'}; mso-number-format:'0';">${auth}</td>
-      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${isFriday ? '#fecaca' : '#d1fae5'}; mso-number-format:'0';">${exist}</td>
-      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${pres}</td>
-      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${abs}</td>
-      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; font-weight: bold; background-color: ${rowBg};">${pct}%</td>
+      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; background-color: ${rowBg};">${formattedDate}</td>
+      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; background-color: ${rowBg};">${dayName}</td>
+      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; background-color: ${isFriday ? '#ffe4e6' : '#ecfdf5'}; mso-number-format:'0';">${auth}</td>
+      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; background-color: ${isFriday ? '#ffe4e6' : '#d1fae5'}; mso-number-format:'0';">${exist}</td>
+      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${pres}</td>
+      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${abs}</td>
+      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; font-weight: bold; background-color: ${rowBg};">${pct}%</td>
     </tr>`;
   });
 
@@ -1732,12 +1563,12 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
     </tbody>
     <tfoot>
       <tr>
-        <th colspan="2" style="background-color: #0f766e; color: #ffffff; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">Total / Average</th>
-        <th style="background-color: #e2e8f0; color: #000000; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">${avgAuth}</th>
-        <th style="background-color: #cbd5e1; color: #000000; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">${avgExist}</th>
-        <th style="background-color: #a7f3d0; color: #000000; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">${totalPresentSum}</th>
-        <th style="background-color: #ffedd5; color: #9a3412; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">${totalAbsentSum}</th>
-        <th style="background-color: #166534; color: #ffffff; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">${overallPct}%</th>
+        <th colspan="2" style="background-color: #0f766e; color: #ffffff; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">Total / Average</th>
+        <th style="background-color: #f1f5f9; color: #000000; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">${avgAuth}</th>
+        <th style="background-color: #e2e8f0; color: #000000; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">${avgExist}</th>
+        <th style="background-color: #a7f3d0; color: #000000; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">${totalPresentSum}</th>
+        <th style="background-color: #ffedd5; color: #9a3412; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">${totalAbsentSum}</th>
+        <th style="background-color: #166534; color: #ffffff; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">${overallPct}%</th>
       </tr>
     </tfoot>
   </table>
@@ -1891,7 +1722,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
         '}' +
         '.kpi-card {' +
           'background: #f8fafc;' +
-          'border: 1px solid #e2e8f0;' +
+          'border: 1px solid #f1f5f9;' +
           'border-radius: 8px;' +
           'padding: 8px 10px;' +
           'text-align: center;' +
@@ -1924,7 +1755,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
         '}' +
         'th {' +
           'background: #f1f5f9;' +
-          'border: 1px solid #cbd5e1;' +
+          'border: 1px solid #e2e8f0;' +
           'color: #000000;' +
           'font-weight: 700;' +
           'font-size: 9px;' +
@@ -1934,7 +1765,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
           'text-align: left;' +
         '}' +
         'td {' +
-          'border: 1px solid #e2e8f0;' +
+          'border: 1px solid #f1f5f9;' +
           'padding: 6px 10px;' +
           'font-size: 10px;' +
         '}' +
@@ -1955,7 +1786,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
         '}' +
         '.pct-high { background: #d1fae5; color: #065f46; }' +
         '.pct-mid { background: #fef3c7; color: #92400e; }' +
-        '.pct-low { background: #fee2e2; color: #991b1b; }' +
+        '.pct-low { background: #fff1f2; color: #991b1b; }' +
         '.footer {' +
           'margin-top: 40px;' +
           'display: flex;' +
@@ -1965,7 +1796,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
         '}' +
         '.signature-line {' +
           'width: 150px;' +
-          'border-top: 1px solid #cbd5e1;' +
+          'border-top: 1px solid #e2e8f0;' +
           'margin-top: 30px;' +
           'text-align: center;' +
           'padding-top: 4px;' +
@@ -2035,7 +1866,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
           tableRowsHtml +
         '</tbody>' +
         '<tfoot>' +
-          '<tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1;">' +
+          '<tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid #e2e8f0;">' +
             '<td colspan="2" style="text-align: right;">Average:</td>' +
             '<td style="text-align: center;">' + avgAuth + '</td>' +
             '<td style="text-align: center;">' + avgExist + '</td>' +
@@ -2086,14 +1917,14 @@ function _renderHistoryState(dateStr, state, container) {
       groupNames.forEach(function(groupName) {
         var rows = pageData[groupName];
         if (!rows) return;
-        if (!Array.isArray(rows)) {
-          if (typeof rows === 'object') { rows = Object.values(rows); } else { return; }
-        }
-        if (rows.length === 0) return;
+        var rowsObj = pageData[groupName];
+        if (!rowsObj || typeof rowsObj !== 'object') return;
 
         var groupRows = [];
         var secExist = 0, secPresent = 0, secAbsent = 0;
-        rows.forEach(function(row) {
+        
+        Object.keys(rowsObj).forEach(function(rKey) {
+          var row = rowsObj[rKey];
           if (!row || typeof row !== 'object') return;
           var desig = row.designation || 'N/A';
           var authorized = parseInt(row.authorized) || 0;
@@ -2103,7 +1934,7 @@ function _renderHistoryState(dateStr, state, container) {
           totalAuth += authorized;
           totalExist += existing; totalPresent += present; totalAbsent += absent;
           secExist += existing; secPresent += present; secAbsent += absent;
-          groupRows.push({desig: desig, existing: existing, present: present, absent: absent});
+          groupRows.push({desig: desig, existing: existing, present: present, absent: absent, authorized: authorized, pageId: pageId, groupName: groupName, rKey: rKey});
         });
 
         if (groupRows.length === 0) return;
@@ -2111,7 +1942,20 @@ function _renderHistoryState(dateStr, state, container) {
         var rowsHtml = '';
         groupRows.forEach(function(r) {
           var pct = r.existing > 0 ? Math.round((r.present / r.existing) * 100) : 0;
-          rowsHtml +=
+          if (window.historyEditMode) {
+            rowsHtml +=
+              '<article class="ios-merge-card ios-ss-premium-card" style="margin: 8px 14px; padding: 12px 14px; border: 1px solid #3b82f6; background: #eff6ff;">' +
+                '<div class="ios-merge-card-main">' +
+                  '<div class="ios-merge-date" style="font-size: 0.95rem; color: #1e3a8a; margin-bottom: 2px;">' + historyEscapeHtml(r.desig) + '</div>' +
+                '</div>' +
+                '<div class="ios-merge-card-stats" style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">' +
+                  '<span style="font-size:0.85rem; font-weight:600; color:#475569; display:flex; align-items:center; gap:4px;">Pres: <input type="number" class="ios-hm-edit-input" data-page="'+historyEscapeHtml(r.pageId)+'" data-group="'+historyEscapeHtml(r.groupName)+'" data-rkey="'+historyEscapeHtml(r.rKey)+'" data-field="present" value="'+r.present+'" style="width:60px; padding:4px; border:1px solid #cbd5e1; border-radius:6px;"></span>' +
+                  '<span style="font-size:0.85rem; font-weight:600; color:#475569; display:flex; align-items:center; gap:4px;">Exist: <input type="number" class="ios-hm-edit-input" data-page="'+historyEscapeHtml(r.pageId)+'" data-group="'+historyEscapeHtml(r.groupName)+'" data-rkey="'+historyEscapeHtml(r.rKey)+'" data-field="existing" value="'+r.existing+'" style="width:60px; padding:4px; border:1px solid #cbd5e1; border-radius:6px;"></span>' +
+                  '<span style="font-size:0.85rem; font-weight:600; color:#475569; display:flex; align-items:center; gap:4px;">Auth: '+r.authorized+'</span>' +
+                '</div>' +
+              '</article>';
+          } else {
+            rowsHtml +=
             '<article class="ios-merge-card ios-ss-premium-card" style="margin: 8px 14px; padding: 12px 14px;">' +
               '<div class="ios-merge-card-main">' +
                 '<div class="ios-merge-date" style="font-size: 0.95rem; color: #1c1134; margin-bottom: 2px;">' + historyEscapeHtml(r.desig) + '</div>' +
@@ -2124,6 +1968,7 @@ function _renderHistoryState(dateStr, state, container) {
                 '<span class="ios-merge-percent ' + getAttendanceTone(pct) + '">' + pct + '%</span>' +
               '</div>' +
             '</article>';
+          }
         });
 
         sectionsHtml +=
@@ -2167,7 +2012,7 @@ function _renderHistoryState(dateStr, state, container) {
       '<div class="ios-ss-sections">' + sectionsHtml + '</div>';
   } catch(e) {
     console.error('_renderHistoryState error:', e);
-    container.innerHTML = '<div style="padding:2rem;"><h3 style="color:#ef4444; margin-bottom:1rem;">Error rendering snapshot</h3><pre style="background:#f8fafc; padding:1.5rem; border-radius:12px; overflow:auto; max-height:70vh; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">' + JSON.stringify(state, null, 2) + '</pre></div>';
+    container.innerHTML = '<div style="padding:2rem;"><h3 style="color:#ef4444; margin-bottom:1rem;">Error rendering snapshot</h3><pre style="background:#f8fafc; padding:1.5rem; border-radius:12px; overflow:auto; max-height:70vh; font-size:0.85rem; color:#334155; border:1px solid #f1f5f9;">' + JSON.stringify(state, null, 2) + '</pre></div>';
   }
 }
 

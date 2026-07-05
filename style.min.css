@@ -8819,3 +8819,175 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
   font-size: 1rem !important;
 }
 
+\r\n
+/* --- NEW ADMIN MODAL LAYOUT STYLES --- */
+
+/* Sidebar Footer */
+.ios-hm-sidebar {
+  display: flex;
+  flex-direction: column;
+}
+.ios-hm-sidebar-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(60,30,90,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ios-global-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 10px 12px;
+}
+
+/* Viewer Wrapper & View Tabs */
+.ios-hm-viewer-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.4);
+}
+.ios-hm-view-tabs {
+  display: flex;
+  padding: 12px 20px;
+  gap: 8px;
+  border-bottom: 1px solid rgba(60,30,90,0.08);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow-x: auto;
+}
+.ios-hm-tab-btn {
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid transparent;
+  color: #4c1d95;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  border-radius: 99px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.ios-hm-tab-btn:hover {
+  background: rgba(139, 92, 246, 0.15);
+}
+.ios-hm-tab-btn.is-active {
+  background: #7c3aed;
+  color: white;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+.ios-hm-viewer {
+  flex: 1;
+}
+
+/* Export Toolbar */
+.ios-export-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0 24px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  border-radius: 12px;
+}
+.ios-export-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ios-export-btn, .ios-export-select {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  transition: all 0.2s;
+  cursor: pointer;
+  outline: none;
+}
+.ios-export-select {
+  border: 1px solid rgba(139, 92, 246, 0.22);
+  background: white;
+  color: #1c1134;
+}
+.ios-export-select:hover, .ios-export-select:focus {
+  border-color: #8b5cf6;
+}
+.ios-export-pdf {
+  color: #6d28d9;
+  background: rgba(245, 240, 255, 0.82);
+  border: 1px solid rgba(139, 92, 246, 0.22);
+}
+.ios-export-pdf:hover {
+  border-color: #8b5cf6;
+  background: rgba(245, 240, 255, 0.95);
+}
+.ios-export-excel {
+  color: #047857;
+  background: rgba(209, 250, 229, 0.82);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+.ios-export-excel:hover {
+  border-color: #10b981;
+  background: rgba(209, 250, 229, 0.95);
+}
+.ios-export-complete {
+  color: #b45309;
+  background: rgba(254, 243, 199, 0.82);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.ios-export-complete:hover {
+  border-color: #f59e0b;
+  background: rgba(254, 243, 199, 0.95);
+}
+.ios-export-delete {
+  color: #ef4444;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.ios-export-delete:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: #ef4444;
+}
+
+/* Adjust ios-merge-head */
+.ios-merge-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0; 
+}
+.ios-merge-head-info {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .ios-hm-sidebar-footer {
+    padding-top: 12px;
+    margin-top: 12px;
+    flex-direction: row;
+  }
+  .ios-export-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ios-export-group {
+    justify-content: stretch;
+  }
+  .ios-export-group > * {
+    flex: 1;
+  }
+}

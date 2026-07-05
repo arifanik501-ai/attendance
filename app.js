@@ -1054,19 +1054,42 @@ function _renderEntryContent(pageId) {
         // Handle authorized column edits
         if (e.target.classList.contains('auth-input')) {
           state[pageId][g][i].authorized = val;
-          globalAppState = state;
-          updateGroupTotals(e.target.closest('table'), state[pageId][g]);
-          return;
+            globalAppState = state;
+            updateGroupTotals(e.target.closest('table'), state[pageId][g]);
+            if (window.firebaseDb) {
+              window.firebaseDb.ref(`mep_dashboard_state/${pageId}/${g}/${i}/authorized`).set(val);
+              // Also update last update info without full re-render
+              window.firebaseDb.ref('mep_last_update_info').set({
+                deviceId: SESSION_DEVICE_ID,
+                timestamp: Date.now(),
+                pageTitle: SECTIONS_CONFIG[pageId].title,
+                actionStr: "dY, " + SECTIONS_CONFIG[pageId].title + " has been updated"
+              });
+            }
+            return;
         }
 
         state[pageId][g][i][f] = val;
 
-        if (f === 'existing' || f === 'present') {
-          calculateRow(state[pageId][g][i]);
-          e.target.closest('tr').querySelector('.absent-val').textContent = state[pageId][g][i].absent;
-        }
+          if (f === 'existing' || f === 'present') {
+            calculateRow(state[pageId][g][i]);
+            e.target.closest('tr').querySelector('.absent-val').textContent = state[pageId][g][i].absent;
+          }
 
-        updateGroupTotals(e.target.closest('table'), state[pageId][g]);
+          updateGroupTotals(e.target.closest('table'), state[pageId][g]);
+
+          if (window.firebaseDb) {
+            window.firebaseDb.ref(`mep_dashboard_state/${pageId}/${g}/${i}/${f}`).set(val);
+            if (f === 'existing' || f === 'present') {
+              window.firebaseDb.ref(`mep_dashboard_state/${pageId}/${g}/${i}/absent`).set(state[pageId][g][i].absent);
+            }
+            window.firebaseDb.ref('mep_last_update_info').set({
+              deviceId: SESSION_DEVICE_ID,
+              timestamp: Date.now(),
+              pageTitle: SECTIONS_CONFIG[pageId].title,
+              actionStr: "dY, " + SECTIONS_CONFIG[pageId].title + " has been updated"
+            });
+          }
       });
     });
 

@@ -1,13 +1,10 @@
 const fs = require('fs');
 
 let content = fs.readFileSync('history.js', 'utf8');
-content = content.replace(/\\r\\n/g, '\\n');
 
-// Replace Rows Html
-let startRows = content.indexOf('rowsHtml +=\\n            \\'<div class="ios-ss-row">\\' +');
-let endRows = content.indexOf('</div>\\';\\n        });', startRows) + 8;
-if (startRows > -1 && endRows > 8) {
-  const replacement = `rowsHtml +=
+// Replace Rows Html (Premium Card Design)
+const regexRows = /rowsHtml \+=\s*'<div class="ios-ss-row">' \+[\s\S]*?'<\/div>';/;
+const replaceRows = `rowsHtml +=
             '<article class="ios-merge-card ios-ss-premium-card" style="margin: 8px 14px; padding: 12px 14px;">' +
               '<div class="ios-merge-card-main">' +
                 '<div class="ios-merge-date" style="font-size: 0.95rem; color: #1c1134; margin-bottom: 2px;">' + historyEscapeHtml(r.desig) + '</div>' +
@@ -20,44 +17,47 @@ if (startRows > -1 && endRows > 8) {
                 '<span class="ios-merge-percent ' + getAttendanceTone(pct) + '">' + pct + '%</span>' +
               '</div>' +
             '</article>';`;
-  content = content.substring(0, startRows) + replacement + content.substring(endRows);
-  console.log('REPLACED rowsHtml');
+            
+if (content.match(regexRows)) {
+  content = content.replace(regexRows, replaceRows);
+  console.log("REPLACED rowsHtml");
 } else {
-  console.log('COULD NOT FIND rowsHtml, start:', startRows);
+  // Try another match if it was already replaced partially
+  const regexRowsFallback = /rowsHtml \+=\s*'<article class="ios-merge-card"[\s\S]*?'<\/article>';/;
+  if (content.match(regexRowsFallback)) {
+      content = content.replace(regexRowsFallback, replaceRows);
+      console.log("REPLACED rowsHtml (fallback)");
+  }
 }
 
 // Replace KPI HTML
-let startKPI = content.indexOf('\\'<div class="ios-ss-kpi">\\' +');
-let endKPI = content.indexOf('\\'</div>\\' +\\n      \\'<div class="ios-ss-sections">\\'', startKPI);
-if (startKPI > -1 && endKPI > -1) {
-  const replacement = `'<div class="ios-merge-kpis ios-ss-premium-kpis" style="margin: 0 0 24px 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));">' +
+const regexKPI = /'<div class="ios-ss-kpi">' \+[\s\S]*?'<\/div>' \+/;
+const replaceKPI = `'<div class="ios-merge-kpis ios-ss-premium-kpis" style="margin: 0 0 24px 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));">' +
         '<div><span>Authorized</span><b class="k-authorized">' + (totalAuth || totalExist) + '</b></div>' +
         '<div><span>Existing</span><b class="k-existing">' + totalExist + '</b></div>' +
         '<div><span>Present</span><b class="k-present">' + totalPresent + '</b></div>' +
         '<div><span>Absent</span><b class="k-absent">' + totalAbsent + '</b></div>' +
       '</div>' +`;
-  content = content.substring(0, startKPI) + replacement + content.substring(endKPI + 8);
-  console.log('REPLACED KPI Html');
-} else {
-  console.log('COULD NOT FIND KPI Html, start:', startKPI);
+
+if (content.match(regexKPI)) {
+  content = content.replace(regexKPI, replaceKPI);
+  console.log("REPLACED KPI HTML");
 }
 
 // Replace Head HTML
-let startHead = content.indexOf('\\'<div class="ios-ss-head">\\' +');
-let endHead = content.indexOf('\\'<div class="ios-ss-head-actions">\\' +', startHead);
-if (startHead > -1 && endHead > -1) {
-  const replacement = `'<div class="ios-merge-head ios-ss-premium-head" style="margin-bottom: 20px;">' +
+const regexHead = /'<div class="ios-ss-head">' \+[\s\S]*?'<div class="ios-ss-head-actions">' \+/;
+const replaceHead = `'<div class="ios-merge-head ios-ss-premium-head" style="margin-bottom: 20px;">' +
         '<div class="ios-merge-head-info">' +
           '<h3 class="ios-ss-head-title" style="font-size: 1.3rem;">Daily Snapshot</h3>' +
           '<div class="ios-ss-head-date">' + formattedDate + '</div>' +
         '</div>' +
         '<div class="ios-ss-head-actions" style="margin-left: auto;">' +`;
-  content = content.substring(0, startHead) + replacement + content.substring(endHead + 37);
-  console.log('REPLACED Head Html');
-} else {
-  console.log('COULD NOT FIND Head Html, start:', startHead);
+
+if (content.match(regexHead)) {
+  content = content.replace(regexHead, replaceHead);
+  console.log("REPLACED Head HTML");
 }
 
-content = content.replace(/\\n/g, '\\r\\n');
 fs.writeFileSync('history.js', content);
 fs.writeFileSync('history.min.js', content);
+console.log("update_ss_robust.js finished.");

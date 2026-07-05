@@ -51,14 +51,14 @@ window.openAdminHistoryModal = function() {
   input.placeholder = 'Enter PIN';
   input.style.padding = '12px';
   input.style.fontSize = '18px';
-  input.style.border = '2px solid #f1f5f9';
+  input.style.border = '2px solid #e2e8f0';
   input.style.borderRadius = '8px';
   input.style.width = '180px';
   input.style.textAlign = 'center';
   input.style.outline = 'none';
   input.style.transition = 'border-color 0.2s';
   input.addEventListener('focus', () => input.style.borderColor = '#3b82f6');
-  input.addEventListener('blur', () => input.style.borderColor = '#f1f5f9');
+  input.addEventListener('blur', () => input.style.borderColor = '#e2e8f0');
 
   const btn = document.createElement('button');
   btn.innerText = 'Unlock Archive';
@@ -136,6 +136,18 @@ window.openHistoryModal = function() {
           </div>
         </div>
         <div class="ios-hm-header-actions">
+          <button id="btn-admin-compile-excel" class="admin-premium-btn" onclick="window.downloadCompleteMonthlyHistoryExcel()" type="button" title="Compile Excel for current month">
+            <svg class="admin-premium-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span>Compile Excel</span>
+          </button>
+          <button id="btn-admin-monthly-chart" class="admin-premium-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #047857;" onclick="window.generateMonthlyChart()" type="button" title="View Monthly Pie Chart">
+            <svg class="admin-premium-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            <span>Pie Chart</span>
+          </button>
+          <button id="fan-merge-history-btn" class="ios-hm-merge-btn" onclick="window.showFanAssembleDimmerMergedHistory()" type="button">
+            <span class="ios-hm-merge-icon" aria-hidden="true">↔</span>
+            <span>Fan Assemble + Dimmer</span>
+          </button>
           <button class="ios-hm-close" onclick="window.closeHistoryModal()" aria-label="Close">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
@@ -164,41 +176,17 @@ window.openHistoryModal = function() {
           <div class="ios-hm-legend">
             <span class="ios-hm-legend-dot"></span>Green dots indicate saved admin snapshots
           </div>
-          
-          <div class="ios-hm-sidebar-footer">
-            <button id="btn-admin-compile-excel" class="admin-premium-btn ios-global-btn" onclick="window.downloadCompleteMonthlyHistoryExcel()" type="button" title="Compile Excel for current month">
-              <svg class="admin-premium-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-              <span>Compile Excel</span>
-            </button>
-            <button id="btn-admin-monthly-chart" class="admin-premium-btn ios-global-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #047857;" onclick="window.generateMonthlyChart()" type="button" title="View Monthly Pie Chart">
-              <svg class="admin-premium-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
-              <span>Pie Chart</span>
-            </button>
-          </div>
         </aside>
 
-        <section class="ios-hm-viewer-wrapper">
-          <div class="ios-hm-view-tabs">
-            <button id="fan-merge-history-btn-default" class="ios-hm-tab-btn is-active" onclick="window.showDefaultMergedHistory()" type="button">
-              Daily Snapshot
-            </button>
-            <button id="fan-merge-history-btn" class="ios-hm-tab-btn" onclick="window.showFanAssembleDimmerMergedHistory()" type="button">
-              Fan Assemble + Dimmer
-            </button>
-            <button id="fan-roj-shapla-merge-history-btn" class="ios-hm-tab-btn" onclick="window.showFanRojonigondhaShaplaMergedHistory()" type="button">
-              Rojonigondha + Shapla
-            </button>
-          </div>
-          <div class="ios-hm-viewer" id="history-data-viewer">
-            <div class="ios-hm-empty">
-              <div class="ios-hm-empty-ico" aria-hidden="true">
-                <span class="ios-hm-empty-ring"></span>
-                <span class="ios-hm-empty-ring ios-hm-empty-ring-2"></span>
-                <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><circle cx="8.5" cy="14.5" r="1" fill="currentColor"/><circle cx="12" cy="14.5" r="1" fill="currentColor"/><circle cx="15.5" cy="14.5" r="1" fill="currentColor"/></svg>
-              </div>
-              <div class="ios-hm-empty-text">Select a date to view admin history</div>
-              <div class="ios-hm-empty-hint">Days with a glowing dot have saved snapshots</div>
+        <section class="ios-hm-viewer" id="history-data-viewer">
+          <div class="ios-hm-empty">
+            <div class="ios-hm-empty-ico" aria-hidden="true">
+              <span class="ios-hm-empty-ring"></span>
+              <span class="ios-hm-empty-ring ios-hm-empty-ring-2"></span>
+              <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><circle cx="8.5" cy="14.5" r="1" fill="currentColor"/><circle cx="12" cy="14.5" r="1" fill="currentColor"/><circle cx="15.5" cy="14.5" r="1" fill="currentColor"/></svg>
             </div>
+            <div class="ios-hm-empty-text">Select a date to view admin history</div>
+            <div class="ios-hm-empty-hint">Days with a glowing dot have saved snapshots</div>
           </div>
         </section>
       </div>
@@ -326,12 +314,8 @@ window._loadHistoryForDate = function(dateStr) {
   const viewer = document.getElementById('history-data-viewer');
   if (!viewer) return;
   window.historySelectedDate = dateStr;
-  if (window.historyMergedMode === 'assemble_dimmer') {
+  if (window.historyMergedMode) {
     window.renderFanAssembleDimmerMergedForDate(dateStr);
-    return;
-  }
-  if (window.historyMergedMode === 'roj_shapla') {
-    window.renderFanRojonigondhaShaplaMergedForDate(dateStr);
     return;
   }
   updateMergedHistoryButtonState();
@@ -369,7 +353,7 @@ window.deleteHistoryDate = function(dateStr) {
   const confirmed = confirm(
     'Warning: This will permanently delete attendance history for ' +
     formattedDate +
-    '.\r\n\r\nThis action cannot be undone. Delete this date?'
+    '.\n\nThis action cannot be undone. Delete this date?'
   );
   if (!confirmed) return;
 
@@ -408,9 +392,8 @@ window.deleteHistoryDate = function(dateStr) {
 
 function updateMergedHistoryButtonState() {
   const btn = document.getElementById('fan-merge-history-btn');
-  const btn2 = document.getElementById('fan-roj-shapla-merge-history-btn');
-  if (btn) btn.classList.toggle('is-active', window.historyMergedMode === 'assemble_dimmer');
-  if (btn2) btn2.classList.toggle('is-active', window.historyMergedMode === 'roj_shapla');
+  if (!btn) return;
+  btn.classList.toggle('is-active', !!window.historyMergedMode);
 }
 
 function historyEscapeHtml(value) {
@@ -448,172 +431,6 @@ function getAttendanceTone(pct) {
   return 'low';
 }
 
-
-function collectFanRojonigondhaShaplaTotals(state) {
-  const targetGroups = ["Fan Rojonigondha", "Fan Sada Shapla"];
-  const totals = { authorized: 0, existing: 0, present: 0, absent: 0 };
-  const workerRow = { designation: 'Worker', authorized: 0, existing: 0, present: 0, absent: 0 };
-
-  targetGroups.forEach(function(groupName) {
-    getHistoryRows(state, 'bikash', groupName).forEach(function(row) {
-      if (!row || typeof row !== 'object') return;
-      const designation = String(row.designation || '').trim();
-      if (designation.toLowerCase() !== 'worker') return;
-      const authorized = historyToCount(row.authorized);
-      const existing = historyToCount(row.existing);
-      const present = historyToCount(row.present);
-      let absent = authorized - present;
-
-      totals.authorized += authorized;
-      totals.existing += existing;
-      totals.present += present;
-      totals.absent += absent;
-      workerRow.authorized += authorized;
-      workerRow.existing += existing;
-      workerRow.present += present;
-      workerRow.absent += absent;
-    });
-  });
-
-  return {
-    totals: totals,
-    rows: workerRow.authorized > 0 || workerRow.existing > 0 || workerRow.present > 0 || workerRow.absent > 0 ? [workerRow] : []
-  };
-}
-
-window.showFanRojonigondhaShaplaMergedHistory = function() {
-  if (window.historyMergedMode === 'roj_shapla') return; // already active
-  window.historyMergedMode = 'roj_shapla';
-  updateMergedHistoryButtonState();
-
-  const selectedDate = window.historySelectedDate || Array.from(window.savedHistoryDates || []).sort().reverse()[0];
-  if (!selectedDate) {
-    if (!window.savedHistoryDates || window.savedHistoryDates.size === 0) {
-      window._fetchSavedHistoryDates(function() {
-        const latestDate = Array.from(window.savedHistoryDates || []).sort().reverse()[0];
-        if (latestDate) {
-          window.historySelectedDate = latestDate;
-          window.renderFanRojonigondhaShaplaMergedForDate(latestDate);
-          return;
-        }
-        const viewer = document.getElementById('history-data-viewer');
-        if (viewer) {
-          viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No saved history found yet.</div><div class="ios-hm-empty-hint">Save attendance snapshots first, then open this merged history.</div></div>';
-        }
-      });
-    }
-    return;
-  }
-  window.historySelectedDate = selectedDate;
-  window.renderFanRojonigondhaShaplaMergedForDate(selectedDate);
-};
-
-window.renderFanRojonigondhaShaplaMergedForDate = function(dateStr) {
-  const viewer = document.getElementById('history-data-viewer');
-  if (!viewer) return;
-  window.historySelectedDate = dateStr;
-  window.historyMergedMode = 'roj_shapla';
-  updateMergedHistoryButtonState();
-
-  viewer.innerHTML = `<div class="ios-hm-loader"><div class="ios-hm-spinner"></div><div class="ios-hm-loader-text">Loading daily Worker merge…</div></div>`;
-
-  const loadDailyMerged = function() {
-    if (!window.firebaseDb) {
-      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text" style="color:#ef4444;">Firebase not connected</div><div class="ios-hm-empty-hint">Daily merged history needs saved Firebase snapshots.</div></div>';
-      return;
-    }
-
-    window.firebaseDb.ref('mep_attendance_history/' + dateStr).once('value').then(function(snapshot) {
-      if (snapshot.exists()) {
-        renderFanRojonigondhaShaplaMergedHistory(dateStr, snapshot.val(), viewer);
-      } else {
-        viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No snapshot found for ' + historyEscapeHtml(dateStr) + '.</div></div>';
-      }
-    }).catch(function(err) {
-      console.error('Merged history load error:', err);
-      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text" style="color:#ef4444;">Error loading merged history</div></div>';
-    });
-  };
-
-  if (!window.savedHistoryDates || !window.savedHistoryDates.has(dateStr)) {
-    window._fetchSavedHistoryDates(loadDailyMerged);
-  } else {
-    loadDailyMerged();
-  }
-};
-
-function renderFanRojonigondhaShaplaMergedHistory(dateStr, state, container) {
-  const merged = collectFanRojonigondhaShaplaTotals(state);
-  if (merged.rows.length === 0) {
-    container.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No Worker history found for Fan Rojonigondha or Fan Sada Shapla.</div></div>';
-    return;
-  }
-
-  const totalPct = getAttendancePct(merged.totals.present, merged.totals.authorized);
-  const rowCards = merged.rows.map(function(row) {
-    const rowPct = getAttendancePct(row.present, row.authorized);
-    return (
-      '<article class="ios-merge-card">' +
-        '<div class="ios-merge-card-main">' +
-          '<div class="ios-merge-date">' + historyEscapeHtml(row.designation) + '</div>' +
-          '<div class="ios-merge-title">' + row.present + '/' + row.existing + ' present</div>' +
-        '</div>' +
-        '<div class="ios-merge-card-stats">' +
-          '<span class="ios-merge-pill authorized">Auth ' + row.authorized + '</span>' +
-          '<span class="ios-merge-pill present">P ' + row.present + '</span>' +
-          '<span class="ios-merge-pill existing">E ' + row.existing + '</span>' +
-          '<span class="ios-merge-pill absent">A ' + row.absent + '</span>' +
-          '<span class="ios-merge-percent ' + getAttendanceTone(rowPct) + '">' + rowPct + '%</span>' +
-        '</div>' +
-      '</article>'
-    );
-  }).join('');
-
-  container.innerHTML =
-    '<div class="ios-merge-head">' +
-      '<div class="ios-merge-head-info">' +
-        '<h3 class="ios-ss-head-title">Daily Worker Merge</h3>' +
-        '<div class="ios-ss-head-date">' + historyEscapeHtml(formatHistoryDate(dateStr)) + ' &middot; Fan Rojonigondha Worker + Fan Sada Shapla Worker</div>' +
-      '</div>' +
-      '<div class="ios-ss-ring" style="--pct:' + totalPct + '"><span class="ios-ss-ring-val">' + totalPct + '%</span></div>' +
-    '</div>' +
-    '<div class="ios-export-toolbar">' +
-      '<div class="ios-export-group">' +
-        '<select id="merged-pdf-month-select" class="ios-export-select">' +
-          '<option value="" disabled selected>Select Month...</option>' +
-        '</select>' +
-        '<button id="btn-export-pdf" onclick="window.downloadMonthlyHistoryPDF()" class="ios-export-btn ios-export-pdf" type="button" title="Download PDF">' +
-          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>' +
-          '<span>PDF</span>' +
-        '</button>' +
-        '<button id="btn-export-excel" onclick="window.downloadMonthlyHistoryExcel()" class="ios-export-btn ios-export-excel" type="button" title="Download Merged Excel">' +
-          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>' +
-          '<span>Excel Merge</span>' +
-        '</button>' +
-        '<button id="btn-export-complete-excel" onclick="window.downloadCompleteMonthlyHistoryExcel()" class="ios-export-btn ios-export-complete" type="button" title="Download Complete Excel">' +
-          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>' +
-          '<span>Complete Excel</span>' +
-        '</button>' +
-      '</div>' +
-      '<button class="ios-export-btn ios-export-delete" onclick="window.deleteHistoryDate(\'' + historyEscapeHtml(dateStr) + '\')" type="button" title="Delete this date snapshot">' +
-        '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>' +
-        '<span>Delete</span>' +
-      '</button>' +
-    '</div>' +
-    '<div class="ios-merge-kpis">' +
-      '<div><span>Type</span><b>Worker</b></div>' +
-      '<div><span>Authorized</span><b class="k-authorized">' + merged.totals.authorized + '</b></div>' +
-      '<div><span>Existing</span><b class="k-existing">' + merged.totals.existing + '</b></div>' +
-      '<div><span>Present</span><b class="k-present">' + merged.totals.present + '</b></div>' +
-      '<div><span>Absent (from Authorize Manpower)</span><b class="k-absent">' + merged.totals.absent + '</b></div>' +
-    '</div>' +
-    '<div class="ios-merge-list">' + rowCards + '</div>';
-
-  setTimeout(function() {
-    window.populatePDFMonthDropdown();
-  }, 50);
-}
-
 function collectFanAssembleDimmerTotals(state) {
   const targetGroups = ["Fan Assemble", "Fan Dimmer & Blade"];
   const totals = { authorized: 0, existing: 0, present: 0, absent: 0 };
@@ -646,23 +463,15 @@ function collectFanAssembleDimmerTotals(state) {
   };
 }
 
-window.showDefaultMergedHistory = function() {
-  window.historyMergedMode = false;
-  updateMergedHistoryButtonState();
-  if (window.historySelectedDate) {
-    window._loadHistoryForDate(window.historySelectedDate);
-  } else {
-    const viewer = document.getElementById('history-data-viewer');
-    if (viewer) {
-      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-ico" aria-hidden="true"><span class="ios-hm-empty-ring"></span><span class="ios-hm-empty-ring ios-hm-empty-ring-2"></span><svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3" ry="3"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><circle cx="8.5" cy="14.5" r="1" fill="currentColor"/><circle cx="12" cy="14.5" r="1" fill="currentColor"/><circle cx="15.5" cy="14.5" r="1" fill="currentColor"/></svg></div><div class="ios-hm-empty-text">Select a date to view admin history</div><div class="ios-hm-empty-hint">Days with a glowing dot have saved snapshots</div></div>';
-    }
-  }
-};
-
 window.showFanAssembleDimmerMergedHistory = function() {
-  if (window.historyMergedMode === 'assemble_dimmer') return; // already active
-  window.historyMergedMode = 'assemble_dimmer';
+  window.historyMergedMode = !window.historyMergedMode;
   updateMergedHistoryButtonState();
+  if (!window.historyMergedMode) {
+    if (window.historySelectedDate) {
+      window._loadHistoryForDate(window.historySelectedDate);
+    }
+    return;
+  }
 
   const selectedDate = window.historySelectedDate || Array.from(window.savedHistoryDates || []).sort().reverse()[0];
   if (!selectedDate) {
@@ -690,7 +499,7 @@ window.renderFanAssembleDimmerMergedForDate = function(dateStr) {
   const viewer = document.getElementById('history-data-viewer');
   if (!viewer) return;
   window.historySelectedDate = dateStr;
-  window.historyMergedMode = 'assemble_dimmer';
+  window.historyMergedMode = true;
   updateMergedHistoryButtonState();
 
   viewer.innerHTML = `
@@ -754,34 +563,34 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
 
   container.innerHTML =
     '<div class="ios-merge-head">' +
-      '<div class="ios-merge-head-info">' +
+      '<div>' +
         '<h3 class="ios-ss-head-title">Daily Worker Merge</h3>' +
-        '<div class="ios-ss-head-date">' + historyEscapeHtml(formatHistoryDate(dateStr)) + ' &middot; Fan Rojonigondha Worker + Fan Sada Shapla Worker</div>' +
+        '<div class="ios-ss-head-date">' + historyEscapeHtml(formatHistoryDate(dateStr)) + ' · Fan Assemble Worker + Fan Dimmer Worker</div>' +
       '</div>' +
-      '<div class="ios-ss-ring" style="--pct:' + totalPct + '"><span class="ios-ss-ring-val">' + totalPct + '%</span></div>' +
-    '</div>' +
-    '<div class="ios-export-toolbar">' +
-      '<div class="ios-export-group">' +
-        '<select id="merged-pdf-month-select" class="ios-export-select">' +
-          '<option value="" disabled selected>Select Month...</option>' +
-        '</select>' +
-        '<button id="btn-export-pdf" onclick="window.downloadMonthlyHistoryPDF()" class="ios-export-btn ios-export-pdf" type="button" title="Download PDF">' +
-          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>' +
-          '<span>PDF</span>' +
+      '<div class="ios-ss-head-actions">' +
+        '<div style="display: inline-flex; align-items: center; gap: 6px; margin-right: 4px;">' +
+          '<select id="merged-pdf-month-select" style="padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(139, 92, 246, 0.22); background: white; font-family: inherit; font-size: 0.72rem; font-weight: 700; color: #1c1134; outline: none; cursor: pointer; height: 32px; box-sizing: border-box; transition: border-color 0.2s;" onmouseover="this.style.borderColor=\'#8b5cf6\'" onmouseout="this.style.borderColor=\'rgba(139, 92, 246, 0.22)\'">' +
+            '<option value="" disabled selected>Select Month...</option>' +
+          '</select>' +
+          '<button id="btn-export-pdf" onclick="window.downloadMonthlyHistoryPDF()" class="ios-ss-delete-btn" style="color: #6d28d9; background: rgba(245, 240, 255, 0.82); border: 1px solid rgba(139, 92, 246, 0.22); height: 32px; padding: 0 12px; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s;" onmouseover="this.style.borderColor=\'#8b5cf6\'; this.style.background=\'rgba(245, 240, 255, 0.95)\';" onmouseout="this.style.borderColor=\'rgba(139, 92, 246, 0.22)\'; this.style.background=\'rgba(245, 240, 255, 0.82)\';" type="button">' +
+            '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>' +
+            '<span>PDF</span>' +
+          '</button>' +
+          '<button id="btn-export-excel" onclick="window.downloadMonthlyHistoryExcel()" class="ios-ss-delete-btn" style="color: #047857; background: rgba(209, 250, 229, 0.82); border: 1px solid rgba(16, 185, 129, 0.22); height: 32px; padding: 0 12px; font-weight: 800; font-size: 0.72rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s; margin-left: 4px;" onmouseover="this.style.borderColor=\'#10b981\'; this.style.background=\'rgba(209, 250, 229, 0.95)\';" onmouseout="this.style.borderColor=\'rgba(16, 185, 129, 0.22)\'; this.style.background=\'rgba(209, 250, 229, 0.82)\';" type="button" title="Download Merged Sections Only">' +
+            '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>' +
+            '<span>Excel Merge</span>' +
+          '</button>' +
+          '<button id="btn-export-complete-excel" onclick="window.downloadCompleteMonthlyHistoryExcel()" class="admin-premium-btn" style="height: 32px; padding: 0 12px; font-size: 0.72rem; margin-left: 4px;" type="button" title="Download Complete Month Details">' +
+            '<svg class="admin-premium-icon" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>' +
+            '<span>Complete Excel</span>' +
+          '</button>' +
+        '</div>' +
+        '<button class="ios-ss-delete-btn" onclick="window.deleteHistoryDate(\'' + historyEscapeHtml(dateStr) + '\')" type="button">' +
+          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>' +
+          '<span>Delete Date</span>' +
         '</button>' +
-        '<button id="btn-export-excel" onclick="window.downloadMonthlyHistoryExcel()" class="ios-export-btn ios-export-excel" type="button" title="Download Merged Excel">' +
-          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>' +
-          '<span>Excel Merge</span>' +
-        '</button>' +
-        '<button id="btn-export-complete-excel" onclick="window.downloadCompleteMonthlyHistoryExcel()" class="ios-export-btn ios-export-complete" type="button" title="Download Complete Excel">' +
-          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>' +
-          '<span>Complete Excel</span>' +
-        '</button>' +
+        '<div class="ios-ss-ring" style="--pct:' + totalPct + '"><span class="ios-ss-ring-val">' + totalPct + '%</span></div>' +
       '</div>' +
-      '<button class="ios-export-btn ios-export-delete" onclick="window.deleteHistoryDate(\'' + historyEscapeHtml(dateStr) + '\')" type="button" title="Delete this date snapshot">' +
-        '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>' +
-        '<span>Delete</span>' +
-      '</button>' +
     '</div>' +
     '<div class="ios-merge-kpis">' +
       '<div><span>Type</span><b>Worker</b></div>' +
@@ -1001,14 +810,208 @@ window.renderMonthlyChartModal = function(monthKey, results) {
 
         let rows = pageData[originalGroupName];
         if (!rows) return;
-        var rowsObj = pageData[groupName];
-        if (!rowsObj || typeof rowsObj !== 'object') return;
+        if (!Array.isArray(rows)) {
+          if (typeof rows === 'object') { rows = Object.values(rows); } else { return; }
+        }
 
-        var groupRows = [];
-        var secExist = 0, secPresent = 0, secAbsent = 0;
+        rows.forEach(row => {
+          if (!row || typeof row !== 'object') return;
+          const authorized = parseInt(row.authorized) || 0;
+          const existing = parseInt(row.existing) || 0;
+          const present = parseInt(row.present) || 0;
+          const absent = authorized - present; 
+
+          totalAuth += authorized;
+          totalExist += existing;
+          totalPresent += present;
+          totalAbsent += absent;
+        });
+      });
+    });
+  });
+
+  if (totalExist === 0) {
+    alert("No data available to chart for this month.");
+    return;
+  }
+
+  const numDates = results.length;
+  const avgPresent = numDates > 0 ? Math.round(totalPresent / numDates) : 0;
+  const avgAbsent = numDates > 0 ? Math.round(totalAbsent / numDates) : 0;
+
+  const pieTotal = totalPresent + totalAbsent;
+  const oAvgPct = pieTotal > 0 ? Math.round((totalPresent / pieTotal) * 100) : 0;
+  const oAbsPct = pieTotal > 0 ? Math.round((totalAbsent / pieTotal) * 100) : 0;
+
+  let presentSlicePct = pieTotal > 0 ? (totalPresent / pieTotal) * 100 : 0;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'ios-hm-overlay';
+  overlay.style.display = 'flex';
+  overlay.style.justifyContent = 'center';
+  overlay.style.alignItems = 'center';
+  overlay.style.zIndex = '9999999';
+  overlay.style.backgroundColor = 'rgba(15,23,42,0.85)';
+  overlay.style.backdropFilter = 'blur(8px)';
+  overlay.style.opacity = '1';
+  
+  const monthParts = monthKey.split('-');
+  const dateObj = new Date(monthParts[0], monthParts[1] - 1);
+  const monthName = dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  overlay.innerHTML = `
+    <div style="background: #ffffff; width: 92%; max-width: 420px; border-radius: 28px; padding: 35px 25px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; animation: chartPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+      <h2 style="margin: 0 0 5px 0; color: #0f172a; font-weight: 800; font-size: 1.6rem; letter-spacing: -0.02em;">Monthly Overview</h2>
+      <div style="color: #64748b; margin-bottom: 35px; font-weight: 600; font-size: 1.05rem;">${monthName}</div>
+      
+      <div style="position: relative; width: 220px; height: 220px; margin: 0 auto 40px auto; border-radius: 50%; background: conic-gradient(#10b981 0% ${presentSlicePct}%, #ef4444 ${presentSlicePct}% 100%); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2), inset 0 0 20px rgba(0,0,0,0.05); transition: all 0.3s ease;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 145px; height: 145px; background: #ffffff; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: inset 0 4px 15px rgba(0,0,0,0.08), 0 0 0 12px rgba(255,255,255,0.3);">
+          <span style="font-size: 2.8rem; font-weight: 900; color: #10b981; letter-spacing: -0.03em; line-height: 1;">${oAvgPct}<span style="font-size: 1.5rem;">%</span></span>
+          <span style="font-size: 0.85rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px;">Present</span>
+        </div>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; gap: 15px; margin-bottom: 30px;">
+        <div style="flex: 1; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 16px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; font-weight: 700; color: #166534; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">
+            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span> Present
+          </div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #14532d;">${oAvgPct}%</div>
+          <div style="font-size: 0.85rem; color: #166534; font-weight: 600; opacity: 0.8; margin-top: 4px;">${avgPresent.toLocaleString()} avg/day</div>
+        </div>
+        <div style="flex: 1; background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 16px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; font-weight: 700; color: #991b1b; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">
+            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></span> Absent
+          </div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #7f1d1d;">${oAbsPct}%</div>
+          <div style="font-size: 0.85rem; color: #991b1b; font-weight: 600; opacity: 0.8; margin-top: 4px;">${avgAbsent.toLocaleString()} avg/day</div>
+        </div>
+      </div>
+      
+      <button onclick="this.closest('.ios-hm-overlay').remove()" style="width: 100%; padding: 16px; background: #0f172a; color: #fff; border: none; border-radius: 14px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+        Close Dashboard
+      </button>
+    </div>
+    <style>
+      @keyframes chartPopIn {
+        0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
+      }
+    </style>
+  `;
+
+  document.body.appendChild(overlay);
+};
+
+window.downloadCompleteMonthlyHistoryExcel = function() {
+  if (typeof window.syncLiveDataToAppState === 'function') window.syncLiveDataToAppState();
+  // Force SW unregister to bypass stubborn cache during development/updates
+  if (navigator.serviceWorker) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      for (let reg of regs) { reg.unregister(); }
+    });
+  }
+
+  let monthKey;
+  const select = document.getElementById('merged-pdf-month-select');
+  if (select && select.value) {
+    monthKey = select.value;
+  } else if (window.historyCurrentDate) {
+    monthKey = window.historyCurrentDate.getFullYear() + '-' + String(window.historyCurrentDate.getMonth() + 1).padStart(2, '0');
+  }
+
+  if (!monthKey) {
+    alert('Please select a month first.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-export-complete-excel') || document.getElementById('btn-admin-compile-excel');
+  const originalText = btn ? btn.innerHTML : 'Compile Excel';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '...';
+  }
+
+  const datesInMonth = Array.from(window.savedHistoryDates).filter(function(dateStr) {
+    return getReportingMonthInfo(dateStr).key === monthKey;
+  }).sort(function(a, b) {
+    const partsA = a.split('-').map(Number);
+    const partsB = b.split('-').map(Number);
+    const dateA = new Date(partsA[0], partsA[1] - 1, partsA[2]);
+    const dateB = new Date(partsB[0], partsB[1] - 1, partsB[2]);
+    return dateA - dateB;
+  });
+
+  if (datesInMonth.length === 0) {
+    alert('No dates with saved snapshots in this month.');
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    return;
+  }
+
+  const fetchPromises = datesInMonth.map(function(dateStr) {
+    return window.firebaseDb.ref('mep_attendance_history/' + dateStr).once('value').then(function(snap) {
+      return {
+        dateStr: dateStr,
+        state: snap.val()
+      };
+    });
+  });
+
+  Promise.all(fetchPromises).then(function(results) {
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+    generateAndDownloadCompleteMonthlyExcel(monthKey, results);
+  }).catch(function(err) {
+    console.error(err);
+    alert('Error fetching data: ' + err.message);
+    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+  });
+};
+function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
+  if (results.length === 0) {
+    alert("No data available for the selected month.");
+    return;
+  }
+
+  const monthInfo = getReportingMonthInfo(results[0].dateStr);
+  
+  // 1. Get all dates and sort them
+  const dates = results.map(r => r.dateStr).sort((a, b) => new Date(a) - new Date(b));
+  const numDates = dates.length;
+  
+  // 2. Build 2D map: dataMap[sectionName][designationName][dateStr] = { auth, exist, pres, abs }
+  const dataMap = {};
+  
+  results.forEach(function(res) {
+    const dStr = res.dateStr;
+    const state = res.state || {};
+    
+    Object.keys(state).forEach(function(pageId) {
+      // Only process valid attendance sheets (keys in SECTIONS_CONFIG)
+      if (typeof SECTIONS_CONFIG === 'undefined' || !SECTIONS_CONFIG[pageId]) return;
+
+      const pageData = state[pageId];
+      if (typeof pageData !== 'object' || pageData === null) return;
+      
+      Object.keys(pageData).forEach(function(originalGroupName) {
+        let groupName = originalGroupName;
+        // Filter out unwanted personal names acting as sections
+        const excludedSections = ['anik', 'anwar', 'bikash', 'monir', 'takbir'];
+        if (excludedSections.includes(groupName.toLowerCase().trim())) return;
+
+        // Merge historical "Power Press & Stamping" into "Fan Power Press & Stamping"
+        if (groupName.trim().toLowerCase() === 'power press & stamping') {
+          groupName = 'Fan Power Press & Stamping';
+        }
+
+        var rows = pageData[originalGroupName];
+        if (!rows) return;
+        if (!Array.isArray(rows)) {
+          if (typeof rows === 'object') { rows = Object.values(rows); } else { return; }
+        }
         
-        Object.keys(rowsObj).forEach(function(rKey) {
-          var row = rowsObj[rKey];
+        if (!dataMap[groupName]) dataMap[groupName] = {};
+        
+        rows.forEach(function(row) {
           if (!row || typeof row !== 'object') return;
           let desig = String(row.designation || 'N/A').trim();
           
@@ -1042,24 +1045,6 @@ window.renderMonthlyChartModal = function(monthKey, results) {
     });
   });
 
-  // --- START INJECTION: Force specific designations from July 2024 onwards ---
-  dates.forEach(function(dStr) {
-    if (dStr >= '2024-07-01') {
-      if (!dataMap['Fan Sada Shapla']) dataMap['Fan Sada Shapla'] = {};
-      if (!dataMap['Fan Sada Shapla']['Supervisor']) dataMap['Fan Sada Shapla']['Supervisor'] = {};
-      if (!dataMap['Fan Sada Shapla']['Supervisor'][dStr]) {
-        dataMap['Fan Sada Shapla']['Supervisor'][dStr] = { auth: 0, exist: 0, pres: 0, abs: 0 };
-      }
-
-      if (!dataMap['Fan Assemble']) dataMap['Fan Assemble'] = {};
-      if (!dataMap['Fan Assemble']['Jr. Officer']) dataMap['Fan Assemble']['Jr. Officer'] = {};
-      if (!dataMap['Fan Assemble']['Jr. Officer'][dStr]) {
-        dataMap['Fan Assemble']['Jr. Officer'][dStr] = { auth: 0, exist: 0, pres: 0, abs: 0 };
-      }
-    }
-  });
-  // --- END INJECTION ---
-
   // 3. Build HTML Table for Excel
   let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
   <head>
@@ -1086,47 +1071,47 @@ window.renderMonthlyChartModal = function(monthKey, results) {
     </xml>
     <![endif]-->
   </head><body>
-  <table border="1" style="border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 11pt; border: 1px solid #94a3b8;">
+  <table border="1" style="border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 10pt; border: 1px solid #94a3b8;">
     <thead>
       <tr>
-        <th colspan="${2 + dates.length * 4 + 6}" style="font-size: 24pt; font-weight: 900; text-align: center; padding: 24px; background-color: #020617; color: #ffffff; border: 1px solid #0f172a; text-transform: uppercase; letter-spacing: 3px;">
+        <th colspan="${2 + dates.length * 4 + 6}" style="font-size: 18pt; font-weight: bold; text-align: center; padding: 12px; background-color: #064e3b; color: #ffffff; border: 1px solid #94a3b8;">
           Complete Attendance Efficiency Report - ${monthInfo.displayName}
         </th>
       </tr>
       <tr>
-        <th rowspan="2" style="background-color: #1e293b; color: #ffffff; font-weight: 800; vertical-align: middle; text-align: center; border: 1px solid #334155; border-bottom: 4px solid #d97706; padding: 10px; border-left: 2px solid #94a3b8; padding: 10px;">Section</th>
-        <th rowspan="2" style="background-color: #1e293b; color: #ffffff; font-weight: 800; vertical-align: middle; text-align: center; border: 1px solid #334155; border-bottom: 4px solid #d97706; padding: 10px; border-right: 2px solid #94a3b8; padding: 10px;">Designation</th>`;
+        <th rowspan="2" style="background-color: #064e3b; color: #ffffff; font-weight: bold; vertical-align: middle; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 6px;">Section</th>
+        <th rowspan="2" style="background-color: #064e3b; color: #ffffff; font-weight: bold; vertical-align: middle; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 6px;">Designation</th>`;
         
   dates.forEach(dStr => {
     const d = new Date(dStr);
     const dateLabel = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     const isFriday = d.getDay() === 5;
-    const bgColor = isFriday ? '#be123c' : '#334155';
-    html += `<th colspan="4" style="background-color: ${bgColor}; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px;">${dateLabel}</th>`;
+    const bgColor = isFriday ? '#991b1b' : '#047857';
+    html += `<th colspan="4" style="background-color: ${bgColor}; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 6px;">${dateLabel}</th>`;
   });
   
-  html += `<th colspan="6" style="background-color: #1e293b; color: #ffffff; font-weight: 800; text-align: center; border: 1px solid #334155; border-left: 2px solid #475569; border-right: 2px solid #475569; padding: 10px;">MONTHLY PERFORMANCE SUMMARY</th>
+  html += `<th colspan="6" style="background-color: #0f766e; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 6px;">Monthly Total / Average</th>
       </tr>
       <tr>`;
       
   dates.forEach((dStr) => {
     const isFriday = new Date(dStr).getDay() === 5;
-    const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
-    const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
+    const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
+    const existBg = isFriday ? '#fecaca' : '#d1fae5';
     const presBg = '#a7f3d0';
     const absBg = '#ffedd5';
-    html += `<th style="background-color: ${authBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Auth</th>
-             <th style="background-color: ${existBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Exist</th>
-             <th style="background-color: ${presBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Pres</th>
-             <th style="background-color: ${absBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Abs</th>`;
+    html += `<th style="background-color: ${authBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Auth</th>
+             <th style="background-color: ${existBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Exist</th>
+             <th style="background-color: ${presBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Pres</th>
+             <th style="background-color: ${absBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Abs</th>`;
   });
   
-  html += `<th style="background-color: #f1f5f9; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Auth</th>
-           <th style="background-color: #e2e8f0; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Exist</th>
-           <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Pres</th>
-           <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Abs</th>
-           <th style="background-color: #059669; color: #ffffff; text-align: center; border: 1px solid #e2e8f0; border-bottom: 3px solid #047857; padding: 10px; font-size: 11pt; font-weight: 900; text-transform: uppercase;">Pres %</th>
-           <th style="background-color: #e11d48; color: #ffffff; text-align: center; border: 1px solid #e2e8f0; border-bottom: 3px solid #be123c; border-right: 2px solid #94a3b8; padding: 10px; font-size: 11pt; font-weight: 900; text-transform: uppercase;">Abs %</th>
+  html += `<th style="background-color: #e2e8f0; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Auth</th>
+           <th style="background-color: #cbd5e1; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Exist</th>
+           <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Pres</th>
+           <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Abs</th>
+           <th style="background-color: #064e3b; color: #ffffff; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Pres %</th>
+           <th style="background-color: #064e3b; color: #ffffff; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Abs %</th>
       </tr>
     </thead>
     <tbody>`;
@@ -1139,14 +1124,6 @@ window.renderMonthlyChartModal = function(monthKey, results) {
   Object.keys(dataMap).sort().forEach(section => {
     // 3. Remove Empty Rows: Skip designations that have 0 auth/exist across all dates
     const designations = Object.keys(dataMap[section]).sort().filter(desig => {
-      // Force include these from July 1st
-      if (section === 'Fan Sada Shapla' && desig === 'Supervisor') {
-        if (dates.some(d => d >= '2024-07-01')) return true;
-      }
-      if (section === 'Fan Assemble' && desig === 'Jr. Officer') {
-        if (dates.some(d => d >= '2024-07-01')) return true;
-      }
-
       let totalData = 0;
       dates.forEach(dStr => {
         if (dataMap[section][desig][dStr]) totalData += dataMap[section][desig][dStr].auth + dataMap[section][desig][dStr].exist;
@@ -1165,9 +1142,9 @@ window.renderMonthlyChartModal = function(monthKey, results) {
     designations.forEach((desig, index) => {
       html += `<tr>`;
       if (index === 0) {
-        html += `<td rowspan="${rowSpanCount}" style="vertical-align: middle; background-color: #f8fafc; color: #000000; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; border-bottom: 2px solid #94a3b8; padding: 10px; font-weight: 900; font-size: 13pt; text-transform: uppercase; color: #1e293b;">${section}</td>`;
+        html += `<td rowspan="${rowSpanCount}" style="vertical-align: middle; background-color: #f8fafc; color: #000000; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; font-size: 10pt;">${section}</td>`;
       }
-      html += `<td style="background-color: #ffffff; color: #000000; border: 1px solid #e2e8f0; border-right: 2px solid #94a3b8; padding: 10px; font-weight: 700; font-size: 11pt; color: #334155;">${desig}</td>`;
+      html += `<td style="background-color: #ffffff; color: #000000; border: 1px solid #cbd5e1; border-right: 2px solid #94a3b8; padding: 5px; font-weight: 500;">${desig}</td>`;
         
       let rowAuthSum = 0, rowExistSum = 0, rowPresSum = 0, rowAbsSum = 0;
       let rowDaysWithData = 0;
@@ -1175,14 +1152,14 @@ window.renderMonthlyChartModal = function(monthKey, results) {
       dates.forEach(dStr => {
         const cell = dataMap[section][desig][dStr];
         const isFriday = new Date(dStr).getDay() === 5;
-        const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
-        const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
+        const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
+        const existBg = isFriday ? '#fecaca' : '#d1fae5';
         
         if (cell) {
-          html += `<td style="text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: ${authBg}; mso-number-format:'0';">${cell.auth}</td>
-                   <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: ${existBg}; mso-number-format:'0';">${cell.exist}</td>
-                   <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${cell.pres}</td>
-                   <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${cell.abs}</td>`;
+          html += `<td style="text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 4px; color: #000000; background-color: ${authBg}; mso-number-format:'0';">${cell.auth}</td>
+                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: ${existBg}; mso-number-format:'0';">${cell.exist}</td>
+                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${cell.pres}</td>
+                   <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${cell.abs}</td>`;
           rowAuthSum += cell.auth;
           rowExistSum += cell.exist;
           rowPresSum += cell.pres;
@@ -1199,10 +1176,10 @@ window.renderMonthlyChartModal = function(monthKey, results) {
           sectionTotals[dStr].pres += cell.pres;
           sectionTotals[dStr].abs += cell.abs;
         } else {
-          html += `<td style="text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; color: #7F7F7F; background-color: ${authBg};">-</td>
-                   <td style="text-align: center; border: 1px solid #e2e8f0; color: #7F7F7F; background-color: ${existBg};">-</td>
-                   <td style="text-align: center; border: 1px solid #e2e8f0; color: #7F7F7F; background-color: #a7f3d0;">-</td>
-                   <td style="text-align: center; border: 1px solid #e2e8f0; color: #7F7F7F; background-color: #ffedd5;">-</td>`;
+          html += `<td style="text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; color: #7F7F7F; background-color: ${authBg};">-</td>
+                   <td style="text-align: center; border: 1px solid #cbd5e1; color: #7F7F7F; background-color: ${existBg};">-</td>
+                   <td style="text-align: center; border: 1px solid #cbd5e1; color: #7F7F7F; background-color: #a7f3d0;">-</td>
+                   <td style="text-align: center; border: 1px solid #cbd5e1; color: #7F7F7F; background-color: #ffedd5;">-</td>`;
         }
       });
       
@@ -1214,29 +1191,29 @@ window.renderMonthlyChartModal = function(monthKey, results) {
       const rawAvgPct = rowAuthSum > 0 ? (rowPresSum / rowAuthSum) : 0;
       const rawAbsPct = rowAuthSum > 0 ? (rowAbsSum / rowAuthSum) : 0;
       
-      html += `<td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #f1f5f9; mso-number-format:'0';">${avgAuth}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${avgExist}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${avgPres}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${avgAbs}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #ffffff; background-color: #059669; mso-number-format:'0%'; font-size: 11pt;">${rawAvgPct}</td>
-               <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-right: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #e11d48; mso-number-format:'0%'; font-size: 11pt;">${rawAbsPct}</td>
+      html += `<td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${avgAuth}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #000000; background-color: #cbd5e1; mso-number-format:'0';">${avgExist}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${avgPres}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${avgAbs}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${rawAvgPct}</td>
+               <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-right: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${rawAbsPct}</td>
              </tr>`;
     });
 
     // Section Total Row with thick border
     html += `<tr>`;
-    html += `<td style="background-color: #f8fafc; color: #000000; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 10px; font-weight: 900; text-transform: uppercase; text-align: right; background-color: #f1f5f9; color: #0f172a;">TOTAL</td>`;
+    html += `<td style="background-color: #f8fafc; color: #000000; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 5px; font-weight: bold; font-style: italic; text-align: right;">Total</td>`;
     
     let secAuthTotal = 0, secExistTotal = 0, secPresTotal = 0, secAbsTotal = 0;
     dates.forEach(dStr => {
       const t = sectionTotals[dStr];
       const isFriday = new Date(dStr).getDay() === 5;
-      const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
-      const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
-      html += `<td style="text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; font-weight: bold; background-color: ${authBg}; color: #000000; mso-number-format:'0';">${t.auth}</td>
-               <td style="text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; font-weight: bold; background-color: ${existBg}; color: #000000; mso-number-format:'0';">${t.exist}</td>
-               <td style="text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; font-weight: bold; background-color: #a7f3d0; color: #000000; mso-number-format:'0';">${t.pres}</td>
-               <td style="text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; font-weight: bold; background-color: #ffedd5; color: #9a3412; mso-number-format:'0';">${t.abs}</td>`;
+      const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
+      const existBg = isFriday ? '#fecaca' : '#d1fae5';
+      html += `<td style="text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; background-color: ${authBg}; color: #000000; mso-number-format:'0';">${t.auth}</td>
+               <td style="text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; background-color: ${existBg}; color: #000000; mso-number-format:'0';">${t.exist}</td>
+               <td style="text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; background-color: #a7f3d0; color: #000000; mso-number-format:'0';">${t.pres}</td>
+               <td style="text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; background-color: #ffedd5; color: #9a3412; mso-number-format:'0';">${t.abs}</td>`;
       secAuthTotal += t.auth;
       secExistTotal += t.exist;
       secPresTotal += t.pres;
@@ -1252,31 +1229,31 @@ window.renderMonthlyChartModal = function(monthKey, results) {
     const sRawPct = secAuthTotal > 0 ? (secPresTotal / secAuthTotal) : 0;
     const sRawAbsPct = secAuthTotal > 0 ? (secAbsTotal / secAuthTotal) : 0;
 
-    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #f1f5f9; mso-number-format:'0';">${sAvgAuth}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${sAvgExist}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${sAvgPres}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${sAvgAbs}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #059669; mso-number-format:'0%'; font-size: 11pt;">${sRawPct}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #e11d48; mso-number-format:'0%'; font-size: 11pt;">${sRawAbsPct}</td>
+    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${sAvgAuth}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #cbd5e1; mso-number-format:'0';">${sAvgExist}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${sAvgPres}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${sAvgAbs}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${sRawPct}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${sRawAbsPct}</td>
            </tr>`;
            
     // 5. Visual Spacing: Add empty row separator
-    html += `<tr><td colspan="${2 + dates.length * 4 + 6}" style="border:none; height: 24px; background-color: #f1f5f9;"></td></tr>`;
+    html += `<tr><td colspan="${2 + dates.length * 4 + 6}" style="border:none; height: 16px; background-color: #f1f5f9;"></td></tr>`;
   });
   
   // Daily Totals Row
   html += `<tr>
-    <td colspan="2" style="font-weight: bold; text-align: right; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #312e81; font-size: 13pt; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">GRAND DAILY TOTALS</td>`;
+    <td colspan="2" style="font-weight: bold; text-align: right; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 8px; color: #ffffff; background-color: #0f766e;">GRAND DAILY TOTALS</td>`;
   
   dates.forEach(dStr => {
     const t = dateTotals[dStr];
     const isFriday = new Date(dStr).getDay() === 5;
-    const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
-    const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
-    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: ${authBg};">${t.auth}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: ${existBg};">${t.exist}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #a7f3d0;">${t.pres}</td>
-             <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #9a3412; background-color: #ffedd5;">${t.abs}</td>`;
+    const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
+    const existBg = isFriday ? '#fecaca' : '#d1fae5';
+    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 6px; color: #000000; background-color: ${authBg};">${t.auth}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 6px; color: #000000; background-color: ${existBg};">${t.exist}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 6px; color: #000000; background-color: #a7f3d0;">${t.pres}</td>
+             <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 6px; color: #9a3412; background-color: #ffedd5;">${t.abs}</td>`;
   });
   
   let gTotalAuth = 0, gTotalExist = 0, gTotalPres = 0, gTotalAbs = 0;
@@ -1298,12 +1275,12 @@ window.renderMonthlyChartModal = function(monthKey, results) {
   const gPct = gTotalAuth > 0 ? Math.round((gTotalPres / gTotalAuth) * 100) + '%' : '0%';
   const gAbsPct = gTotalAuth > 0 ? Math.round((gTotalAbs / gTotalAuth) * 100) + '%' : '0%';
 
-  html += `<td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #f1f5f9; mso-number-format:'0';">${gAvgAuth}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${gAvgExist}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${gAvgPres}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${gAvgAbs}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #059669; mso-number-format:'0%'; font-size: 11pt;">${gPct}</td>
-           <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-top: 3px solid #334155; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #e11d48; mso-number-format:'0%'; font-size: 11pt;">${gAbsPct}</td></tr>`;
+  html += `<td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${gAvgAuth}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #cbd5e1; mso-number-format:'0';">${gAvgExist}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${gAvgPres}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${gAvgAbs}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${gPct}</td>
+           <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${gAbsPct}</td></tr>`;
 
   
   // =========================================================
@@ -1331,36 +1308,36 @@ window.renderMonthlyChartModal = function(monthKey, results) {
            <tr><td colspan="${2 + dates.length * 4 + 6}" style="border:none; height: 30px;"></td></tr>`;
 
   html += `<tr>
-        <td colspan="2" rowspan="2" style="background-color: #1e293b; color: #ffffff; font-weight: 800; vertical-align: middle; text-align: center; border: 1px solid #334155; border-bottom: 4px solid #d97706; padding: 10px; border-right: 2px solid #94a3b8; padding: 10px;">Designation</td>`;
+        <td colspan="2" rowspan="2" style="background-color: #064e3b; color: #ffffff; font-weight: bold; vertical-align: middle; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 6px;">Designation</td>`;
         
   dates.forEach(dStr => {
     const d = new Date(dStr);
     const dateLabel = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     const isFriday = d.getDay() === 5;
-    const bgColor = isFriday ? '#be123c' : '#334155';
-    html += `<th colspan="4" style="background-color: ${bgColor}; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px;">${dateLabel}</th>`;
+    const bgColor = isFriday ? '#991b1b' : '#047857';
+    html += `<th colspan="4" style="background-color: ${bgColor}; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 6px;">${dateLabel}</th>`;
   });
   
-  html += `<th colspan="6" style="background-color: #1e293b; color: #ffffff; font-weight: 800; text-align: center; border: 1px solid #334155; border-left: 2px solid #475569; border-right: 2px solid #475569; padding: 10px;">MONTHLY PERFORMANCE SUMMARY</th>
+  html += `<th colspan="6" style="background-color: #0f766e; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 6px;">Monthly Total / Average</th>
       </tr>
       <tr>`;
       
   dates.forEach((dStr) => {
     const isFriday = new Date(dStr).getDay() === 5;
-    const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
-    const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
-    html += `<th style="background-color: ${authBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Auth</th>
-              <th style="background-color: ${existBg}; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Exist</th>
-              <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Pres</th>
-              <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10.5pt; font-weight: 900; text-transform: uppercase;">Abs</th>`;
+    const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
+    const existBg = isFriday ? '#fecaca' : '#d1fae5';
+    html += `<th style="background-color: ${authBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Auth</th>
+              <th style="background-color: ${existBg}; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Exist</th>
+              <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Pres</th>
+              <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Abs</th>`;
   });
   
-  html += `<th style="background-color: #f1f5f9; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Auth</th>
-            <th style="background-color: #e2e8f0; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Exist</th>
-            <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Pres</th>
-            <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; padding: 10px; font-size: 10pt;">Avg Abs</th>
-            <th style="background-color: #059669; color: #ffffff; text-align: center; border: 1px solid #e2e8f0; border-bottom: 3px solid #047857; padding: 10px; font-size: 11pt; font-weight: 900; text-transform: uppercase;">Pres %</th>
-            <th style="background-color: #e11d48; color: #ffffff; text-align: center; border: 1px solid #e2e8f0; border-bottom: 3px solid #be123c; border-right: 2px solid #94a3b8; padding: 10px; font-size: 11pt; font-weight: 900; text-transform: uppercase;">Abs %</th>
+  html += `<th style="background-color: #e2e8f0; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-left: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Auth</th>
+            <th style="background-color: #cbd5e1; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Exist</th>
+            <th style="background-color: #a7f3d0; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Pres</th>
+            <th style="background-color: #ffedd5; color: #000000; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Avg Abs</th>
+            <th style="background-color: #064e3b; color: #ffffff; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Pres %</th>
+            <th style="background-color: #064e3b; color: #ffffff; text-align: center; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 4px; font-size: 10pt;">Abs %</th>
       </tr>`;
 
   Object.keys(desigTotals).sort().forEach(desig => {
@@ -1368,19 +1345,19 @@ window.renderMonthlyChartModal = function(monthKey, results) {
     dates.forEach(dStr => checkData += desigTotals[desig][dStr].auth + desigTotals[desig][dStr].exist);
     if (checkData === 0) return; // Skip empty rows
 
-    html += `<tr><td colspan="2" style="background-color: #ffffff; color: #000000; border: 1px solid #e2e8f0; border-right: 2px solid #94a3b8; padding: 10px; font-weight: bold; font-size: 10pt;">${desig}</td>`;
+    html += `<tr><td colspan="2" style="background-color: #ffffff; color: #000000; border: 1px solid #cbd5e1; border-right: 2px solid #94a3b8; padding: 5px; font-weight: bold; font-size: 10pt;">${desig}</td>`;
     
     let rAuth = 0, rExist = 0, rPres = 0, rAbs = 0;
     
     dates.forEach(dStr => {
       const cell = desigTotals[desig][dStr];
       const isFriday = new Date(dStr).getDay() === 5;
-      const authBg = isFriday ? '#fff1f2' : '#ecfdf5';
-      const existBg = isFriday ? '#ffe4e6' : '#d1fae5';
-      html += `<td style="text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: ${authBg}; mso-number-format:'0';">${cell.auth}</td>
-                <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: ${existBg}; mso-number-format:'0';">${cell.exist}</td>
-                <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${cell.pres}</td>
-                <td style="text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${cell.abs}</td>`;
+      const authBg = isFriday ? '#fee2e2' : '#ecfdf5';
+      const existBg = isFriday ? '#fecaca' : '#d1fae5';
+      html += `<td style="text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 4px; color: #000000; background-color: ${authBg}; mso-number-format:'0';">${cell.auth}</td>
+                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: ${existBg}; mso-number-format:'0';">${cell.exist}</td>
+                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${cell.pres}</td>
+                <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${cell.abs}</td>`;
       
       rAuth += cell.auth;
       rExist += cell.exist;
@@ -1395,12 +1372,12 @@ window.renderMonthlyChartModal = function(monthKey, results) {
     const rawPct = rAuth > 0 ? (rPres / rAuth) : 0;
     const rawAbsPct = rAuth > 0 ? (rAbs / rAuth) : 0;
     
-    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-left: 2px solid #94a3b8; padding: 10px; color: #000000; background-color: #f1f5f9; mso-number-format:'0';">${aAuth}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${aExist}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${aPres}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${aAbs}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; padding: 10px; color: #ffffff; background-color: #059669; mso-number-format:'0%'; font-size: 11pt;">${rawPct}</td>
-              <td style="font-weight:bold; text-align: center; border: 1px solid #e2e8f0; border-right: 2px solid #94a3b8; padding: 10px; color: #ffffff; background-color: #e11d48; mso-number-format:'0%'; font-size: 11pt;">${rawAbsPct}</td>
+    html += `<td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-left: 2px solid #94a3b8; padding: 5px; color: #000000; background-color: #e2e8f0; mso-number-format:'0';">${aAuth}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #000000; background-color: #cbd5e1; mso-number-format:'0';">${aExist}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${aPres}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${aAbs}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${rawPct}</td>
+              <td style="font-weight:bold; text-align: center; border: 1px solid #cbd5e1; border-right: 2px solid #94a3b8; padding: 5px; color: #ffffff; background-color: #064e3b; mso-number-format:'0%';">${rawAbsPct}</td>
             </tr>`;
   });
   
@@ -1499,18 +1476,18 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
   <table border="1" style="border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 11pt; border: 1px solid #94a3b8;">
     <thead>
       <tr>
-        <th colspan="7" style="font-size: 24pt; font-weight: 900; text-align: center; padding: 24px; background-color: #020617; color: #ffffff; border: 1px solid #0f172a; text-transform: uppercase; letter-spacing: 3px; border-bottom: 2px solid #94a3b8;">
+        <th colspan="7" style="font-size: 18pt; font-weight: bold; text-align: center; padding: 12px; background-color: #064e3b; color: #ffffff; border: 1px solid #94a3b8; border-bottom: 2px solid #94a3b8;">
           Worker Attendance - ${monthInfo.displayName}
         </th>
       </tr>
       <tr>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Date</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Day</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Authorized</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Existing</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Present</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8; white-space: normal; word-wrap: break-word;">Absent<br>(from Authorize Manpower)</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #e2e8f0; border-bottom: 2px solid #94a3b8;">Percentage</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Date</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Day</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Authorized</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Existing</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Present</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; white-space: normal; word-wrap: break-word;">Absent<br>(from Authorize Manpower)</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8;">Percentage</th>
       </tr>
     </thead>
     <tbody>
@@ -1529,10 +1506,10 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
     const dayName = dateObj.toLocaleDateString('en-GB', { weekday: 'short' });
 
     const isFriday = dateObj.getDay() === 5;
-    const rowBg = isFriday ? '#fff1f2' : '#ffffff';
-    const cellBorder = "1px solid #e2e8f0";
+    const rowBg = isFriday ? '#fee2e2' : '#ffffff';
+    const cellBorder = "1px solid #cbd5e1";
 
-    const merged = window.historyMergedMode === 'roj_shapla' ? collectFanRojonigondhaShaplaTotals(res.state) : collectFanAssembleDimmerTotals(res.state);
+    const merged = collectFanAssembleDimmerTotals(res.state);
     const auth = merged.totals.authorized || 0;
     const exist = merged.totals.existing || 0;
     const pres = merged.totals.present || 0;
@@ -1545,13 +1522,13 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
     totalAbsentSum += abs;
 
     html += `<tr>
-      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; background-color: ${rowBg};">${formattedDate}</td>
-      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; background-color: ${rowBg};">${dayName}</td>
-      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; background-color: ${isFriday ? '#ffe4e6' : '#ecfdf5'}; mso-number-format:'0';">${auth}</td>
-      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; background-color: ${isFriday ? '#ffe4e6' : '#d1fae5'}; mso-number-format:'0';">${exist}</td>
-      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${pres}</td>
-      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${abs}</td>
-      <td style="text-align: center; padding: 10px; border: ${cellBorder}; color: #000000; font-weight: bold; background-color: ${rowBg};">${pct}%</td>
+      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${rowBg};">${formattedDate}</td>
+      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${rowBg};">${dayName}</td>
+      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${isFriday ? '#fecaca' : '#ecfdf5'}; mso-number-format:'0';">${auth}</td>
+      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${isFriday ? '#fecaca' : '#d1fae5'}; mso-number-format:'0';">${exist}</td>
+      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${pres}</td>
+      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${abs}</td>
+      <td style="text-align: center; padding: 6px; border: ${cellBorder}; color: #000000; font-weight: bold; background-color: ${rowBg};">${pct}%</td>
     </tr>`;
   });
 
@@ -1563,12 +1540,12 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
     </tbody>
     <tfoot>
       <tr>
-        <th colspan="2" style="background-color: #0f766e; color: #ffffff; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">Total / Average</th>
-        <th style="background-color: #f1f5f9; color: #000000; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">${avgAuth}</th>
-        <th style="background-color: #e2e8f0; color: #000000; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">${avgExist}</th>
-        <th style="background-color: #a7f3d0; color: #000000; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">${totalPresentSum}</th>
-        <th style="background-color: #ffedd5; color: #9a3412; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">${totalAbsentSum}</th>
-        <th style="background-color: #166534; color: #ffffff; text-align: center; font-weight: bold; padding: 10px; border: 1px solid #e2e8f0; border-top: 2px solid #94a3b8;">${overallPct}%</th>
+        <th colspan="2" style="background-color: #0f766e; color: #ffffff; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">Total / Average</th>
+        <th style="background-color: #e2e8f0; color: #000000; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">${avgAuth}</th>
+        <th style="background-color: #cbd5e1; color: #000000; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">${avgExist}</th>
+        <th style="background-color: #a7f3d0; color: #000000; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">${totalPresentSum}</th>
+        <th style="background-color: #ffedd5; color: #9a3412; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">${totalAbsentSum}</th>
+        <th style="background-color: #166534; color: #ffffff; text-align: center; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">${overallPct}%</th>
       </tr>
     </tfoot>
   </table>
@@ -1606,7 +1583,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
     const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     const dayName = dateObj.toLocaleDateString('en-GB', { weekday: 'short' });
 
-    const merged = window.historyMergedMode === 'roj_shapla' ? collectFanRojonigondhaShaplaTotals(res.state) : collectFanAssembleDimmerTotals(res.state);
+    const merged = collectFanAssembleDimmerTotals(res.state);
     const auth = merged.totals.authorized || 0;
     const exist = merged.totals.existing || 0;
     const pres = merged.totals.present || 0;
@@ -1722,7 +1699,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
         '}' +
         '.kpi-card {' +
           'background: #f8fafc;' +
-          'border: 1px solid #f1f5f9;' +
+          'border: 1px solid #e2e8f0;' +
           'border-radius: 8px;' +
           'padding: 8px 10px;' +
           'text-align: center;' +
@@ -1755,7 +1732,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
         '}' +
         'th {' +
           'background: #f1f5f9;' +
-          'border: 1px solid #e2e8f0;' +
+          'border: 1px solid #cbd5e1;' +
           'color: #000000;' +
           'font-weight: 700;' +
           'font-size: 9px;' +
@@ -1765,7 +1742,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
           'text-align: left;' +
         '}' +
         'td {' +
-          'border: 1px solid #f1f5f9;' +
+          'border: 1px solid #e2e8f0;' +
           'padding: 6px 10px;' +
           'font-size: 10px;' +
         '}' +
@@ -1786,7 +1763,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
         '}' +
         '.pct-high { background: #d1fae5; color: #065f46; }' +
         '.pct-mid { background: #fef3c7; color: #92400e; }' +
-        '.pct-low { background: #fff1f2; color: #991b1b; }' +
+        '.pct-low { background: #fee2e2; color: #991b1b; }' +
         '.footer {' +
           'margin-top: 40px;' +
           'display: flex;' +
@@ -1796,7 +1773,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
         '}' +
         '.signature-line {' +
           'width: 150px;' +
-          'border-top: 1px solid #e2e8f0;' +
+          'border-top: 1px solid #cbd5e1;' +
           'margin-top: 30px;' +
           'text-align: center;' +
           'padding-top: 4px;' +
@@ -1866,7 +1843,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
           tableRowsHtml +
         '</tbody>' +
         '<tfoot>' +
-          '<tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid #e2e8f0;">' +
+          '<tr style="background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1;">' +
             '<td colspan="2" style="text-align: right;">Average:</td>' +
             '<td style="text-align: center;">' + avgAuth + '</td>' +
             '<td style="text-align: center;">' + avgExist + '</td>' +
@@ -1901,28 +1878,21 @@ function generateAndPrintMonthlyReport(monthKey, results) {
 function _renderHistoryState(dateStr, state, container) {
   try {
     var formattedDate = formatHistoryDate(dateStr);
-
     var totalAuth = 0, totalExist = 0, totalPresent = 0, totalAbsent = 0;
     var sectionsHtml = '';
 
-    var pageIds = Object.keys(state);
-    pageIds.forEach(function(pageId) {
+    Object.keys(state).forEach(function(pageId) {
       if (isMetaStateKey(pageId)) return;
-      if (!state[pageId] || typeof state[pageId] !== 'object' || Array.isArray(state[pageId])) return;
-
       var pageData = state[pageId];
-      var groupNames = Object.keys(pageData);
-      if (groupNames.length === 0) return;
+      if (!pageData || typeof pageData !== 'object' || Array.isArray(pageData)) return;
 
-      groupNames.forEach(function(groupName) {
-        var rows = pageData[groupName];
-        if (!rows) return;
+      Object.keys(pageData).forEach(function(groupName) {
         var rowsObj = pageData[groupName];
         if (!rowsObj || typeof rowsObj !== 'object') return;
 
         var groupRows = [];
         var secExist = 0, secPresent = 0, secAbsent = 0;
-        
+
         Object.keys(rowsObj).forEach(function(rKey) {
           var row = rowsObj[rKey];
           if (!row || typeof row !== 'object') return;
@@ -1934,7 +1904,9 @@ function _renderHistoryState(dateStr, state, container) {
           totalAuth += authorized;
           totalExist += existing; totalPresent += present; totalAbsent += absent;
           secExist += existing; secPresent += present; secAbsent += absent;
-          groupRows.push({desig: desig, existing: existing, present: present, absent: absent, authorized: authorized, pageId: pageId, groupName: groupName, rKey: rKey});
+          groupRows.push({desig: desig, existing: existing, present: present,
+            absent: absent, authorized: authorized,
+            pageId: pageId, groupName: groupName, rKey: rKey});
         });
 
         if (groupRows.length === 0) return;
@@ -1944,30 +1916,32 @@ function _renderHistoryState(dateStr, state, container) {
           var pct = r.existing > 0 ? Math.round((r.present / r.existing) * 100) : 0;
           if (window.historyEditMode) {
             rowsHtml +=
-              '<article class="ios-merge-card ios-ss-premium-card" style="margin: 8px 14px; padding: 12px 14px; border: 1px solid #3b82f6; background: #eff6ff;">' +
-                '<div class="ios-merge-card-main">' +
-                  '<div class="ios-merge-date" style="font-size: 0.95rem; color: #1e3a8a; margin-bottom: 2px;">' + historyEscapeHtml(r.desig) + '</div>' +
+              '<div class="ios-ss-row" style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;margin:4px 14px;padding:10px 14px;">' +
+                '<div class="ios-ss-desig">' +
+                  '<div class="ios-ss-desig-name" style="color:#1e40af;">' + historyEscapeHtml(r.desig) + '</div>' +
+                  '<div style="font-size:0.73rem;color:#6b7280;margin-top:2px;">Auth: ' + r.authorized + '</div>' +
                 '</div>' +
-                '<div class="ios-merge-card-stats" style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">' +
-                  '<span style="font-size:0.85rem; font-weight:600; color:#475569; display:flex; align-items:center; gap:4px;">Pres: <input type="number" class="ios-hm-edit-input" data-page="'+historyEscapeHtml(r.pageId)+'" data-group="'+historyEscapeHtml(r.groupName)+'" data-rkey="'+historyEscapeHtml(r.rKey)+'" data-field="present" value="'+r.present+'" style="width:60px; padding:4px; border:1px solid #cbd5e1; border-radius:6px;"></span>' +
-                  '<span style="font-size:0.85rem; font-weight:600; color:#475569; display:flex; align-items:center; gap:4px;">Exist: <input type="number" class="ios-hm-edit-input" data-page="'+historyEscapeHtml(r.pageId)+'" data-group="'+historyEscapeHtml(r.groupName)+'" data-rkey="'+historyEscapeHtml(r.rKey)+'" data-field="existing" value="'+r.existing+'" style="width:60px; padding:4px; border:1px solid #cbd5e1; border-radius:6px;"></span>' +
-                  '<span style="font-size:0.85rem; font-weight:600; color:#475569; display:flex; align-items:center; gap:4px;">Auth: '+r.authorized+'</span>' +
+                '<div style="display:flex;gap:8px;align-items:center;">' +
+                  '<label style="font-size:0.78rem;font-weight:600;color:#1d4ed8;display:flex;align-items:center;gap:4px;">P:<input type="number" min="0" class="ios-hm-edit-input" data-page="' + historyEscapeHtml(r.pageId) + '" data-group="' + historyEscapeHtml(r.groupName) + '" data-rkey="' + historyEscapeHtml(r.rKey) + '" data-field="present" value="' + r.present + '" style="width:52px;padding:4px 5px;border:1.5px solid #93c5fd;border-radius:6px;font-size:0.88rem;font-weight:700;text-align:center;outline:none;"></label>' +
+                  '<label style="font-size:0.78rem;font-weight:600;color:#1d4ed8;display:flex;align-items:center;gap:4px;">E:<input type="number" min="0" class="ios-hm-edit-input" data-page="' + historyEscapeHtml(r.pageId) + '" data-group="' + historyEscapeHtml(r.groupName) + '" data-rkey="' + historyEscapeHtml(r.rKey) + '" data-field="existing" value="' + r.existing + '" style="width:52px;padding:4px 5px;border:1.5px solid #93c5fd;border-radius:6px;font-size:0.88rem;font-weight:700;text-align:center;outline:none;"></label>' +
                 '</div>' +
-              '</article>';
+              '</div>';
           } else {
             rowsHtml +=
-            '<article class="ios-merge-card ios-ss-premium-card" style="margin: 8px 14px; padding: 12px 14px;">' +
-              '<div class="ios-merge-card-main">' +
-                '<div class="ios-merge-date" style="font-size: 0.95rem; color: #1c1134; margin-bottom: 2px;">' + historyEscapeHtml(r.desig) + '</div>' +
-                '<div class="ios-merge-title" style="font-weight: 600; opacity: 0.85;">' + r.present + '/' + r.existing + ' present</div>' +
-              '</div>' +
-              '<div class="ios-merge-card-stats">' +
-                '<span class="ios-merge-pill present">P ' + r.present + '</span>' +
-                '<span class="ios-merge-pill existing">E ' + r.existing + '</span>' +
-                '<span class="ios-merge-pill absent">A ' + r.absent + '</span>' +
-                '<span class="ios-merge-percent ' + getAttendanceTone(pct) + '">' + pct + '%</span>' +
-              '</div>' +
-            '</article>';
+              '<div class="ios-ss-row">' +
+                '<div class="ios-ss-desig">' +
+                  '<div class="ios-ss-desig-name">' + historyEscapeHtml(r.desig) + '</div>' +
+                  '<div class="ios-ss-mini-meta">' +
+                    '<span class="ios-ss-mini-dot ' + getAttendanceTone(pct) + '"></span>' +
+                    '<span>' + pct + '% present</span>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="ios-ss-chips">' +
+                  '<span class="ios-ss-chip c-exist"><span class="lbl">E</span>' + r.existing + '</span>' +
+                  '<span class="ios-ss-chip c-present"><span class="lbl">P</span>' + r.present + '</span>' +
+                  '<span class="ios-ss-chip c-absent' + (r.absent === 0 ? ' zero' : '') + '"><span class="lbl">A</span>' + r.absent + '</span>' +
+                '</div>' +
+              '</div>';
           }
         });
 
@@ -1990,29 +1964,74 @@ function _renderHistoryState(dateStr, state, container) {
     var pct = totalExist > 0 ? Math.round((totalPresent / totalExist) * 100) : 0;
 
     container.innerHTML =
-      '<div class="ios-merge-head ios-ss-premium-head" style="margin-bottom: 20px;">' +
-        '<div class="ios-merge-head-info">' +
-          '<h3 class="ios-ss-head-title" style="font-size: 1.3rem;">Daily Snapshot</h3>' +
+      '<div class="ios-ss-head" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-bottom:10px;margin-bottom:10px;">' +
+        '<div>' +
+          '<h3 class="ios-ss-head-title">Attendance Snapshot</h3>' +
           '<div class="ios-ss-head-date">' + formattedDate + '</div>' +
         '</div>' +
-        '<div class="ios-ss-head-actions" style="margin-left: auto;">' +
-          '<button class="ios-ss-delete-btn" onclick="window.deleteHistoryDate(\'' + historyEscapeHtml(dateStr) + '\')" type="button">' +
-            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>' +
-            '<span>Delete Date</span>' +
-          '</button>' +
+        '<div class="ios-ss-head-actions" style="display:flex;align-items:center;gap:6px;">' +
+          (window.historyEditMode ?
+            '<button id="btn-save-history" onclick="window.saveHistoryChanges(\'' + historyEscapeHtml(dateStr) + '\')" type="button" style="background:#10b981;border:none;border-radius:99px;color:#fff;font-weight:700;padding:7px 15px;cursor:pointer;font-size:0.82rem;">✓ Save</button>' +
+            '<button onclick="window.toggleHistoryEditMode()" type="button" style="background:#f1f5f9;color:#475569;border:none;border-radius:99px;font-weight:700;padding:7px 13px;cursor:pointer;font-size:0.82rem;">✕ Cancel</button>'
+          :
+            '<button onclick="window.toggleHistoryEditMode()" type="button" style="background:linear-gradient(135deg,#3b82f6,#6366f1);border:none;border-radius:99px;color:#fff;font-weight:700;padding:7px 15px;cursor:pointer;font-size:0.82rem;">✏️ Edit</button>' +
+            '<button class="ios-ss-delete-btn" onclick="window.deleteHistoryDate(\'' + historyEscapeHtml(dateStr) + '\')" type="button">' +
+              '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>' +
+              '<span>Delete</span>' +
+            '</button>'
+          ) +
           '<div class="ios-ss-ring" style="--pct:' + pct + '"><span class="ios-ss-ring-val">' + pct + '%</span></div>' +
         '</div>' +
       '</div>' +
-      '<div class="ios-merge-kpis ios-ss-premium-kpis" style="margin: 0 0 24px 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));">' +
-        '<div><span>Authorized</span><b class="k-authorized">' + (totalAuth || totalExist) + '</b></div>' +
-        '<div><span>Existing</span><b class="k-existing">' + totalExist + '</b></div>' +
-        '<div><span>Present</span><b class="k-present">' + totalPresent + '</b></div>' +
-        '<div><span>Absent</span><b class="k-absent">' + totalAbsent + '</b></div>' +
+      '<div class="ios-ss-kpi">' +
+        '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Authorized</div><div class="ios-ss-kpi-value k-total">' + (totalAuth || totalExist) + '</div></div>' +
+        '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Existing</div><div class="ios-ss-kpi-value k-existing">' + totalExist + '</div></div>' +
+        '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Present</div><div class="ios-ss-kpi-value k-present">' + totalPresent + '</div></div>' +
+        '<div class="ios-ss-kpi-cell"><div class="ios-ss-kpi-label">Absent</div><div class="ios-ss-kpi-value k-absent">' + totalAbsent + '</div></div>' +
       '</div>' +
       '<div class="ios-ss-sections">' + sectionsHtml + '</div>';
   } catch(e) {
     console.error('_renderHistoryState error:', e);
-    container.innerHTML = '<div style="padding:2rem;"><h3 style="color:#ef4444; margin-bottom:1rem;">Error rendering snapshot</h3><pre style="background:#f8fafc; padding:1.5rem; border-radius:12px; overflow:auto; max-height:70vh; font-size:0.85rem; color:#334155; border:1px solid #f1f5f9;">' + JSON.stringify(state, null, 2) + '</pre></div>';
+    container.innerHTML = '<div style="padding:2rem;"><h3 style="color:#ef4444;">Error rendering snapshot</h3><pre style="background:#f8fafc;padding:1rem;border-radius:8px;overflow:auto;font-size:0.8rem;color:#334155;">' + JSON.stringify(state, null, 2) + '</pre></div>';
   }
 }
-
+
+window.historyEditMode = false;
+window.currentHistoryState = null;
+
+window.toggleHistoryEditMode = function() {
+  window.historyEditMode = !window.historyEditMode;
+  if (!window.historySelectedDate || !window.currentHistoryState) return;
+  var viewer = document.getElementById('history-data-viewer');
+  if (viewer) { _renderHistoryState(window.historySelectedDate, window.currentHistoryState, viewer); }
+};
+
+window.saveHistoryChanges = function(dateStr) {
+  if (!window.currentHistoryState) return;
+  if (!confirm('Are you sure you want to save these changes?\nThis will permanently update Firebase data.')) return;
+  var inputs = document.querySelectorAll('.ios-hm-edit-input');
+  inputs.forEach(function(input) {
+    var pageId = input.getAttribute('data-page');
+    var group = input.getAttribute('data-group');
+    var rKey = input.getAttribute('data-rkey');
+    var field = input.getAttribute('data-field');
+    var val = parseInt(input.value); if (isNaN(val)) val = 0;
+    if (window.currentHistoryState[pageId] &&
+        window.currentHistoryState[pageId][group] &&
+        window.currentHistoryState[pageId][group][rKey]) {
+      window.currentHistoryState[pageId][group][rKey][field] = val;
+    }
+  });
+  var btn = document.getElementById('btn-save-history');
+  if (btn) { btn.innerHTML = 'Saving...'; btn.disabled = true; }
+  window.firebaseDb.ref('mep_attendance_history/' + dateStr).set(window.currentHistoryState).then(function() {
+    alert('Snapshot updated successfully!');
+    window.historyEditMode = false;
+    var viewer = document.getElementById('history-data-viewer');
+    if (viewer) { _renderHistoryState(dateStr, window.currentHistoryState, viewer); }
+  }).catch(function(err) {
+    console.error('Error saving snapshot:', err);
+    alert('Failed to save. Please try again.');
+    if (btn) { btn.innerHTML = '\u2713 Save'; btn.disabled = false; }
+  });
+};

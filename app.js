@@ -478,10 +478,34 @@ function saveAppState(state, customActionStr = null) {
   }
 
   if (window.firebaseDb) {
+    // --- SAFE CONCURRENT WRITE FIX ---
+    // Instead of overwriting the ENTIRE state with set(), we use update()
+    // at the page level. This prevents one user's save from overwriting
+    // another user's simultaneously-saved page data.
     localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(state));
     localDashboardState = JSON.parse(JSON.stringify(state));
     localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
-    window.firebaseDb.ref('mep_dashboard_state').set(state);
+
+    // Build a partial update object - isolated by page if saving from an entry sheet.
+    // This guarantees that if 100 users update different sheets (or the same sheet) 100 times,
+    // the absolute last update for every sheet is what stays stored in Firebase, without stomping other sheets.
+    const updatePayload = {};
+    if (currentActivePageId && SECTIONS_CONFIG[currentActivePageId] && state[currentActivePageId]) {
+      updatePayload[currentActivePageId] = state[currentActivePageId];
+      if (state.branchAttendance && state.branchAttendance[currentActivePageId]) {
+        updatePayload[`branchAttendance/${currentActivePageId}`] = state.branchAttendance[currentActivePageId];
+      }
+    } else {
+      for (const key of Object.keys(state)) {
+        updatePayload[key] = state[key];
+      }
+    }
+    // Use update() so concurrent writes from different users don't stomp each other
+    window.firebaseDb.ref('mep_dashboard_state').update(updatePayload)
+      .catch(err => {
+        console.warn('[saveAppState] Firebase update failed, falling back to set():', err);
+        window.firebaseDb.ref('mep_dashboard_state').set(state);
+      });
 
     const sheetName = currentActivePageId ? (SECTIONS_CONFIG[currentActivePageId]?.title || 'An entry sheet') : 'The dashboard';
     const actionMessage = customActionStr || `🔄 ${sheetName} has been updated`;
@@ -1103,6 +1127,13 @@ function _renderEntryContent(pageId) {
     };
 
     document.getElementById('btn-save').onclick = () => {
+      // Prevent double-clicks
+      const saveBtn = document.getElementById('btn-save');
+      if (saveBtn.disabled) return;
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.6';
+      saveBtn.querySelector('span') && (saveBtn.querySelector('span').textContent = 'Saving...');
+
       // Sync any auth-input edits into the save state
       document.querySelectorAll('.auth-input').forEach(inp => {
         const g = inp.getAttribute('data-group');
@@ -1112,34 +1143,87 @@ function _renderEntryContent(pageId) {
           state[pageId][g][i].authorized = val;
         }
       });
+
+      // Sync all regular inputs to ensure latest typed values are captured
+      document.querySelectorAll('.entry-input:not(.auth-input)').forEach(inp => {
+        const g = inp.getAttribute('data-group');
+        const idx = parseInt(inp.getAttribute('data-index'), 10);
+        const f = inp.getAttribute('data-field');
+        const val = parseInt(inp.value) || 0;
+        if (state[pageId] && state[pageId][g] && state[pageId][g][idx] !== undefined && f) {
+          state[pageId][g][idx][f] = val;
+          if (f === 'existing' || f === 'present') {
+            calculateRow(state[pageId][g][idx]);
+          }
+        }
+      });
+
       globalAppState = state;
 
-      // Add history notification
+      // Add history notification — using timestamp for reliable today-check
       const now = new Date();
       if (!state.history) state.history = [];
 
-      // Formatting: 06 March 26
       const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
-      // Formatting: 10:45 PM
       const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-
-      state.history.unshift({
+      const newHistoryEntry = {
         page: SECTIONS_CONFIG[pageId].title,
         time: timeFormatter.format(now),
         date: dateFormatter.format(now),
         timestamp: Date.now()
-      });
-      // Keep max 20 history items
-      if (state.history.length > 20) state.history.pop();
+      };
+
+      // --- CONCURRENT HISTORY FIX ---
+      // Remove any existing entry for this page today to avoid duplicates,
+      // then add fresh entry. This prevents the pending list from keeping
+      // a section as "Missing" even after it was saved.
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      state.history = state.history.filter(h => 
+        !(h.page === SECTIONS_CONFIG[pageId].title && h.timestamp >= startOfToday)
+      );
+      state.history.unshift(newHistoryEntry);
+      // Keep max 50 history items
+      if (state.history.length > 50) state.history = state.history.slice(0, 50);
       localStorage.setItem('has_new_notifications', 'true');
 
-      saveAppState(state);
+      // CRITICAL: Save history to Firebase SEPARATELY via transaction to prevent
+      // concurrent saves from overwriting each other's history entries
+      const doSaveAndNavigate = () => {
+        saveAppState(state);
+        // Re-lock the authorize manpower edit mode after saving
+        localStorage.setItem(EDIT_AUTH_STORAGE_KEY, 'false');
+        // Update pending list immediately so it reflects the save
+        if (typeof window.updateReminderList === 'function') {
+          window.updateReminderList(true);
+        }
+        window.location.href = 'index.html';
+      };
 
-      // Re-lock the authorize manpower edit mode after saving
-      localStorage.setItem(EDIT_AUTH_STORAGE_KEY, 'false');
-
-      alert('Thank you.');
-      window.location.href = 'index.html';
+      if (window.firebaseDb) {
+        // Use a Firebase transaction on the history node to safely merge
+        // concurrent saves without overwriting each other
+        window.firebaseDb.ref('mep_dashboard_state/history').transaction(currentHistory => {
+          const existing = Array.isArray(currentHistory) ? currentHistory : [];
+          // Remove existing entry for this page from today to avoid duplicates
+          const filtered = existing.filter(h =>
+            !(h.page === SECTIONS_CONFIG[pageId].title && h.timestamp >= startOfToday)
+          );
+          filtered.unshift(newHistoryEntry);
+          // Keep max 50
+          return filtered.slice(0, 50);
+        }).then(result => {
+          if (result.committed) {
+            state.history = result.snapshot.val() || state.history;
+            globalAppState = state;
+          }
+          doSaveAndNavigate();
+        }).catch(() => {
+          // If transaction fails, still save - don't block the user
+          doSaveAndNavigate();
+        });
+      } else {
+        doSaveAndNavigate();
+      }
     };
 
   }, 10); // End setTimeout macro task
@@ -2490,9 +2574,11 @@ function setupFirebaseListener() {
         saveAppState(globalAppState);
       }
 
-      // Update the "Pending Today" button automatically in the background
+      // Update the "Pending Today" badge silently in the background.
+      // The dedicated history listener (_setupPendingListRealTimeSync) handles
+      // real-time updates; this is a safety fallback for initial load.
       if (typeof window.updateReminderList === 'function') {
-        window.updateReminderList(false);
+        window.updateReminderList(true);
       }
 
       // The state updates silently in the background (globalAppState is always fresh).
@@ -2619,6 +2705,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function trySetupFirebase() {
     if (window.firebaseDb) {
       setupFirebaseListener();
+      // Attach a dedicated real-time listener on the history node so
+      // the Pending list updates instantly when ANY device saves an entry.
+      if (typeof window._setupPendingListRealTimeSync === 'function') {
+        window._setupPendingListRealTimeSync();
+      }
     } else if (retryCount < maxRetries) {
       retryCount++;
       setTimeout(trySetupFirebase, 500);
@@ -2709,7 +2800,10 @@ window.clearHistory = function () {
 
 // Reminder Logic
 window.updateReminderList = function (silent = false) {
-  const state = getAppState();
+  // ALWAYS use globalAppState for history — it is kept fresh by the Firebase listener.
+  // Falling back to getAppState() can return stale local data and cause the pending
+  // list to show a section as "Missing" even after it was already saved.
+  const state = globalAppState || getAppState();
   const now = new Date();
   const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
   const todayStr = dateFormatter.format(now);
@@ -2722,15 +2816,16 @@ window.updateReminderList = function (silent = false) {
 
   history.forEach(h => {
     const cleanDate = h.date ? h.date.replace(/[\u200E\u200F]/g, '').trim() : '';
+    // Primary check: use timestamp (most reliable, independent of locale/format)
     if (h.timestamp && h.timestamp >= startOfToday) {
       updatedTodayMap[h.page] = true;
     } else if (cleanDate === cleanTodayStr) {
+      // Fallback: string date comparison (for older history entries without timestamp)
       updatedTodayMap[h.page] = true;
     }
   });
 
   const missingSections = [];
-  // Loop through all configured pages to find missing ones
   for (const [pageKey, config] of Object.entries(SECTIONS_CONFIG)) {
     if (!updatedTodayMap[config.title]) {
       missingSections.push({ title: config.title, id: pageKey });
@@ -2740,7 +2835,6 @@ window.updateReminderList = function (silent = false) {
   const badge = document.getElementById('reminder-badge');
   const countSpan = document.getElementById('reminder-count');
   const list = document.getElementById('reminder-list');
-  const dashboardPendingContainer = document.getElementById('dashboard-pending-container');
 
   if (badge) {
     if (missingSections.length > 0) {
@@ -2757,7 +2851,7 @@ window.updateReminderList = function (silent = false) {
       list.innerHTML = '<div style="padding:1.5rem; text-align:center; color:#10b981; font-size:0.95rem; font-weight:600;"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" style="display:block; margin:0 auto 8px auto;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>All sheets updated today!</div>';
     } else {
       list.innerHTML = missingSections.map(s => `
-        <a href="entry.html?page=${s.id.replace('qc', 'qc')}" style="text-decoration:none; padding:0.8rem 1rem; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; transition:background 0.2s;" onmouseover="this.style.background='var(--glass-bg)'" onmouseout="this.style.background='transparent'">
+        <a href="entry.html?page=${s.id}" style="text-decoration:none; padding:0.8rem 1rem; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; transition:background 0.2s;" onmouseover="this.style.background='var(--glass-bg)'" onmouseout="this.style.background='transparent'">
           <div style="font-weight:600; font-size:0.95rem; color:var(--text-dark); display:flex; align-items:center; gap:8px;">
             <svg width="16" height="16" fill="none" stroke="#ef4444" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
             ${s.title}

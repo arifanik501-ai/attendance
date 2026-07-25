@@ -64,6 +64,23 @@ function setupFirebaseListener() {
             }
           }
         }
+
+        if (data.iom) {
+          if (!localDashboardState) {
+            localDashboardState = JSON.parse(JSON.stringify(data));
+          }
+          const iomStr = JSON.stringify(data.iom);
+          const currentIomStr = localDashboardState.iom ? JSON.stringify(localDashboardState.iom) : '';
+          if (iomStr !== currentIomStr) {
+            localDashboardState.iom = data.iom;
+            localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+            if (currentActivePageId === 'iom-dashboard') {
+              if (typeof _performDashboardRender === 'function') {
+                _performDashboardRender();
+              }
+            }
+          }
+        }
       } else {
         globalAppState = createDefaultState();
         saveAppState(globalAppState);

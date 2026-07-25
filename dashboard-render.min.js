@@ -623,6 +623,66 @@ function buildIomDashboardReportHtml(state, period) {
     </section>`;
 }
 
+window.saveIomDataToFirebase = function(silent = false) {
+  const state = localDashboardState || globalAppState || getAppState();
+  if (state?.iom_locked === true) {
+    if (!silent) {
+      alert("⚠️ IOM Report is currently LOCKED by Admin. Edits cannot be saved until unlocked.");
+    }
+    return;
+  }
+
+  const inputs = document.querySelectorAll('.iom-input');
+  if (!inputs.length) return;
+
+  const periodKey = getCustomPeriodByOffset(getIomDashboardPeriodOffset()).key;
+  
+  if (!globalAppState) globalAppState = {};
+  if (!globalAppState.iom) globalAppState.iom = {};
+  if (!globalAppState.iom[periodKey]) globalAppState.iom[periodKey] = {};
+
+  inputs.forEach(input => {
+    const staffId = input.getAttribute('data-staff');
+    const hrKey = input.getAttribute('data-hr');
+    let val = parseInt(input.value, 10);
+    
+    if (!globalAppState.iom[periodKey][staffId]) globalAppState.iom[periodKey][staffId] = {};
+    
+    if (isNaN(val) || val <= 0) {
+      delete globalAppState.iom[periodKey][staffId][hrKey];
+    } else {
+      globalAppState.iom[periodKey][staffId][hrKey] = val;
+    }
+  });
+
+  localDashboardState = JSON.parse(JSON.stringify(globalAppState));
+  localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(globalAppState));
+  localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+
+  if (window.firebaseDb) {
+    window.firebaseDb.ref(`mep_dashboard_state/iom/${periodKey}`).set(globalAppState.iom[periodKey])
+      .then(() => {
+        window.firebaseDb.ref('mep_dashboard_publish_trigger').set(Date.now());
+      })
+      .catch(err => {
+        console.warn('Firebase IOM save failed:', err);
+      });
+    
+    saveAppState(globalAppState, "🔄 IOM Data Updated");
+  } else {
+    localStorage.setItem('manpowerData', JSON.stringify(globalAppState));
+  }
+
+  if (!silent) {
+    if (window.app && typeof window.app.showToast === 'function') {
+      window.app.showToast('✅ IOM Data saved & updated on Firebase!', 'success');
+    } else {
+      alert('IOM Data Saved Successfully on Firebase!');
+    }
+    _performDashboardRender();
+  }
+};
+
 function bindIomDashboardControls() {
   document.querySelectorAll('[data-iom-step]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -636,31 +696,40 @@ function bindIomDashboardControls() {
   const saveBtn = document.getElementById('iom-save-btn');
   if (saveBtn) {
     saveBtn.addEventListener('click', () => {
-      const inputs = document.querySelectorAll('.iom-input');
-      const periodKey = getCustomPeriodByOffset(getIomDashboardPeriodOffset()).key;
-      
-      if (!globalAppState.iom) globalAppState.iom = {};
-      if (!globalAppState.iom[periodKey]) globalAppState.iom[periodKey] = {};
-      
-      inputs.forEach(input => {
-        const staffId = input.getAttribute('data-staff');
-        const hrKey = input.getAttribute('data-hr');
-        let val = parseInt(input.value, 10);
-        
-        if (!globalAppState.iom[periodKey][staffId]) globalAppState.iom[periodKey][staffId] = {};
-        
-        if (isNaN(val) || val <= 0) {
-          delete globalAppState.iom[periodKey][staffId][hrKey];
-        } else {
-          globalAppState.iom[periodKey][staffId][hrKey] = val;
-        }
-      });
-      
-      saveAppState(globalAppState, "IOM Data Updated");
-      alert('IOM Data Saved Successfully!');
-      _performDashboardRender(); // Re-render to update the calculated totals visually
+      window.saveIomDataToFirebase(false);
     });
   }
+
+  // Auto-save on input change/blur & live row sum update
+  let iomDebounceTimer = null;
+  document.querySelectorAll('.iom-input').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const tr = e.target.closest('tr');
+      if (!tr) return;
+      const inputs = tr.querySelectorAll('.iom-input');
+      let totalDay = 0;
+      let totalHour = 0;
+      inputs.forEach(inp => {
+        const hr = parseInt(inp.getAttribute('data-hr'), 10) || 0;
+        const val = parseInt(inp.value, 10) || 0;
+        if (val > 0) {
+          totalDay += val;
+          totalHour += (val * hr);
+        }
+      });
+      const totalDayCol = tr.querySelector('.iom-total-day-col');
+      if (totalDayCol) totalDayCol.textContent = totalDay || '';
+      const totalHourCell = tr.children[14];
+      if (totalHourCell) totalHourCell.textContent = totalHour || '';
+    });
+
+    input.addEventListener('change', () => {
+      clearTimeout(iomDebounceTimer);
+      iomDebounceTimer = setTimeout(() => {
+        window.saveIomDataToFirebase(true);
+      }, 500);
+    });
+  });
 }
 
 window.syncLiveDataToAppState = function() {

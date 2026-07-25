@@ -583,6 +583,9 @@ function saveAppState(state, customActionStr = null) {
         updatePayload[key] = state[key];
       }
     }
+    if (state.iom) updatePayload['iom'] = state.iom;
+    if (typeof state.iom_locked !== 'undefined') updatePayload['iom_locked'] = state.iom_locked;
+    if (state.iom_staff_list) updatePayload['iom_staff_list'] = state.iom_staff_list;
     // Use update() so concurrent writes from different users don't stomp each other
     window.firebaseDb.ref('mep_dashboard_state').update(updatePayload)
       .catch(err => {
@@ -2653,6 +2656,23 @@ function setupFirebaseListener() {
           if (lockChanged && currentActivePageId === 'iom-dashboard') {
             if (typeof _performDashboardRender === 'function') {
               _performDashboardRender();
+            }
+          }
+        }
+
+        if (data.iom) {
+          if (!localDashboardState) {
+            localDashboardState = JSON.parse(JSON.stringify(data));
+          }
+          const iomStr = JSON.stringify(data.iom);
+          const currentIomStr = localDashboardState.iom ? JSON.stringify(localDashboardState.iom) : '';
+          if (iomStr !== currentIomStr) {
+            localDashboardState.iom = data.iom;
+            localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+            if (currentActivePageId === 'iom-dashboard') {
+              if (typeof _performDashboardRender === 'function') {
+                _performDashboardRender();
+              }
             }
           }
         }

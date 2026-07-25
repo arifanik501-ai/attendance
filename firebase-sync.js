@@ -50,6 +50,20 @@ function setupFirebaseListener() {
 
         globalAppState = data;
         localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(data));
+
+        if (typeof data.iom_locked !== 'undefined') {
+          if (!localDashboardState) {
+            localDashboardState = JSON.parse(JSON.stringify(data));
+          }
+          const lockChanged = localDashboardState.iom_locked !== data.iom_locked;
+          localDashboardState.iom_locked = data.iom_locked;
+          localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+          if (lockChanged && currentActivePageId === 'iom-dashboard') {
+            if (typeof _performDashboardRender === 'function') {
+              _performDashboardRender();
+            }
+          }
+        }
       } else {
         globalAppState = createDefaultState();
         saveAppState(globalAppState);

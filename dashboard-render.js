@@ -515,7 +515,7 @@ function buildIomDashboardReportHtml(state, period) {
           <span class="print-only">${d7 || ''}</span>
         </td>
         <td style="border: 1px solid #000; padding: 0;">
-          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="8hr" value="${d8 || ''}" min="0" max="31">
+          <input type="number" class="iom-input no-print" data-staff="${staff.id}" data-hr="8hr" value="${d8 || ''}" min="0" max="31" ${lockAttr}>
           <span class="print-only">${d8 || ''}</span>
         </td>
         <td style="text-align:center; font-weight:bold; border: 1px solid #000;">${totalHour || ''}</td>
@@ -537,6 +537,10 @@ function buildIomDashboardReportHtml(state, period) {
           <button class="branch-period-btn" data-iom-step="1" type="button" style="border: 1px solid #ccc; background: #f9f9f9; color: #333;">Next ›</button>
           <button id="iom-save-btn" type="button" style="background: ${isLocked ? '#9ca3af' : '#2563eb'}; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; cursor: ${isLocked ? 'not-allowed' : 'pointer'}; margin-left: 10px;" ${isLocked ? 'disabled' : ''}>Save Data</button>
           
+          <button class="branch-period-btn" onclick="window.toggleIomLock()" type="button" aria-label="${isLocked ? 'Unlock IOM Report' : 'Lock IOM Report'}" data-tip-title="${isLocked ? 'Unlock IOM' : 'Lock IOM'}" data-tip-desc="${isLocked ? 'Unlock editing for everyone' : 'Lock editing for everyone'}" data-tip-theme="${isLocked ? 'danger' : 'success'}" style="border: 1px solid ${isLocked ? '#dc2626' : '#059669'}; background: ${isLocked ? '#fee2e2' : '#d1fae5'}; color: ${isLocked ? '#991b1b' : '#065f46'}; font-weight: bold; margin-left: 6px; padding: 6px 14px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+            ${isLocked ? '🔒 Locked (Unlock)' : '🔓 Unlocked (Lock)'}
+          </button>
+
           <button class="branch-period-btn branch-download-btn" onclick="window.openIomConfigModal()" type="button" aria-label="Edit IOM Config" data-tip-title="Edit IOM Settings" data-tip-theme="warning" style="border: 1px solid #b45309; background: #fef3c7; color: #b45309; margin-left: 10px;">
             <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           </button>
@@ -1370,14 +1374,15 @@ function _performDashboardRender() {
       </div>
 
       <div style="display:flex; flex-direction:column; gap:0.5rem; margin: auto 1.5rem; align-self: center;" class="no-print">
-        <button class="btn glass-btn glass-btn-amber" type="button" onclick="publishDashboardUpdates()" data-tip-title="Update Dashboard" data-tip-desc="Publish latest data to all Dashboards" data-tip-theme="info" data-tip-placement="bottom" style="padding: 10px;">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <button class="btn glass-btn glass-btn-amber" type="button" onclick="publishDashboardUpdates()" data-tip-title="Update Dashboard" data-tip-desc="Publish latest data to all Dashboards" data-tip-theme="info" data-tip-placement="bottom">
+          <svg class="glass-btn-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
             <path d="M3 3v5h5" />
           </svg>
+          <span>Update Dashboard</span>
         </button>
         <button class="btn glass-btn glass-btn-amber" type="button" onclick="exportReport()" data-tip-title="Download JPG" data-tip-desc="Download dashboard report as JPG" data-tip-theme="warning" data-tip-placement="bottom">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          <svg class="glass-btn-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
           <span>Download JPG</span>
         </button>
       </div>
@@ -1385,6 +1390,7 @@ function _performDashboardRender() {
         <div class="clock-widget" id="clock-widget">
         <div class="clock-premium-badge">Live Standard Time</div>
         <div class="analog-clock">
+          <div class="clock-pointer"></div>
           <div class="clock-face">
             <div class="clock-tick tick-1"></div>
             <div class="clock-tick tick-2"></div>

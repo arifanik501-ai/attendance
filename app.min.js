@@ -31,83 +31,124 @@ function getClockSnapshot(date = new Date()) {
 }
 
 function buildExportAnalogClockSvg(snapshot = getClockSnapshot(), theme = getActiveTheme()) {
-  const [themeSoft, themeMain, themeDeep] = theme.palette;
   const ticks = Array.from({ length: 60 }, (_, index) => {
     const angle = index * 6;
     const isMajor = index % 5 === 0;
-    const y1 = isMajor ? 12 : 8;
-    const y2 = isMajor ? 22 : 15;
-    const stroke = isMajor ? themeDeep : '#94a3b8';
-    const width = isMajor ? 2.8 : 1.2;
-    return `<line x1="70" y1="${y1}" x2="70" y2="${y2}" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" transform="rotate(${angle} 70 70)"/>`;
+    
+    if (isMajor) {
+      const isCardinals = (index % 15 === 0);
+      const length = isCardinals ? 12 : 8;
+      const width = isCardinals ? 3.5 : 2.5;
+      return `<g transform="rotate(${angle} 70 70)">
+                <rect x="${70 - width/2}" y="10" width="${width}" height="${length}" rx="1" fill="#e2e8f0" />
+                <rect x="${70 - width/2 + 0.5}" y="11" width="${width-1}" height="${length-2}" rx="0.5" fill="#38bdf8" opacity="0.8"/>
+              </g>`;
+    } else {
+      return `<line x1="70" y1="10" x2="70" y2="13" stroke="#64748b" stroke-width="1" stroke-linecap="round" transform="rotate(${angle} 70 70)"/>`;
+    }
   }).join('');
-  const numbers = [
-    { value: '12', x: 70, y: 32 },
-    { value: '3', x: 108, y: 75 },
-    { value: '6', x: 70, y: 116 },
-    { value: '9', x: 32, y: 75 }
-  ].map(item => `<text x="${item.x}" y="${item.y}" text-anchor="middle" fill="${themeDeep}" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="900">${item.value}</text>`).join('');
+
   const hourAngle = snapshot.hourDegrees;
   const minuteAngle = snapshot.minDegrees;
   const secondAngle = snapshot.secondDegrees;
-  const isMonochromeExport = theme.id === 'monochrome-export';
-  const minuteHandStroke = isMonochromeExport ? themeDeep : '#1e293b';
-  const secondHandStroke = isMonochromeExport ? themeDeep : '#dc2626';
-  const clockFaceStop = isMonochromeExport ? '#ffffff' : '#f8fafc';
 
   return `
     <svg class="export-analog-clock-svg" viewBox="0 0 140 140" width="108" height="108" aria-label="Export clock ${snapshot.displayTime} ${snapshot.ampm}" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="exportClockRim" x1="18" y1="10" x2="122" y2="132" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stop-color="${themeSoft}"/>
-          <stop offset="0.52" stop-color="${themeMain}"/>
-          <stop offset="1" stop-color="${themeDeep}"/>
+        <linearGradient id="bezelOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f8fafc"/>
+          <stop offset="20%" stop-color="#94a3b8"/>
+          <stop offset="50%" stop-color="#e2e8f0"/>
+          <stop offset="80%" stop-color="#64748b"/>
+          <stop offset="100%" stop-color="#cbd5e1"/>
         </linearGradient>
-        <radialGradient id="exportClockFace" cx="42" cy="28" r="104" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stop-color="#ffffff"/>
-          <stop offset="0.72" stop-color="${clockFaceStop}"/>
-          <stop offset="1" stop-color="${themeSoft}"/>
+        <linearGradient id="bezelInner" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#334155"/>
+          <stop offset="50%" stop-color="#cbd5e1"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+        <radialGradient id="dialFace" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#1e293b"/>
+          <stop offset="70%" stop-color="#0f172a"/>
+          <stop offset="100%" stop-color="#020617"/>
         </radialGradient>
+        <linearGradient id="glassGlare" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.15"/>
+          <stop offset="40%" stop-color="#ffffff" stop-opacity="0.0"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0"/>
+        </linearGradient>
       </defs>
-      <circle cx="70" cy="70" r="65" fill="url(#exportClockRim)"/>
-      <circle cx="70" cy="70" r="58" fill="url(#exportClockFace)" stroke="#ffffff" stroke-width="3"/>
+
+      <circle cx="70" cy="70" r="68" fill="url(#bezelOuter)"/>
+      <circle cx="70" cy="70" r="63" fill="url(#bezelInner)"/>
+      <circle cx="70" cy="70" r="61" fill="url(#dialFace)"/>
+
+      <text x="70" y="45" text-anchor="middle" fill="#94a3b8" font-family="'Inter', Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="1">MEP</text>
+      <text x="70" y="95" text-anchor="middle" fill="#64748b" font-family="'Inter', Arial, sans-serif" font-size="5" font-weight="600" letter-spacing="0.5">AUTOMATIC</text>
+
       ${ticks}
-      ${numbers}
-      <line x1="70" y1="74" x2="70" y2="38" stroke="${themeDeep}" stroke-width="5.4" stroke-linecap="round" transform="rotate(${hourAngle} 70 70)"/>
-      <line x1="70" y1="76" x2="70" y2="26" stroke="${minuteHandStroke}" stroke-width="3.8" stroke-linecap="round" transform="rotate(${minuteAngle} 70 70)"/>
-      <line x1="70" y1="82" x2="70" y2="18" stroke="${secondHandStroke}" stroke-width="2" stroke-linecap="round" transform="rotate(${secondAngle} 70 70)"/>
-      <circle cx="70" cy="70" r="7.2" fill="${themeMain}" stroke="#ffffff" stroke-width="2.6"/>
-      <circle cx="70" cy="70" r="2.4" fill="#ffffff"/>
+      
+      <g transform="rotate(${hourAngle} 70 70)">
+        <polygon points="67,74 73,74 71,35 69,35" fill="rgba(0,0,0,0.4)" transform="translate(1, 1)"/>
+        <polygon points="67,74 73,74 71,35 69,35" fill="#cbd5e1"/>
+        <polygon points="69,72 71,72 70.5,38 69.5,38" fill="#ffffff"/>
+        <polygon points="69.5,65 70.5,65 70.5,42 69.5,42" fill="#38bdf8" opacity="0.8"/>
+      </g>
+
+      <g transform="rotate(${minuteAngle} 70 70)">
+        <polygon points="67,76 73,76 70.5,18 69.5,18" fill="rgba(0,0,0,0.4)" transform="translate(1.5, 1.5)"/>
+        <polygon points="67,76 73,76 70.5,18 69.5,18" fill="#e2e8f0"/>
+        <polygon points="69,74 71,74 70.2,22 69.8,22" fill="#ffffff"/>
+        <polygon points="69.5,65 70.5,65 70.2,28 69.8,28" fill="#38bdf8" opacity="0.8"/>
+      </g>
+
+      <g transform="rotate(${secondAngle} 70 70)">
+        <circle cx="70" cy="70" r="3" fill="rgba(0,0,0,0.4)" transform="translate(2, 2)"/>
+        <polygon points="68.8,88 71.2,88 70.5,16 69.5,16" fill="rgba(0,0,0,0.4)" transform="translate(2, 2)"/>
+        <polygon points="68.8,88 71.2,88 70.5,16 69.5,16" fill="#e11d48"/>
+        <circle cx="70" cy="78" r="4.5" fill="#e11d48"/>
+        <circle cx="70" cy="78" r="2.5" fill="#0f172a"/>
+        <circle cx="70" cy="24" r="3" fill="#e11d48"/>
+        <circle cx="70" cy="24" r="1.5" fill="#38bdf8"/>
+      </g>
+
+      <circle cx="70" cy="70" r="3.5" fill="#cbd5e1"/>
+      <circle cx="70" cy="70" r="1.5" fill="#94a3b8"/>
+      <circle cx="70" cy="70" r="61" fill="url(#glassGlare)"/>
     </svg>`;
 }
 
 function buildExportClockMarkup(snapshot = getClockSnapshot(), theme = getActiveTheme(), options = {}) {
   const [themeSoft, themeMain, themeDeep] = theme.palette;
-  const analogSize = options.analogSize || 54;
-  const widgetPadding = options.widgetPadding || '0.4rem 0.55rem';
-  const clockWidth = options.width || options.minWidth || '112px';
-  const digitalSize = options.digitalSize || '0.96rem';
+  const analogSize = options.analogSize || 64;
+  const widgetPadding = options.widgetPadding || '0.5rem 0.5rem';
+  const clockWidth = options.width || options.minWidth || '120px';
+  const digitalSize = options.digitalSize || '1.05rem';
   const dateText = options.dateText || snapshot.longDate;
-  const dateSize = options.dateSize || '0.58rem';
-  const ampmSize = options.ampmSize || '0.5rem';
+  const dateSize = options.dateSize || '0.55rem';
+  const ampmSize = options.ampmSize || '0.55rem';
   const clockSvg = buildExportAnalogClockSvg(snapshot, theme).replace('width="108" height="108"', `width="${analogSize}" height="${analogSize}"`);
   const isMonochromeExport = theme.id === 'monochrome-export';
-  const clockBorderColor = isMonochromeExport ? themeDeep : themeSoft;
-  const clockRadius = isMonochromeExport ? '0' : '14px';
-  const clockTextColor = isMonochromeExport ? themeDeep : '#0f172a';
-  const clockDateColor = isMonochromeExport ? themeDeep : '#475569';
+  
+  const widgetBg = isMonochromeExport ? '#ffffff' : '#0f172a';
+  const clockBorderColor = isMonochromeExport ? themeDeep : '#1e293b';
+  const clockRadius = isMonochromeExport ? '0' : '16px';
+  const clockTextColor = isMonochromeExport ? themeDeep : '#f8fafc';
+  const clockDateColor = isMonochromeExport ? themeDeep : '#94a3b8';
+  const accentColor = isMonochromeExport ? themeMain : '#38bdf8';
   const accentRadius = isMonochromeExport ? '0' : '999px';
 
   return `
-    <div class="export-clock-widget" style="padding:${widgetPadding}; width:${clockWidth}; min-width:${clockWidth}; max-width:${clockWidth}; background:#ffffff; border-radius:${clockRadius}; border:1.5px solid ${clockBorderColor}; margin:0; box-shadow:none; text-align:center; box-sizing:border-box; flex:0 0 auto;">
-      <div class="export-analog-clock" style="width:${analogSize}px; height:${analogSize}px; margin:0 auto 0.6rem auto; line-height:0;">
+    <div class="export-clock-widget" style="padding:${widgetPadding}; width:${clockWidth}; min-width:${clockWidth}; max-width:${clockWidth}; background:${widgetBg}; border-radius:${clockRadius}; border:1px solid ${clockBorderColor}; margin:0; box-shadow:${isMonochromeExport ? 'none' : '0 8px 16px rgba(0,0,0,0.3)'}; text-align:center; box-sizing:border-box; flex:0 0 auto; position:relative; overflow:hidden;">
+      <div style="position:absolute; top:0; left:0; width:100%; height:30%; background:linear-gradient(180deg, rgba(56,189,248,0.1) 0%, rgba(15,23,42,0) 100%); pointer-events:none;"></div>
+      <div class="export-analog-clock" style="position:relative; width:${analogSize}px; height:${analogSize}px; margin:0.2rem auto 0.6rem auto; line-height:0; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4));">
         ${clockSvg}
       </div>
-      <div class="export-digital-time" style="font-weight:850; font-size:${digitalSize}; color:${clockTextColor}; letter-spacing:-0.035em; font-family:'Inter', sans-serif; margin:0 0 0.25rem; padding:0; background:transparent; border:0; box-shadow:none; display:flex; align-items:flex-start; justify-content:center; line-height:1;">
-        ${snapshot.displayTime}<span style="font-size:${ampmSize}; font-weight:850; margin-left:8px; margin-top:2px; color:${clockTextColor}; letter-spacing:0;">${snapshot.ampm}</span>
+      <div class="export-digital-time" style="position:relative; font-weight:800; font-size:${digitalSize}; color:${clockTextColor}; letter-spacing:-0.02em; font-family:'Inter', Arial, sans-serif; margin:0 0 0.25rem; padding:0; background:transparent; border:0; box-shadow:none; display:flex; align-items:flex-start; justify-content:center; line-height:1;">
+        ${snapshot.displayTime}<span style="font-size:${ampmSize}; font-weight:800; margin-left:4px; margin-top:2px; color:${accentColor}; letter-spacing:0;">${snapshot.ampm}</span>
       </div>
-      <div class="export-clock-date" style="font-weight:750; font-size:${dateSize}; color:${clockDateColor}; background:transparent; line-height:1.1;">${dateText}</div>
-      <div class="export-clock-accent" style="width:34px; height:2px; margin:0.22rem auto 0; border-radius:${accentRadius}; background:${themeMain};"></div>
+      <div class="export-clock-date" style="position:relative; font-weight:600; font-size:${dateSize}; color:${clockDateColor}; text-transform:uppercase; letter-spacing:0.06em; background:transparent; line-height:1.2; font-family:'Inter', Arial, sans-serif;">${dateText}</div>
+      <div class="export-clock-accent" style="position:relative; width:24px; height:3px; margin:0.4rem auto 0.2rem; border-radius:${accentRadius}; background:${accentColor};"></div>
     </div>`;
 }
 
@@ -268,7 +309,49 @@ function getBranchAttendanceStatsForPage(state, pageId, periodKey) {
 }
 
 window.toggleIomLock = function() {
-  // Deprecated function, moved to config modal
+  const currentState = getAppState();
+  const currentLocked = currentState?.iom_locked === true;
+  const actionText = currentLocked ? "Unlock" : "Lock";
+  
+  const pass = prompt(`Enter Password to ${actionText} IOM Report for everyone:`);
+  if (pass === null) return;
+  
+  const validPasswords = ["a", "8250", "9696", "2222", "1111", "0011"];
+  if (!validPasswords.includes(pass)) {
+    alert("Incorrect Password!");
+    return;
+  }
+
+  const newLockState = !currentLocked;
+  currentState.iom_locked = newLockState;
+  globalAppState = currentState;
+  localDashboardState = JSON.parse(JSON.stringify(currentState));
+  localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(currentState));
+  localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(currentState));
+
+  if (window.firebaseDb) {
+    window.firebaseDb.ref('mep_dashboard_state/iom_locked').set(newLockState);
+    window.firebaseDb.ref('mep_dashboard_publish_trigger').set(Date.now());
+    const actionMsg = newLockState ? '🔒 IOM Report has been locked for everyone' : '🔓 IOM Report has been unlocked for everyone';
+    window.firebaseDb.ref('mep_last_update_info').set({
+      deviceId: SESSION_DEVICE_ID,
+      timestamp: Date.now(),
+      pageTitle: 'IOM Report',
+      actionStr: actionMsg
+    });
+  } else {
+    localStorage.setItem('manpowerData', JSON.stringify(currentState));
+  }
+
+  if (typeof _performDashboardRender === 'function') {
+    _performDashboardRender();
+  }
+  
+  if (window.app && typeof window.app.showToast === 'function') {
+    window.app.showToast(newLockState ? '🔒 IOM Report is now locked for everyone!' : '🔓 IOM Report is now unlocked for everyone!', newLockState ? 'warning' : 'success');
+  } else {
+    alert(newLockState ? '🔒 IOM Report is now locked for everyone!' : '🔓 IOM Report is now unlocked for everyone!');
+  }
 };
 
 window.playAlertSoundAndVibrate = function () {
@@ -1481,16 +1564,6 @@ function exportReportOriginal() {
   applyClockSnapshot(clone, exportClock, {
     ampmStyle: 'font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #000000; letter-spacing: 0;'
   });
-  clone.querySelectorAll('.clock-widget').forEach(clockWidget => {
-    clockWidget.outerHTML = buildExportClockMarkup(exportClock, exportTheme, {
-      analogSize: 86,
-      widgetPadding: '0.64rem 0.82rem',
-      width: '182px',
-      digitalSize: '1.38rem',
-      dateSize: '0.78rem',
-      ampmSize: '0.68rem'
-    });
-  });
 
   // Create an off-screen container
   const container = document.createElement('div');
@@ -2569,6 +2642,20 @@ function setupFirebaseListener() {
 
         globalAppState = data;
         localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(data));
+
+        if (typeof data.iom_locked !== 'undefined') {
+          if (!localDashboardState) {
+            localDashboardState = JSON.parse(JSON.stringify(data));
+          }
+          const lockChanged = localDashboardState.iom_locked !== data.iom_locked;
+          localDashboardState.iom_locked = data.iom_locked;
+          localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+          if (lockChanged && currentActivePageId === 'iom-dashboard') {
+            if (typeof _performDashboardRender === 'function') {
+              _performDashboardRender();
+            }
+          }
+        }
       } else {
         globalAppState = createDefaultState();
         saveAppState(globalAppState);
@@ -3518,13 +3605,27 @@ window.openIomConfigModal = function() {
     let currentState = getAppState();
     currentState.iom_staff_list = IOM_STAFF_LIST;
     currentState.iom_locked = lockChecked;
+    globalAppState = currentState;
+    localDashboardState = JSON.parse(JSON.stringify(currentState));
+    localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(currentState));
+    localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(currentState));
     
     // Save to firebase
-    saveAppState(currentState, '🔄 IOM Configuration Updated');
-    window.firebaseDb.ref('mep_dashboard_publish_trigger').set(Date.now());
+    if (window.firebaseDb) {
+      window.firebaseDb.ref('mep_dashboard_state/iom_staff_list').set(IOM_STAFF_LIST);
+      window.firebaseDb.ref('mep_dashboard_state/iom_locked').set(lockChecked);
+      window.firebaseDb.ref('mep_dashboard_publish_trigger').set(Date.now());
+      saveAppState(currentState, lockChecked ? '🔒 IOM Configuration Updated (Locked)' : '🔓 IOM Configuration Updated (Unlocked)');
+    } else {
+      localStorage.setItem('manpowerData', JSON.stringify(currentState));
+    }
     
     document.getElementById('iom-config-modal').remove();
-    _performDashboardRender(); // Force re-render locally
-    app.showToast('✅ IOM Configuration saved successfully!', 'success');
+    if (typeof _performDashboardRender === 'function') {
+      _performDashboardRender(); // Force re-render locally
+    }
+    if (window.app && typeof window.app.showToast === 'function') {
+      window.app.showToast('✅ IOM Configuration saved successfully!', 'success');
+    }
   });
 };

@@ -103,7 +103,7 @@ function setupFirebaseListener() {
       if (trigger) {
         localDashboardState = JSON.parse(JSON.stringify(globalAppState));
         localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
-        if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard' || currentActivePageId === 'iom-dashboard') {
+        if (currentActivePageId === 'index' || currentActivePageId === 'iom-dashboard') {
           _performDashboardRender();
         }
       }
@@ -190,7 +190,7 @@ function setupFirebaseListener() {
   } else {
     // Fallback if SDK failed to load
     globalAppState = getAppState();
-    if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard') {
+    if (currentActivePageId === 'index') {
       _performDashboardRender();
     }
   }

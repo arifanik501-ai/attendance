@@ -170,12 +170,14 @@ function applyClockSnapshot(root, snapshot = getClockSnapshot(), ids = {}) {
 function buildCustomPeriodFromStart(startDate) {
   const start = new Date(startDate.getFullYear(), startDate.getMonth(), CUSTOM_PERIOD_CUTOFF_DAY);
   const end = new Date(start.getFullYear(), start.getMonth() + 1, CUSTOM_PERIOD_CUTOFF_DAY - 1);
+  const repMonthDate = new Date(end);
+  const periodKey = `${repMonthDate.getFullYear()}-${String(repMonthDate.getMonth() + 1).padStart(2, '0')}`;
   return {
-    key: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(CUSTOM_PERIOD_CUTOFF_DAY).padStart(2, '0')}`,
+    key: periodKey,
     start,
     end,
-    label: start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-    monthName: start.toLocaleDateString('en-US', { month: 'long' }),
+    label: repMonthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    monthName: repMonthDate.toLocaleDateString('en-US', { month: 'long' }),
     rangeLabel: `${start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })} to ${end.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}`
   };
 }
@@ -776,8 +778,7 @@ function generateSidebar(activePage) {
   const entrySheetIcon = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,88H152V32Z" opacity="0.2"/><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-32-80a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,136Zm0,32a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,168Z"/></svg>';
   const dashboardPages = [
     { id: 'index', title: 'Dashboard', url: 'index.html', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M112,56v48a8,8,0,0,1-8,8H56a8,8,0,0,1-8-8V56a8,8,0,0,1,8-8h48A8,8,0,0,1,112,56Zm88-8H152a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V56A8,8,0,0,0,200,48Zm-96,96H56a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V152A8,8,0,0,0,104,144Zm96,0H152a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V152A8,8,0,0,0,200,144Z" opacity="0.2"/><path d="M200,136H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,200,136Zm0,64H152V152h48v48ZM104,40H56A16,16,0,0,0,40,56v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,64H56V56h48v48Zm96-64H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,64H152V56h48v48Zm-96,32H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm0,64H56V152h48v48Z"/></svg>' },
-    { id: 'overtime-dashboard', title: 'Overtime Dashboard', url: 'index.html#overtime-dashboard', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,40V208H152V40Z" opacity="0.2"/><path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"/></svg>' },
-    { id: 'iom-dashboard', title: 'IOM Report', url: 'index.html#iom-dashboard', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M40,48V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88L160,32H56A16,16,0,0,0,40,48Z" opacity="0.2"/><path d="M213.66,82.34l-48-48A8,8,0,0,0,160,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,196.69,88H160ZM200,208H56V48h88V88a8,8,0,0,0,8,8h48V208Z"/></svg>' }
+    { id: 'iom-dashboard', title: 'IOM Report', url: 'index.html#iom-dashboard', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M40,48V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88L160,32H56A16,16,0,0,0,40,48Z" opacity="0.2"/><path d="M213.66,82.34l-48-48A8,8,0,0,0,160,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,196.69,88H160ZM200,208H56V48h88V88a8,8,0,0,0,8,8h48V208Z"/></svg>' },
   ];
   const entryPages = [
     { id: 'anik', title: 'Entry (Anik)', url: 'entry.html?page=anik', icon: entrySheetIcon },
@@ -903,13 +904,12 @@ function renderEntryPage(pageId) {
   }
   document.getElementById('page-title').classList.add('page-title-premium');
 
-  // Check if already authenticated this session
+  // Check if already authenticated in current session
   const authed = sessionStorage.getItem('auth_' + pageId);
   if (authed === 'true') {
-    if (globalAppState) _renderEntryContent(pageId);
+    _renderEntryContent(pageId);
     return;
   }
-
   // Show password gate
   const container = document.getElementById('report-container');
   container.innerHTML = `
@@ -1003,7 +1003,6 @@ function renderEntryPage(pageId) {
   const pins = document.querySelectorAll('.pin-box');
   const popPin = (el) => {
     el.classList.remove('pin-pop');
-    // Force reflow so the animation can retrigger on consecutive inputs.
     void el.offsetWidth;
     el.classList.add('pin-pop');
   };
@@ -1018,7 +1017,12 @@ function renderEntryPage(pageId) {
       if (e.target.value) {
         popPin(pin);
         if (i < 3) pins[i + 1].focus();
-        if (i === 3) document.getElementById('pin-submit').click();
+        if (i === 3) {
+          setTimeout(() => {
+            const submitBtn = document.getElementById('pin-submit');
+            if (submitBtn) submitBtn.click();
+          }, 50);
+        }
       }
     });
     pin.addEventListener('keydown', (e) => {
@@ -1026,10 +1030,13 @@ function renderEntryPage(pageId) {
         pins[i - 1].focus();
         pins[i - 1].value = '';
       }
+      if (e.key === 'Enter') {
+        const submitBtn = document.getElementById('pin-submit');
+        if (submitBtn) submitBtn.click();
+      }
     });
   });
   pins[0].focus();
-
   // Show/Hide PIN toggle
   const toggleBtn = document.getElementById('toggle-pin');
   const toggleLabel = toggleBtn.querySelector('.toggle-pin-label');
@@ -1053,11 +1060,14 @@ function renderEntryPage(pageId) {
   document.getElementById('pin-submit').addEventListener('click', () => {
     const entered = Array.from(pins).map(p => p.value).join('');
     const lockWrap = document.getElementById('glass-lock-wrap');
+    
+    // Strict check: Only accept the exact password for this specific entry sheet
     if (entered === config.password) {
       sessionStorage.setItem('auth_' + pageId, 'true');
+      localStorage.removeItem('auth_' + pageId);
       if (lockWrap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         lockWrap.classList.add('is-unlocked');
-        setTimeout(() => _renderEntryContent(pageId), 1350);
+        setTimeout(() => _renderEntryContent(pageId), 1000);
       } else {
         _renderEntryContent(pageId);
       }
@@ -1152,7 +1162,7 @@ function _renderEntryContent(pageId) {
       container.appendChild(card);
     }
 
-    container.appendChild(renderBranchAttendanceCard(pageId, state));
+
 
     document.querySelectorAll('.entry-input').forEach(input => {
       input.addEventListener('input', (e) => {
@@ -1202,8 +1212,6 @@ function _renderEntryContent(pageId) {
           }
       });
     });
-
-    bindBranchAttendanceControls(pageId, state);
 
     // Re-init reveal to catch the new tables
     initScrollReveal();

@@ -18,7 +18,7 @@ const filterTarget = `      // 3. Remove Empty Rows: Skip designations that have
 const filterReplace = `      // 3. Remove Empty Rows: Skip designations that have 0 auth/exist across all dates
       const designations = Object.keys(dataMap[section]).sort().filter(desig => {
         // Force include these from July 1st
-        if (section === 'Fan Sada Shapla' && desig === 'Supervisor') {
+        if (section === 'Fan Sada Shapla' && (desig === 'Supervisor' || desig === 'Sr. Supervisor')) {
           if (dates.some(d => d >= '2024-07-01')) return true;
         }
         if (section === 'Fan Assemble' && desig === 'Jr. Officer') {

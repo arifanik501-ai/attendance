@@ -93,7 +93,7 @@ try {
 let currentActivePageId = null;
 const SESSION_DEVICE_ID = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 const CUSTOM_PERIOD_CUTOFF_DAY = 26;
-const META_STATE_KEYS = ['history', 'branchAttendance', 'iom', 'iom_staff_list', 'iom_locked'];
+const META_STATE_KEYS = ['history', 'branchAttendance', 'iom', 'iom_staff_list', 'iom_locked', 'rocketEntries'];
 const SMOOTH_MODE_STORAGE_KEY = 'mep_smooth_mode_enabled';
 const EDIT_AUTH_STORAGE_KEY = 'mep_edit_auth_enabled';
 

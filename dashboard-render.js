@@ -1107,12 +1107,11 @@ function downloadOvertimeAttendanceJpgOriginal() {
 // Exactly mapping the structure of Excel rows
 const EXACT_DASHBOARD_ROWS = [
   // id, section (if defined, otherwise spans from above if blank, or empty), designation, how to calc
-  { id: 'R4', section: 'Section', designation: 'Manager', rowspan: 7, type: 'filter', filters: { designation: 'Manager' } },
+  { id: 'R4', section: 'Section', designation: 'Manager', rowspan: 6, type: 'filter', filters: { designation: 'Manager' } },
   { id: 'R5', designation: 'Incharge Production', type: 'filter', filters: { designation: 'In-charge' } },
   { id: 'R6', designation: 'Engineer Production', type: 'filter', filters: { designation: 'Engineer' } },
   { id: 'R7', designation: 'Senior Supervisor', type: 'filter', filters: { designation: 'Sr. Supervisor' } },
   { id: 'R8', designation: 'Jr. Officer', type: 'filter', filters: { designation: 'Jr. Officer' } },
-  { id: 'R9', designation: 'Supervisor', type: 'filter', filters: { designation: 'Supervisor' } },
   { id: 'R10', designation: 'Technical Man', type: 'filter', filters: { designation: 'Technicalman' } },
 
   { id: 'R11', section: 'Fan Assemble', designation: 'Worker', type: 'filter', filters: { group: 'Fan Assemble', designation: 'Worker' }, link: 'entry.html?page=anik' },
@@ -1128,7 +1127,7 @@ const EXACT_DASHBOARD_ROWS = [
 
   { id: 'R21', section: '', designation: 'Production Total', type: 'formula', formulaStr: 'SUM(R4:R20)', isTotal: true },
 
-  { id: 'R22', section: '', designation: 'S Grade', type: 'formula', formulaStr: 'R7+R9+R10+R11+R12+R13+R14+R15+R16+R17+R18+R19+R20', isTotal: true },
+  { id: 'R22', section: '', designation: 'S Grade', type: 'formula', formulaStr: 'R7+R10+R11+R12+R13+R14+R15+R16+R17+R18+R19+R20', isTotal: true },
   { id: 'R23', section: '', designation: 'M Grade', type: 'formula', formulaStr: 'R4+R5+R6+R8', isTotal: true }
 ];
 
@@ -1141,15 +1140,22 @@ function calculateDashboardData(state) {
       let auth = 0, exist = 0, pres = 0, abs = 0;
 
       for (const [pageId, groups] of Object.entries(state)) {
-        if (isMetaStateKey(pageId)) continue;
+        if (isMetaStateKey(pageId) || pageId === 'rocketEntries') continue;
         if (cfg.filters.page && pageId !== cfg.filters.page) continue;
         if (cfg.filters.excludePage && pageId === cfg.filters.excludePage) continue;
 
         for (const [groupName, rows] of Object.entries(groups)) {
           if (cfg.filters.group && groupName !== cfg.filters.group) continue;
+          if (!Array.isArray(rows)) continue;
 
           for (const r of rows) {
-            if (cfg.filters.designation && r.designation !== cfg.filters.designation) continue;
+            if (cfg.filters.designation) {
+              if (cfg.filters.designation === 'Sr. Supervisor') {
+                if (r.designation !== 'Sr. Supervisor' && r.designation !== 'Supervisor') continue;
+              } else if (r.designation !== cfg.filters.designation) {
+                continue;
+              }
+            }
             auth += parseInt(r.authorized) || 0;
             exist += parseInt(r.existing) || 0;
             pres += parseInt(r.present) || 0;
@@ -1196,7 +1202,7 @@ function calculateDashboardData(state) {
 }
 
 window.renderDashboard = function () {
-  currentActivePageId = window.location.hash === '#overtime-dashboard' ? 'overtime-dashboard' : (window.location.hash === '#iom-dashboard' ? 'iom-dashboard' : 'index');
+  currentActivePageId = window.location.hash === '#iom-dashboard' ? 'iom-dashboard' : 'index';
   if (globalAppState) {
     _performDashboardRender();
   }
@@ -1204,12 +1210,19 @@ window.renderDashboard = function () {
 
 function _performDashboardRender() {
   try {
-    const activeDashboardPage = window.location.hash === '#overtime-dashboard' ? 'overtime-dashboard' : (window.location.hash === '#iom-dashboard' ? 'iom-dashboard' : 'index');
+    const activeDashboardPage = window.location.hash === '#iom-dashboard' ? 'iom-dashboard' : 'index';
     currentActivePageId = activeDashboardPage;
     document.getElementById('sidebar').innerHTML = generateSidebar(activeDashboardPage);
 
-    // Clear all entry page auth so password is required again
-    Object.keys(SECTIONS_CONFIG).forEach(key => sessionStorage.removeItem('auth_' + key));
+    // Reset entry sheet session auth when returning to main dashboard
+    if (activeDashboardPage === 'index') {
+      Object.keys(SECTIONS_CONFIG).forEach(key => {
+        sessionStorage.removeItem('auth_' + key);
+        localStorage.removeItem('auth_' + key);
+      });
+    }
+
+    // Keep authenticated sessions active across dashboard renders
     
     // Capture unsaved drafts to prevent data loss on auto-refresh
     const unsavedIom = [];
@@ -1384,27 +1397,6 @@ function _performDashboardRender() {
 
   `;
 
-      if (activeDashboardPage === 'overtime-dashboard') {
-        const overtimeCard = document.createElement('div');
-        overtimeCard.className = 'glass-card';
-        overtimeCard.id = 'export-content';
-        overtimeCard.innerHTML = buildOvertimeDashboardReportHtml(state, getCustomPeriodByOffset(getOvertimeDashboardPeriodOffset()));
-        container.appendChild(overtimeCard);
-        bindOvertimeDashboardControls();
-        
-        unsavedOt.forEach(draft => {
-          const inp = document.querySelector(`.ot-input[data-staff="${draft.staff}"][data-date="${draft.date}"]`);
-          if (inp) { inp.value = draft.value; }
-        });
-        if (focusedEl && focusedEl.type === 'ot') {
-          const inp = document.querySelector(`.ot-input[data-staff="${focusedEl.staff}"][data-date="${focusedEl.date}"]`);
-          if (inp) { setTimeout(() => inp.focus(), 10); }
-        }
-        
-        updateReminderList(true);
-        return;
-      }
-
       if (activeDashboardPage === 'iom-dashboard') {
         const iomCard = document.createElement('div');
         iomCard.className = 'glass-card';
@@ -1422,6 +1414,17 @@ function _performDashboardRender() {
           if (inp) { setTimeout(() => inp.focus(), 10); }
         }
         
+        updateReminderList(true);
+        return;
+      }
+
+      if (activeDashboardPage === 'rocket-compile-dashboard') {
+        const rocketCard = document.createElement('div');
+        rocketCard.className = 'glass-card';
+        rocketCard.id = 'export-content';
+        rocketCard.innerHTML = buildRocketCompileReportHtml(state);
+        container.appendChild(rocketCard);
+        bindRocketCompileDashboardControls();
         updateReminderList(true);
         return;
       }
@@ -1504,7 +1507,7 @@ function _performDashboardRender() {
 
       for (const row of EXACT_DASHBOARD_ROWS) {
         const data = calculatedData[row.id] || { auth: 0, exist: 0, pres: 0, abs: 0 };
-        const mgmtIds = ['R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10'];
+        const mgmtIds = ['R4', 'R5', 'R6', 'R7', 'R8', 'R10'];
         let rowClass = row.isTotal ? 'total-row' : (mgmtIds.includes(row.id) ? 'management-row' : '');
 
         html += `<tr class="${rowClass}">`;
@@ -1581,4 +1584,14 @@ function updateClock() {
   if (!hourHand) return;
   applyClockSnapshot(document, getClockSnapshot());
 }
-
+
+
+function escapeHtmlAttr(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}

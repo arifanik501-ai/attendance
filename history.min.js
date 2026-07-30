@@ -622,8 +622,17 @@ function getReportingMonthInfo(dateStr) {
     return { key: "invalid", year: 0, month: 0, monthName: "Invalid", rangeStr: "", displayName: "Invalid Date (" + dateStr + ")" };
   }
 
-  let repMonth = m;
+  // 26th to 25th month cycle
   let repYear = y;
+  let repMonth = m;
+
+  if (d >= 26) {
+    repMonth = m + 1;
+    if (repMonth > 12) {
+      repMonth = 1;
+      repYear = y + 1;
+    }
+  }
 
   const monthNames = [
     "", "January", "February", "March", "April", "May", "June",
@@ -631,10 +640,17 @@ function getReportingMonthInfo(dateStr) {
   ];
 
   const monthName = monthNames[repMonth];
-  const lastDay = new Date(repYear, repMonth, 0).getDate();
-  
-  let rangeStr = "1 " + monthName + " - " + lastDay + " " + monthName + " " + repYear;
-  const displayName = rangeStr + " (" + monthName + " Month)";
+
+  let startMonth = repMonth - 1;
+  let startYear = repYear;
+  if (startMonth < 1) {
+    startMonth = 12;
+    startYear = repYear - 1;
+  }
+  const startMonthName = monthNames[startMonth];
+
+  const rangeStr = "26 " + startMonthName + " to 25 " + monthName + " " + repYear;
+  const displayName = monthName + " Month = 26 " + startMonthName + " to 25 " + monthName + " " + repYear;
 
   return {
     key: repYear + "-" + String(repMonth).padStart(2, '0'),
@@ -1019,6 +1035,11 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
           if (groupName === 'Fan Auto Powder Coating' && desig.toLowerCase() === 'computer operator') {
             desig = 'Sr. Supervisor';
           }
+
+          // Merge Supervisor into Sr. Supervisor across all groups/sections
+          if (desig.toLowerCase() === 'supervisor') {
+            desig = 'Sr. Supervisor';
+          }
           
           if (!dataMap[groupName][desig]) dataMap[groupName][desig] = {};
           
@@ -1124,6 +1145,13 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
   Object.keys(dataMap).sort().forEach(section => {
     // 3. Remove Empty Rows: Skip designations that have 0 auth/exist across all dates
     const designations = Object.keys(dataMap[section]).sort().filter(desig => {
+      // Force include Fan Sada Shapla Sr. Supervisor / Supervisor from July 1st
+      if (section === 'Fan Sada Shapla' && (desig === 'Supervisor' || desig === 'Sr. Supervisor')) {
+        if (dates.some(d => d >= '2024-07-01')) return true;
+      }
+      if (section === 'Fan Assemble' && desig === 'Jr. Officer') {
+        if (dates.some(d => d >= '2024-07-01')) return true;
+      }
       let totalData = 0;
       dates.forEach(dStr => {
         if (dataMap[section][desig][dStr]) totalData += dataMap[section][desig][dStr].auth + dataMap[section][desig][dStr].exist;

@@ -93,7 +93,60 @@ try {
 let currentActivePageId = null;
 const SESSION_DEVICE_ID = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 const CUSTOM_PERIOD_CUTOFF_DAY = 26;
-const META_STATE_KEYS = ['history', 'branchAttendance', 'iom', 'iom_staff_list', 'iom_locked', 'rocketEntries'];
+const SECTION_STATUS_CONFIG = {
+  fan_power_press: {
+    name: "Fan Power Press Section",
+    entryBy: "Monir",
+    ownerPage: "monir"
+  },
+  fan_die_casting: {
+    name: "Fan Die Casting Section",
+    entryBy: "Monir",
+    ownerPage: "monir"
+  },
+  fan_auto_powder_coating: {
+    name: "Fan Auto Powder Coating Section",
+    entryBy: "Anwar",
+    ownerPage: "anwar"
+  },
+  fan_assemble_line: {
+    name: "Fan Assemble Line",
+    entryBy: "Anik",
+    ownerPage: "anik"
+  },
+  fan_dimmer_and_blade: {
+    name: "Fan Dimmer and Blade",
+    entryBy: "Anik",
+    ownerPage: "anik"
+  },
+  fan_armature_winding: {
+    name: "Fan Armature Winding",
+    entryBy: "Takbir",
+    ownerPage: "takbir"
+  },
+  cf_5607_production: {
+    name: "CF 5607 Production",
+    entryBy: "Takbir",
+    ownerPage: "takbir"
+  },
+  exhaust_fan_production: {
+    name: "Exhaust Fan Production",
+    entryBy: "Bikash",
+    ownerPage: "bikash"
+  },
+  capacitor_production: {
+    name: "Capacitor Production",
+    entryBy: "Bikash",
+    ownerPage: "bikash"
+  },
+  rechargeable_production: {
+    name: "Rechargeable Production",
+    entryBy: "Bikash",
+    ownerPage: "bikash"
+  }
+};
+
+const META_STATE_KEYS = ['history', 'branchAttendance', 'iom', 'iom_staff_list', 'iom_locked', 'rocketEntries', 'sectionStatus'];
 const SMOOTH_MODE_STORAGE_KEY = 'mep_smooth_mode_enabled';
 const EDIT_AUTH_STORAGE_KEY = 'mep_edit_auth_enabled';
 

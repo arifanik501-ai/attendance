@@ -444,7 +444,7 @@ function collectFanAssembleDimmerTotals(state) {
       const authorized = historyToCount(row.authorized);
       const existing = historyToCount(row.existing);
       const present = historyToCount(row.present);
-      let absent = authorized - present;
+      let absent = Math.max(0, authorized - present);
 
       totals.authorized += authorized;
       totals.existing += existing;
@@ -835,7 +835,7 @@ window.renderMonthlyChartModal = function(monthKey, results) {
           const authorized = parseInt(row.authorized) || 0;
           const existing = parseInt(row.existing) || 0;
           const present = parseInt(row.present) || 0;
-          const absent = authorized - present; 
+          const absent = Math.max(0, authorized - present); 
 
           totalAuth += authorized;
           totalExist += existing;
@@ -1046,7 +1046,7 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
           const authorized = parseInt(row.authorized) || 0;
           const existing = parseInt(row.existing) || 0;
           const present = parseInt(row.present) || 0;
-          const absent = authorized - present;
+          const absent = Math.max(0, authorized - present);
           
           if (!dataMap[groupName][desig][dStr]) {
             dataMap[groupName][desig][dStr] = {
@@ -1928,7 +1928,7 @@ function _renderHistoryState(dateStr, state, container) {
           var authorized = parseInt(row.authorized) || 0;
           var existing = parseInt(row.existing) || 0;
           var present = parseInt(row.present) || 0;
-          var absent = authorized - present;
+          var absent = Math.max(0, authorized - present);
           totalAuth += authorized;
           totalExist += existing; totalPresent += present; totalAbsent += absent;
           secExist += existing; secPresent += present; secAbsent += absent;

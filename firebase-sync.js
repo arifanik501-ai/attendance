@@ -80,16 +80,36 @@ function setupFirebaseListener() {
               }
             }
           }
+        if (data.sectionStatus || data.sectionStatusHistory) {
+          if (!localDashboardState) {
+            localDashboardState = JSON.parse(JSON.stringify(data));
+          }
+          if (data.sectionStatus) localDashboardState.sectionStatus = data.sectionStatus;
+          if (data.sectionStatusHistory) localDashboardState.sectionStatusHistory = data.sectionStatusHistory;
+
+          if (!globalAppState) globalAppState = data;
+          else {
+            if (data.sectionStatus) globalAppState.sectionStatus = data.sectionStatus;
+            if (data.sectionStatusHistory) globalAppState.sectionStatusHistory = data.sectionStatusHistory;
+          }
+
+          localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+          localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(globalAppState));
+
+          if (currentActivePageId === 'section-status-report') {
+            if (typeof _performDashboardRender === 'function') {
+              _performDashboardRender();
+            } else if (typeof window._renderSectionStatusReportContent === 'function') {
+              window._renderSectionStatusReportContent();
+            }
+          } else if (['monir', 'anwar', 'anik', 'takbir', 'bikash'].includes(currentActivePageId) && typeof _renderEntryContent === 'function') {
+            _renderEntryContent(currentActivePageId);
+          }
         }
       } else {
         globalAppState = createDefaultState();
         saveAppState(globalAppState);
       }
-
-      // The state updates silently in the background (globalAppState is always fresh).
-      // We intentionally do NOT re-trigger visual rendering here.
-      // The user must click the "Refresh" (Update) button on the dashboard to see new changes.
-      // And if they are editing a sheet, their own save will push to Firebase without interrupting their typing.
     });
 
     // Listen for publish trigger to update live dashboard globally
@@ -103,7 +123,7 @@ function setupFirebaseListener() {
       if (trigger) {
         localDashboardState = JSON.parse(JSON.stringify(globalAppState));
         localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
-        if (currentActivePageId === 'index' || currentActivePageId === 'iom-dashboard') {
+        if (currentActivePageId === 'index' || currentActivePageId === 'iom-dashboard' || currentActivePageId === 'section-status-report') {
           _performDashboardRender();
         }
       }
@@ -117,28 +137,46 @@ function setupFirebaseListener() {
         return;
       }
       const data = snapshot.val();
-      if (data && data.deviceId !== SESSION_DEVICE_ID) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-          const title = 'MEP FAN LTD.';
-          const options = {
-            body: data.actionStr || `🔄 ${data.pageTitle} has been updated`,
-            icon: './icon-192.png',
-            badge: './icon-192.png',
-            tag: 'mep-update-notification',
-            vibrate: [100, 50, 100],
-            renotify: true
-          };
+      if (data) {
+        if (window.firebaseDb) {
+          window.firebaseDb.ref('mep_dashboard_state/sectionStatus').once('value').then(snap => {
+            if (snap.exists()) {
+              const secStat = snap.val();
+              if (!localDashboardState) localDashboardState = {};
+              localDashboardState.sectionStatus = secStat;
+              if (globalAppState) globalAppState.sectionStatus = secStat;
+              localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+              if (currentActivePageId === 'section-status-report') {
+                if (typeof _performDashboardRender === 'function') _performDashboardRender();
+                else if (typeof window._renderSectionStatusReportContent === 'function') window._renderSectionStatusReportContent();
+              }
+            }
+          }).catch(err => console.warn('Section status live sync error:', err));
+        }
 
-          if ('serviceWorker' in navigator) {
-            window.playAlertSoundAndVibrate();
-            navigator.serviceWorker.ready.then(reg => {
-              reg.showNotification(title, options);
-            }).catch(() => {
+        if (data.deviceId !== SESSION_DEVICE_ID) {
+          if ('Notification' in window && Notification.permission === 'granted') {
+            const title = 'MEP FAN LTD.';
+            const options = {
+              body: data.actionStr || `🔄 ${data.pageTitle} has been updated`,
+              icon: './icon-192.png',
+              badge: './icon-192.png',
+              tag: 'mep-update-notification',
+              vibrate: [100, 50, 100],
+              renotify: true
+            };
+
+            if ('serviceWorker' in navigator) {
+              window.playAlertSoundAndVibrate();
+              navigator.serviceWorker.ready.then(reg => {
+                reg.showNotification(title, options);
+              }).catch(() => {
+                new Notification(title, options);
+              });
+            } else {
+              window.playAlertSoundAndVibrate();
               new Notification(title, options);
-            });
-          } else {
-            window.playAlertSoundAndVibrate();
-            new Notification(title, options);
+            }
           }
         }
       }

@@ -458,7 +458,7 @@ function getAppState() {
 
       // Ensure all rows are recalculated with new absent logic
       stateToReturn[pageKey][groupName].forEach(r => {
-        r.absent = (parseInt(r.authorized) || 0) - (parseInt(r.present) || 0);
+        r.absent = Math.max(0, (parseInt(r.authorized) || 0) - (parseInt(r.present) || 0));
       });
     }
   }
@@ -619,7 +619,7 @@ function calculateRow(row) {
   const authorized = parseInt(row.authorized) || 0;
   const existing = parseInt(row.existing) || 0;
   const present = parseInt(row.present) || 0;
-  row.absent = authorized - present;
+  row.absent = Math.max(0, authorized - present);
   return row;
 }
 
@@ -774,11 +774,160 @@ if (document.readyState === 'loading') {
   installServiceWorkerRefresh();
 }
 
+// ═══════════════════════════════════════════════════
+// SECTION STATUS ENTRY & DAILY AUTO RESET SYSTEM (00:00 MIDNIGHT)
+// ═══════════════════════════════════════════════════
+function getCurrentCycleStartTime(nowDate = new Date()) {
+  const dt = new Date(nowDate);
+  dt.setHours(0, 0, 0, 0);
+  return dt.getTime();
+}
+
+function getEffectiveSectionStatus(sectionKey, state = (localDashboardState || getAppState())) {
+  const cfg = (typeof SECTION_STATUS_CONFIG !== 'undefined' ? SECTION_STATUS_CONFIG[sectionKey] : null);
+  if (!cfg) return null;
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const isoDateStr = `${year}-${month}-${day}`;
+
+  let sectionData = (state && state.sectionStatus) ? state.sectionStatus[sectionKey] : null;
+  const cycleStart = getCurrentCycleStartTime();
+
+  if (!sectionData || !sectionData.timestamp || sectionData.timestamp < cycleStart) {
+    if (state && state.sectionStatusHistory && state.sectionStatusHistory[isoDateStr] && state.sectionStatusHistory[isoDateStr][sectionKey]) {
+      sectionData = state.sectionStatusHistory[isoDateStr][sectionKey];
+    }
+  }
+
+  if (sectionData && (sectionData.timestamp >= cycleStart || sectionData.entryDate === isoDateStr)) {
+    return {
+      sectionKey: sectionKey,
+      name: cfg.name,
+      entryBy: sectionData.entryBy || cfg.entryBy,
+      status: sectionData.status,
+      entryDate: sectionData.entryDate || '',
+      entryTime: sectionData.entryTime || '',
+      lastUpdated: sectionData.lastUpdated || '',
+      timestamp: sectionData.timestamp,
+      isPending: false
+    };
+  }
+
+  return {
+    sectionKey: sectionKey,
+    name: cfg.name,
+    entryBy: cfg.entryBy,
+    status: 'PENDING',
+    entryDate: 'No Entry Yet',
+    entryTime: '--:--',
+    lastUpdated: 'Pending',
+    timestamp: 0,
+    isPending: true
+  };
+}
+
+window.updateSectionStatus = function(sectionKey, statusVal, entryBy = null) {
+  const cfg = (typeof SECTION_STATUS_CONFIG !== 'undefined' ? SECTION_STATUS_CONFIG[sectionKey] : null);
+  if (!cfg) return;
+  const now = new Date();
+  const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const isoDateStr = `${year}-${month}-${day}`;
+
+  const entryObj = {
+    sectionKey: sectionKey,
+    name: cfg.name,
+    status: statusVal,
+    entryBy: entryBy || cfg.entryBy,
+    entryDate: dateFormatter.format(now),
+    entryTime: timeFormatter.format(now),
+    lastUpdated: dateFormatter.format(now) + ' ' + timeFormatter.format(now),
+    timestamp: Date.now()
+  };
+
+  const state = getAppState();
+  if (!state.sectionStatus) state.sectionStatus = {};
+  state.sectionStatus[sectionKey] = entryObj;
+
+  if (!state.sectionStatusHistory) state.sectionStatusHistory = {};
+  if (!state.sectionStatusHistory[isoDateStr]) state.sectionStatusHistory[isoDateStr] = {};
+  state.sectionStatusHistory[isoDateStr][sectionKey] = entryObj;
+
+  globalAppState = state;
+
+  localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(state));
+  localDashboardState = JSON.parse(JSON.stringify(state));
+  localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+
+  if (window.firebaseDb) {
+    window.firebaseDb.ref(`mep_dashboard_state/sectionStatus/${sectionKey}`).set(entryObj).catch(err => {
+      console.warn('Firebase sectionStatus update failed:', err);
+    });
+    window.firebaseDb.ref(`mep_dashboard_state/sectionStatusHistory/${isoDateStr}/${sectionKey}`).set(entryObj).catch(err => {
+      console.warn('Firebase sectionStatusHistory update failed:', err);
+    });
+    window.firebaseDb.ref('mep_last_update_info').set({
+      deviceId: SESSION_DEVICE_ID,
+      timestamp: Date.now(),
+      pageTitle: cfg.name,
+      actionStr: `⚙️ ${cfg.name} status updated to ${statusVal} by ${entryObj.entryBy}`
+    });
+  }
+
+  if (typeof app !== 'undefined' && app.showToast) {
+    app.showToast(`✅ ${cfg.name} set to ${statusVal}`, statusVal === 'ON' ? 'success' : 'info');
+  }
+
+  return entryObj;
+};
+
+window.pendingSectionStatus = window.pendingSectionStatus || {};
+
+window.handleSectionStatusToggle = function(sectionKey, statusVal) {
+  const cfg = (typeof SECTION_STATUS_CONFIG !== 'undefined' ? SECTION_STATUS_CONFIG[sectionKey] : null);
+  if (!cfg) return;
+
+  if (!window.pendingSectionStatus) window.pendingSectionStatus = {};
+  window.pendingSectionStatus[sectionKey] = statusVal;
+
+  const row = document.querySelector(`.section-status-item-row[data-section="${sectionKey}"]`);
+  if (row) {
+    const btnOn = row.querySelector('.btn-status-on');
+    const btnOff = row.querySelector('.btn-status-off');
+    if (btnOn && btnOff) {
+      if (statusVal === 'ON') {
+        btnOn.style.background = '#10b981';
+        btnOn.style.color = 'white';
+        btnOn.style.boxShadow = '0 3px 10px rgba(16,185,129,0.4)';
+        btnOff.style.background = 'transparent';
+        btnOff.style.color = '#64748b';
+        btnOff.style.boxShadow = 'none';
+      } else if (statusVal === 'OFF') {
+        btnOff.style.background = '#ef4444';
+        btnOff.style.color = 'white';
+        btnOff.style.boxShadow = '0 3px 10px rgba(239,68,68,0.4)';
+        btnOn.style.background = 'transparent';
+        btnOn.style.color = '#64748b';
+        btnOn.style.boxShadow = 'none';
+      }
+    }
+  }
+};
+
 function generateSidebar(activePage) {
   const entrySheetIcon = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,88H152V32Z" opacity="0.2"/><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-32-80a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,136Zm0,32a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,168Z"/></svg>';
+  const reportIcon = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,40H48A16,16,0,0,0,32,56V200a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V56A16,16,0,0,0,208,40ZM48,56H200V88H48ZM200,200H48V104H200V200Z" opacity="0.2"/><path d="M208,32H48A24,24,0,0,0,24,56V200a24,24,0,0,0,24,24H200a24,24,0,0,0,24-24V56A24,24,0,0,0,208,32ZM48,48H200a8,8,0,0,1,8,8V80H40V56A8,8,0,0,1,48,48ZM200,208H48a8,8,0,0,1-8-8V96H208V200A8,8,0,0,1,200,208Z"/></svg>';
   const dashboardPages = [
     { id: 'index', title: 'Dashboard', url: 'index.html', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M112,56v48a8,8,0,0,1-8,8H56a8,8,0,0,1-8-8V56a8,8,0,0,1,8-8h48A8,8,0,0,1,112,56Zm88-8H152a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V56A8,8,0,0,0,200,48Zm-96,96H56a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V152A8,8,0,0,0,104,144Zm96,0H152a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V152A8,8,0,0,0,200,144Z" opacity="0.2"/><path d="M200,136H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,200,136Zm0,64H152V152h48v48ZM104,40H56A16,16,0,0,0,40,56v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,64H56V56h48v48Zm96-64H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,64H152V56h48v48Zm-96,32H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm0,64H56V152h48v48Z"/></svg>' },
     { id: 'iom-dashboard', title: 'IOM Report', url: 'index.html#iom-dashboard', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M40,48V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88L160,32H56A16,16,0,0,0,40,48Z" opacity="0.2"/><path d="M213.66,82.34l-48-48A8,8,0,0,0,160,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,196.69,88H160ZM200,208H56V48h88V88a8,8,0,0,0,8,8h48V208Z"/></svg>' },
+    { id: 'section-status-report', title: 'Section Status', url: 'index.html#section-status-report', icon: reportIcon }
   ];
   const entryPages = [
     { id: 'anik', title: 'Entry (Anik)', url: 'entry.html?page=anik', icon: entrySheetIcon },
@@ -872,7 +1021,17 @@ function _loadAndDisplayChangeCount() {
 function renderEntryPage(pageId) {
   currentActivePageId = pageId;
   document.getElementById('sidebar').innerHTML = generateSidebar(pageId);
-  const config = SECTIONS_CONFIG[pageId];
+  
+  if (pageId === 'section-status-report') {
+    document.getElementById('page-title').innerHTML = '<span class="page-title-name">Section Status Report</span>';
+    document.getElementById('page-title').classList.add('page-title-premium');
+    if (typeof _renderSectionStatusReportContent === 'function') {
+      _renderSectionStatusReportContent();
+    }
+    return;
+  }
+
+  const config = SECTIONS_CONFIG[pageId] || { title: "Entry Sheet" };
 
   // Split "Entry Sheet (Name)" into a small eyebrow label + a large
   // display name so the heading feels editorial.
@@ -1091,13 +1250,84 @@ function renderEntryPage(pageId) {
   });
 }
 
+window._renderSectionStatusReportContent = function() {
+  const container = document.getElementById('report-container');
+  if (!container) return;
+  const state = (localDashboardState || getAppState());
+  if (typeof buildSectionStatusReportHtml === 'function') {
+    container.innerHTML = `<div class="glass-card" id="export-content">${buildSectionStatusReportHtml(state)}</div>`;
+  } else {
+    container.innerHTML = `<div class="glass-card"><p>Loading Section Status Report...</p></div>`;
+  }
+};
+
 function _renderEntryContent(pageId) {
+  if (pageId === 'section-status-report') {
+    _renderSectionStatusReportContent();
+    return;
+  }
+
   const state = getAppState();
   const pageState = state[pageId];
   const config = SECTIONS_CONFIG[pageId];
 
   const container = document.getElementById('report-container');
   container.innerHTML = '';
+
+  // Section Status Entry Card for Monir & Anwar
+  const sectionsForPage = Object.keys(SECTION_STATUS_CONFIG).filter(k => SECTION_STATUS_CONFIG[k].ownerPage === pageId);
+  if (sectionsForPage.length > 0) {
+    const statusCard = document.createElement('div');
+    statusCard.className = 'glass-card section-status-entry-card';
+    statusCard.style.marginBottom = '1.5rem';
+    statusCard.style.padding = '1.2rem';
+
+    let cardHtml = `
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem; border-bottom:1px solid rgba(0,0,0,0.06); padding-bottom:0.6rem;">
+        <div>
+          <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:var(--text-dark); display:flex; align-items:center; gap:8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            Section Operational Status (Daily Entry)
+          </h3>
+          <p style="margin:0.2rem 0 0 0; font-size:0.82rem; color:var(--text-light); font-weight:500;">Select section status for today.</p>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:0.75rem;">
+    `;
+
+    sectionsForPage.forEach(sKey => {
+      const eff = getEffectiveSectionStatus(sKey, state);
+      const pendingVal = (window.pendingSectionStatus && window.pendingSectionStatus[sKey]) ? window.pendingSectionStatus[sKey] : (eff.isPending ? null : eff.status);
+      const isON = pendingVal === 'ON';
+      const isOFF = pendingVal === 'OFF';
+
+      cardHtml += `
+        <div class="section-status-item-row" data-section="${sKey}" style="background:rgba(255,255,255,0.7); border:1px solid rgba(0,0,0,0.08); border-radius:12px; padding:0.8rem 1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem; transition:all 0.2s;">
+          <div style="flex:1; min-width:180px;">
+            <div style="font-weight:700; font-size:1rem; color:var(--text-dark);">${eff.name}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <div style="display:flex; background:#e2e8f0; padding:3px; border-radius:10px; gap:3px;">
+              <button type="button" class="btn-status-toggle btn-status-on ${isON ? 'active-on' : ''}" 
+                onclick="window.handleSectionStatusToggle('${sKey}', 'ON')"
+                style="padding:6px 18px; border:none; border-radius:8px; font-size:0.9rem; font-weight:800; cursor:pointer; transition:all 0.2s; ${isON ? 'background:#10b981; color:white; box-shadow:0 3px 10px rgba(16,185,129,0.4);' : 'background:transparent; color:#64748b;'}">
+                🟢 ON
+              </button>
+              <button type="button" class="btn-status-toggle btn-status-off ${isOFF ? 'active-off' : ''}" 
+                onclick="window.handleSectionStatusToggle('${sKey}', 'OFF')"
+                style="padding:6px 18px; border:none; border-radius:8px; font-size:0.9rem; font-weight:800; cursor:pointer; transition:all 0.2s; ${isOFF ? 'background:#ef4444; color:white; box-shadow:0 3px 10px rgba(239,68,68,0.4);' : 'background:transparent; color:#64748b;'}">
+                🔴 OFF
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    cardHtml += `</div>`;
+    statusCard.innerHTML = cardHtml;
+    container.appendChild(statusCard);
+  }
 
   setTimeout(() => {
     for (const [groupName, rows] of Object.entries(pageState)) {
@@ -1221,12 +1451,55 @@ function _renderEntryContent(pageId) {
     };
 
     document.getElementById('btn-save').onclick = () => {
-      // Prevent double-clicks
       const saveBtn = document.getElementById('btn-save');
+
+      // Check Section Status validation for this entry page
+      const sectionsForPage = Object.keys(SECTION_STATUS_CONFIG).filter(k => SECTION_STATUS_CONFIG[k].ownerPage === pageId);
+      if (sectionsForPage.length > 0) {
+        let missingSections = [];
+        sectionsForPage.forEach(sKey => {
+          const cfg = SECTION_STATUS_CONFIG[sKey];
+          const pendingVal = (window.pendingSectionStatus && window.pendingSectionStatus[sKey]) ? window.pendingSectionStatus[sKey] : null;
+          const eff = getEffectiveSectionStatus(sKey, state);
+
+          if (!pendingVal && eff.isPending) {
+            missingSections.push(cfg.name);
+          }
+        });
+
+        if (missingSections.length > 0) {
+          if (typeof app !== 'undefined' && app.showToast) {
+            app.showToast('⚠️ Please select ON or OFF status for all sections!', 'warning');
+          }
+          alert('⚠️ Please select ON or OFF status for all sections before updating!\n\nUnselected Sections:\n• ' + missingSections.join('\n• '));
+          return;
+        }
+      }
+
       if (saveBtn.disabled) return;
       saveBtn.disabled = true;
       saveBtn.style.opacity = '0.6';
       saveBtn.querySelector('span') && (saveBtn.querySelector('span').textContent = 'Saving...');
+
+      // Commit section status updates
+      if (sectionsForPage.length > 0) {
+        sectionsForPage.forEach(sKey => {
+          const cfg = SECTION_STATUS_CONFIG[sKey];
+          let statusToSave = (window.pendingSectionStatus && window.pendingSectionStatus[sKey]) ? window.pendingSectionStatus[sKey] : null;
+          
+          if (!statusToSave) {
+            const eff = getEffectiveSectionStatus(sKey, state);
+            if (eff && !eff.isPending) {
+              statusToSave = eff.status;
+            }
+          }
+
+          if (statusToSave) {
+            updateSectionStatus(sKey, statusToSave, cfg.entryBy);
+            if (window.pendingSectionStatus) delete window.pendingSectionStatus[sKey];
+          }
+        });
+      }
 
       // Sync any auth-input edits into the save state
       document.querySelectorAll('.auth-input').forEach(inp => {

@@ -1198,11 +1198,19 @@ function calculateDashboardData(state) {
     }
   }
 
+  // Guarantee absent is never negative on main Dashboard display
+  for (const k in values) {
+    if (values[k]) {
+      values[k].abs = Math.max(0, values[k].abs);
+    }
+  }
+
   return values;
 }
 
 window.renderDashboard = function () {
-  currentActivePageId = window.location.hash === '#iom-dashboard' ? 'iom-dashboard' : 'index';
+  const hash = window.location.hash;
+  currentActivePageId = hash === '#iom-dashboard' ? 'iom-dashboard' : (hash === '#section-status-report' ? 'section-status-report' : 'index');
   if (globalAppState) {
     _performDashboardRender();
   }
@@ -1210,7 +1218,8 @@ window.renderDashboard = function () {
 
 function _performDashboardRender() {
   try {
-    const activeDashboardPage = window.location.hash === '#iom-dashboard' ? 'iom-dashboard' : 'index';
+    const hash = window.location.hash;
+    const activeDashboardPage = hash === '#iom-dashboard' ? 'iom-dashboard' : (hash === '#section-status-report' ? 'section-status-report' : 'index');
     currentActivePageId = activeDashboardPage;
     document.getElementById('sidebar').innerHTML = generateSidebar(activeDashboardPage);
 
@@ -1418,6 +1427,16 @@ function _performDashboardRender() {
         return;
       }
 
+      if (activeDashboardPage === 'section-status-report') {
+        const statusCard = document.createElement('div');
+        statusCard.className = 'glass-card';
+        statusCard.id = 'export-content';
+        statusCard.innerHTML = buildSectionStatusReportHtml(state);
+        container.appendChild(statusCard);
+        updateReminderList(true);
+        return;
+      }
+
       if (activeDashboardPage === 'rocket-compile-dashboard') {
         const rocketCard = document.createElement('div');
         rocketCard.className = 'glass-card';
@@ -1595,3 +1614,528 @@ function escapeHtmlAttr(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
+
+window.buildSectionStatusReportHtml = function(state = (localDashboardState || getAppState())) {
+  const keys = (typeof SECTION_STATUS_CONFIG !== 'undefined') ? Object.keys(SECTION_STATUS_CONFIG) : ['fan_power_press', 'fan_die_casting', 'fan_auto_powder_coating'];
+  
+  let onCount = 0;
+  let offCount = 0;
+  let pendingCount = 0;
+
+  const sectionIcons = {
+    fan_power_press: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18h12M6 14h12M9 10h6M12 2v8"/><path d="M5 22h14"/></svg>
+    </div>`,
+    fan_die_casting: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16V10H4zM6 10V6a2 2 0 012-2h8a2 2 0 012 2v4M10 14h4"/></svg>
+    </div>`,
+    fan_auto_powder_coating: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7 7M10 10l-2 4 4-2M10 10l4-4M18 6a2 2 0 11-4 0 2 2 0 014 0zM19 13a1 1 0 100-2 1 1 0 000 2zM15 17a1 1 0 100-2 1 1 0 000 2zM21 18a1 1 0 100-2 1 1 0 000 2z"/></svg>
+    </div>`,
+    fan_assemble_line: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    </div>`,
+    fan_dimmer_and_blade: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+    </div>`,
+    fan_armature_winding: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M6 6l12 12M6 18L18 6"/></svg>
+    </div>`,
+    cf_5607_production: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+    </div>`,
+    exhaust_fan_production: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 12L8 8M12 12l4 4M12 12l-4 4M12 12l4-4"/></svg>
+    </div>`,
+    capacitor_production: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+    </div>`,
+    rechargeable_production: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2" ry="2"/><line x1="22" y1="11" x2="22" y2="13"/><polygon points="10 10 7 14 11 14 8 18 13 14 9 14 12 10"/></svg>
+    </div>`
+  };
+
+  const rowsHtml = keys.map(sKey => {
+    const eff = (typeof getEffectiveSectionStatus === 'function') ? getEffectiveSectionStatus(sKey, state) : null;
+    const name = eff ? eff.name : sKey;
+    const status = eff ? eff.status : 'PENDING';
+    const icon = sectionIcons[sKey] || sectionIcons.fan_power_press;
+
+    let badgeHtml = '';
+    if (status === 'ON') {
+      onCount++;
+      badgeHtml = `<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; padding:5px 16px; border-radius:20px; font-weight:800; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(34,197,94,0.15);">
+        <span style="width:7px; height:7px; background:#22c55e; border-radius:50%; display:inline-block; box-shadow:0 0 6px #22c55e;"></span> ON
+      </span>`;
+    } else if (status === 'OFF') {
+      offCount++;
+      badgeHtml = `<span style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:5px 16px; border-radius:20px; font-weight:800; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(239,68,68,0.15);">
+        <span style="width:7px; height:7px; background:#ef4444; border-radius:50%; display:inline-block; box-shadow:0 0 6px #ef4444;"></span> OFF
+      </span>`;
+    } else {
+      pendingCount++;
+      badgeHtml = `<span style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; padding:5px 16px; border-radius:20px; font-weight:800; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(245,158,11,0.15);">
+        <span style="width:7px; height:7px; background:#f59e0b; border-radius:50%; display:inline-block;"></span> Pending
+      </span>`;
+    }
+
+    return `
+      <tr style="border-bottom:1px solid rgba(0,0,0,0.05); transition:background 0.2s;" onmouseover="this.style.background='rgba(248,250,252,0.8)'" onmouseout="this.style.background='transparent'">
+        <td style="padding:0.75rem 1rem; text-align:left;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            ${icon}
+            <span style="font-weight:700; color:#1e293b; font-size:0.95rem;">${name}</span>
+          </div>
+        </td>
+        <td style="padding:0.75rem 1rem; text-align:center;">${badgeHtml}</td>
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <div id="section-status-report-card" style="padding:0.6rem 0.6rem 0.8rem 0.6rem; background:#ffffff; border-radius:14px;">
+      
+      <!-- Compact Top Header Row -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem; border-bottom:2px solid #f1f5f9; padding-bottom:0.8rem;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg, #6366f1, #4f46e5); color:white; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(99,102,241,0.3);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          </div>
+          <div>
+            <h2 style="margin:0; font-size:1.35rem; font-weight:800; color:#0f172a; letter-spacing:-0.02em;">Section Status Report</h2>
+            <div style="font-size:0.8rem; color:#64748b; font-weight:500; margin-top:1px;">Real-time daily section status tracking across all factory sections.</div>
+          </div>
+        </div>
+
+        <!-- Download Action Buttons -->
+        <div class="section-status-actions-no-print" style="display:flex; align-items:center; gap:0.5rem;">
+          <button type="button" onclick="window.downloadSectionStatusReportJpg()" 
+            style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; border-radius:10px; padding:0.55rem 1.2rem; font-weight:700; font-size:0.88rem; display:inline-flex; align-items:center; gap:6px; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3); transition:all 0.2s;"
+            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(16,185,129,0.4)'"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16,185,129,0.3)'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <span>Download (JPG)</span>
+          </button>
+          <button type="button" onclick="window.downloadSectionStatusReportExcel()" 
+            style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; border-radius:10px; padding:0.55rem 0.9rem; font-weight:700; font-size:0.88rem; display:inline-flex; align-items:center; gap:4px; cursor:pointer; transition:all 0.2s;"
+            onmouseover="this.style.background='#e2e8f0';" onmouseout="this.style.background='#f1f5f9';">
+            <span>Excel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Compact Stat Cards Row -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:0.6rem; margin-bottom:1rem;">
+        
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:0.6rem 0.9rem; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:0.8rem; font-weight:700; color:#64748b;">Total</span>
+          <span style="font-size:1.2rem; font-weight:800; color:#3b82f6;">${keys.length}</span>
+        </div>
+
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:0.6rem 0.9rem; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:0.8rem; font-weight:700; color:#15803d;">Active (ON)</span>
+          <span style="font-size:1.2rem; font-weight:800; color:#10b981;">${onCount}</span>
+        </div>
+
+        <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:0.6rem 0.9rem; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:0.8rem; font-weight:700; color:#b91c1c;">Inactive (OFF)</span>
+          <span style="font-size:1.2rem; font-weight:800; color:#ef4444;">${offCount}</span>
+        </div>
+
+        <div style="background:#fffbeb; border:1px solid #fef3c7; border-radius:10px; padding:0.6rem 0.9rem; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:0.8rem; font-weight:700; color:#b45309;">Pending</span>
+          <span style="font-size:1.2rem; font-weight:800; color:#f59e0b;">${pendingCount}</span>
+        </div>
+
+      </div>
+
+      <!-- Compact Section Table -->
+      <div style="border-radius:12px; overflow:hidden; border:1px solid #e2e8f0; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
+        <table style="width:100%; border-collapse:collapse; background:#ffffff; font-family:'Inter', sans-serif;">
+          <thead>
+            <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+              <th style="padding:0.75rem 1rem; text-align:left; font-size:0.85rem; font-weight:800; color:#334155; text-transform:uppercase; letter-spacing:0.04em;">Section</th>
+              <th style="padding:0.75rem 1rem; text-align:center; font-size:0.85rem; font-weight:800; color:#334155; text-transform:uppercase; letter-spacing:0.04em; width:180px;">Current Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  `;
+};
+
+window.downloadSectionStatusReportJpg = function() {
+  if (typeof html2canvas === 'undefined') {
+    alert("Missing html2canvas script!");
+    return;
+  }
+
+  if (typeof app !== 'undefined' && app.showToast) {
+    app.showToast('📸 Generating Ultra-HD Premium JPG Report...', 'info');
+  }
+
+  const state = (localDashboardState || getAppState());
+  const keys = (typeof SECTION_STATUS_CONFIG !== 'undefined') ? Object.keys(SECTION_STATUS_CONFIG) : ['fan_power_press', 'fan_die_casting', 'fan_auto_powder_coating'];
+  
+  let onCount = 0;
+  let offCount = 0;
+  let pendingCount = 0;
+
+  const now = new Date();
+  const dateFormatted = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const timeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  const rowsData = keys.map((sKey, index) => {
+    const eff = (typeof getEffectiveSectionStatus === 'function') ? getEffectiveSectionStatus(sKey, state) : null;
+    const name = eff ? eff.name : sKey;
+    const status = eff ? eff.status : 'PENDING';
+    
+    let badgeStyle = '';
+    let badgeText = '';
+    
+    if (status === 'ON') {
+      onCount++;
+      badgeStyle = 'background:linear-gradient(135deg, #10b981, #059669); color:#ffffff; box-shadow:0 3px 8px rgba(16,185,129,0.35);';
+      badgeText = '🟢 ON';
+    } else if (status === 'OFF') {
+      offCount++;
+      badgeStyle = 'background:linear-gradient(135deg, #ef4444, #dc2626); color:#ffffff; box-shadow:0 3px 8px rgba(239,68,68,0.35);';
+      badgeText = '🔴 OFF';
+    } else {
+      pendingCount++;
+      badgeStyle = 'background:linear-gradient(135deg, #f59e0b, #d97706); color:#ffffff; box-shadow:0 3px 8px rgba(245,158,11,0.35);';
+      badgeText = '🟡 PENDING';
+    }
+
+    const rowBg = (index % 2 === 0) ? '#ffffff' : '#f8fafc';
+
+    return `
+      <tr style="background:${rowBg}; border-bottom:1px solid #e2e8f0;">
+        <td style="padding:12px 18px; font-size:14px; font-weight:700; color:#1e293b; text-align:center; width:50px;">${index + 1}</td>
+        <td style="padding:12px 18px; font-size:14px; font-weight:700; color:#0f172a;">${name}</td>
+        <td style="padding:12px 18px; text-align:center;">
+          <span style="display:inline-block; padding:6px 18px; border-radius:20px; font-size:13px; font-weight:800; letter-spacing:0.03em; ${badgeStyle}">
+            ${badgeText}
+          </span>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Create high-res offscreen DOM element
+  const tempContainer = document.createElement('div');
+  tempContainer.style.position = 'absolute';
+  tempContainer.style.left = '-9999px';
+  tempContainer.style.top = '-9999px';
+  tempContainer.style.width = '880px';
+  tempContainer.style.background = '#f1f5f9';
+  tempContainer.style.padding = '32px';
+  tempContainer.style.fontFamily = "'Inter', system-ui, -apple-system, sans-serif";
+  tempContainer.style.boxSizing = 'border-box';
+
+  tempContainer.innerHTML = `
+    <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.12); border:1px solid #cbd5e1;">
+      
+      <!-- Premium Executive Header -->
+      <div style="background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:28px 32px; color:#ffffff; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(234,179,8,0.18); border:1px solid rgba(234,179,8,0.4); color:#fef08a; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px;">
+            ⚡ MEP FAN LTD. • PRODUCTION DIVISION
+          </div>
+          <h1 style="margin:0; font-size:22px; font-weight:900; color:#ffffff; letter-spacing:-0.02em;">SECTION OPERATIONAL STATUS REPORT</h1>
+        </div>
+        <div style="text-align:right; background:rgba(255,255,255,0.08); padding:10px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.12);">
+          <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">REPORT DATE</div>
+          <div style="font-size:15px; font-weight:800; color:#ffffff; margin-top:2px;">${dateFormatted}</div>
+          <div style="font-size:11px; font-weight:600; color:#cbd5e1; margin-top:1px;">${timeFormatted}</div>
+        </div>
+      </div>
+
+      <!-- KPI Metrics Cards Row -->
+      <div style="padding:24px 32px 16px 32px; display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+        
+        <div style="background:#ffffff; border:1.5px solid #bbf7d0; border-radius:14px; padding:16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 12px rgba(16,185,129,0.08);">
+          <div>
+            <div style="font-size:12px; font-weight:800; color:#15803d; text-transform:uppercase; letter-spacing:0.04em;">Operational (ON)</div>
+            <div style="font-size:28px; font-weight:900; color:#166534; margin-top:4px;">${onCount}</div>
+          </div>
+          <div style="width:44px; height:44px; border-radius:12px; background:#dcfce7; color:#166534; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900;">
+            🟢
+          </div>
+        </div>
+
+        <div style="background:#ffffff; border:1.5px solid #fecaca; border-radius:14px; padding:16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 12px rgba(239,68,68,0.08);">
+          <div>
+            <div style="font-size:12px; font-weight:800; color:#b91c1c; text-transform:uppercase; letter-spacing:0.04em;">OFF / Maintenance</div>
+            <div style="font-size:28px; font-weight:900; color:#991b1b; margin-top:4px;">${offCount}</div>
+          </div>
+          <div style="width:44px; height:44px; border-radius:12px; background:#fee2e2; color:#991b1b; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900;">
+            🔴
+          </div>
+        </div>
+
+        <div style="background:#ffffff; border:1.5px solid #fde68a; border-radius:14px; padding:16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 12px rgba(245,158,11,0.08);">
+          <div>
+            <div style="font-size:12px; font-weight:800; color:#b45309; text-transform:uppercase; letter-spacing:0.04em;">Pending Status</div>
+            <div style="font-size:28px; font-weight:900; color:#92400e; margin-top:4px;">${pendingCount}</div>
+          </div>
+          <div style="width:44px; height:44px; border-radius:12px; background:#fef3c7; color:#92400e; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900;">
+            🟡
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Main Section Status Table -->
+      <div style="padding:24px 32px 32px 32px; background:#ffffff;">
+        <table style="width:100%; border-collapse:collapse; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
+          <thead>
+            <tr style="background:#0f172a; color:#ffffff;">
+              <th style="padding:14px 18px; text-align:center; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:50px; border-right:1px solid #334155;">SL</th>
+              <th style="padding:14px 18px; text-align:left; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; border-right:1px solid #334155;">Section Name</th>
+              <th style="padding:14px 18px; text-align:center; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:200px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsData}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Premium Footer Stamp -->
+      <div style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:16px 32px; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#64748b; font-weight:600;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
+          <span>Verified Official Report • MEP FAN LTD.</span>
+        </div>
+        <div>Generated on ${dateFormatted} at ${timeFormatted}</div>
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(tempContainer);
+
+  html2canvas(tempContainer, {
+    scale: 3,
+    backgroundColor: null,
+    useCORS: true,
+    logging: false
+  }).then(canvas => {
+    document.body.removeChild(tempContainer);
+
+    const link = document.createElement('a');
+    link.download = `MEP_Section_Status_Report_${dateFormatted.replace(/\s+/g, '_')}.jpg`;
+    link.href = canvas.toDataURL('image/jpeg', 0.98);
+    link.click();
+
+    if (typeof app !== 'undefined' && app.showToast) {
+      app.showToast('📸 Ultra-HD Premium JPG downloaded successfully!', 'success');
+    }
+  }).catch(err => {
+    if (tempContainer.parentNode) document.body.removeChild(tempContainer);
+    console.error('JPG Export error:', err);
+    alert('JPG export failed. Please try again.');
+  });
+};
+
+window.downloadSectionStatusReportExcel = function() {
+  const pwd = prompt("🔐 Enter password to download Section Status Excel Report:");
+  if (pwd === null) return;
+  if (pwd.trim() !== 'a') {
+    if (typeof app !== 'undefined' && app.showToast) {
+      app.showToast('❌ Incorrect password! Access denied.', 'error');
+    }
+    alert('❌ Incorrect password! Access denied.');
+    return;
+  }
+
+  const state = (localDashboardState || getAppState());
+  const keys = (typeof SECTION_STATUS_CONFIG !== 'undefined') ? Object.keys(SECTION_STATUS_CONFIG) : ['fan_power_press', 'fan_die_casting', 'fan_auto_powder_coating'];
+  
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-indexed
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthName = now.toLocaleString('en-US', { month: 'long' });
+  const monthHeaderStr = `${monthName} ${year}`;
+
+  const history = (state && state.sectionStatusHistory) ? state.sectionStatusHistory : {};
+
+  // Build Day Columns Header (Day 01 .. Day 31)
+  let dayNumHeaders = '';
+  let dayNameHeaders = '';
+  const dayTotalsON = new Array(daysInMonth).fill(0);
+  const dayTotalsOFF = new Array(daysInMonth).fill(0);
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayDate = new Date(year, month, d);
+    const dayStr = String(d).padStart(2, '0');
+    const weekdayStr = dayDate.toLocaleDateString('en-US', { weekday: 'short' });
+    const isFriday = dayDate.getDay() === 5;
+    const bgHeader = isFriday ? '#94a3b8' : '#334155';
+
+    dayNumHeaders += `<th style="border:.5pt solid #cbd5e1; padding:6px; background:${bgHeader}; color:#ffffff; font-weight:bold; font-size:9pt; text-align:center; min-width:36px;">${dayStr}</th>`;
+    dayNameHeaders += `<th style="border:.5pt solid #cbd5e1; padding:4px; background:#475569; color:#f8fafc; font-size:8pt; text-align:center;">${weekdayStr}</th>`;
+  }
+
+  // Section Rows
+  let sectionRowsHtml = '';
+  let sl = 1;
+
+  keys.forEach(sKey => {
+    const cfg = (typeof SECTION_STATUS_CONFIG !== 'undefined' ? SECTION_STATUS_CONFIG[sKey] : null);
+    const name = cfg ? cfg.name : sKey;
+
+    let rowCells = '';
+    let sectionONCount = 0;
+    let sectionOFFCount = 0;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayStr = String(d).padStart(2, '0');
+      const monthStr = String(month + 1).padStart(2, '0');
+      const isoDateStr = `${year}-${monthStr}-${dayStr}`;
+      
+      let statusVal = '-';
+      
+      // Check history first
+      if (history[isoDateStr] && history[isoDateStr][sKey] && history[isoDateStr][sKey].status) {
+        statusVal = history[isoDateStr][sKey].status;
+      } else if (d === now.getDate()) {
+        // Current day status
+        const eff = (typeof getEffectiveSectionStatus === 'function') ? getEffectiveSectionStatus(sKey, state) : null;
+        if (eff && !eff.isPending) {
+          statusVal = eff.status;
+        }
+      }
+
+      let cellStyle = 'background-color:#ffffff; color:#94a3b8; text-align:center; border:.5pt solid #e2e8f0; font-size:9pt;';
+      if (statusVal === 'ON') {
+        sectionONCount++;
+        dayTotalsON[d - 1]++;
+        cellStyle = 'background-color:#dcfce7; color:#15803d; font-weight:bold; text-align:center; border:.5pt solid #86efac; font-size:9pt;';
+      } else if (statusVal === 'OFF') {
+        sectionOFFCount++;
+        dayTotalsOFF[d - 1]++;
+        cellStyle = 'background-color:#fee2e2; color:#b91c1c; font-weight:bold; text-align:center; border:.5pt solid #fca5a5; font-size:9pt;';
+      }
+
+      rowCells += `<td style="${cellStyle}">${statusVal}</td>`;
+    }
+
+    const totalRecordedDays = sectionONCount + sectionOFFCount;
+    const opRateStr = totalRecordedDays > 0 ? Math.round((sectionONCount / totalRecordedDays) * 100) + '%' : '-';
+
+    sectionRowsHtml += `
+      <tr>
+        <td style="border:.5pt solid #cbd5e1; padding:6px; text-align:center; background:#f8fafc; font-weight:bold;">${sl++}</td>
+        <td style="border:.5pt solid #cbd5e1; padding:6px 10px; text-align:left; background:#f8fafc; font-weight:bold; color:#0f172a; white-space:nowrap;">${name}</td>
+        ${rowCells}
+        <td style="border:.5pt solid #cbd5e1; padding:6px; text-align:center; background:#f0fdf4; color:#15803d; font-weight:bold;">${sectionONCount}</td>
+        <td style="border:.5pt solid #cbd5e1; padding:6px; text-align:center; background:#fef2f2; color:#b91c1c; font-weight:bold;">${sectionOFFCount}</td>
+        <td style="border:.5pt solid #cbd5e1; padding:6px; text-align:center; background:#eff6ff; color:#1e40af; font-weight:bold;">${opRateStr}</td>
+      </tr>
+    `;
+  });
+
+  // Summary Rows at Bottom
+  let summaryONCells = '';
+  let summaryOFFCells = '';
+  let summaryRateCells = '';
+
+  for (let d = 0; d < daysInMonth; d++) {
+    const onVal = dayTotalsON[d];
+    const offVal = dayTotalsOFF[d];
+    const tot = onVal + offVal;
+    const rateStr = tot > 0 ? Math.round((onVal / tot) * 100) + '%' : '-';
+
+    summaryONCells += `<td style="border:.5pt solid #cbd5e1; padding:6px; background:#e2e8f0; color:#15803d; font-weight:bold; text-align:center;">${onVal}</td>`;
+    summaryOFFCells += `<td style="border:.5pt solid #cbd5e1; padding:6px; background:#e2e8f0; color:#b91c1c; font-weight:bold; text-align:center;">${offVal}</td>`;
+    summaryRateCells += `<td style="border:.5pt solid #cbd5e1; padding:6px; background:#cbd5e1; color:#0f172a; font-weight:bold; text-align:center;">${rateStr}</td>`;
+  }
+
+  const grandON = dayTotalsON.reduce((a, b) => a + b, 0);
+  const grandOFF = dayTotalsOFF.reduce((a, b) => a + b, 0);
+  const grandTot = grandON + grandOFF;
+  const grandRateStr = grandTot > 0 ? Math.round((grandON / grandTot) * 100) + '%' : '-';
+
+  const excelHtml = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="utf-8"/>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+      </style>
+    </head>
+    <body>
+      <table style="border-collapse:collapse; width:100%;">
+        <thead>
+          <tr>
+            <th colspan="${daysInMonth + 5}" style="background-color:#0f172a; color:#ffffff; font-size:16pt; font-weight:bold; text-align:center; padding:12px;">
+              MEP GROUP — FAN FACTORY SECTION OPERATIONAL STATUS REPORT
+            </th>
+          </tr>
+          <tr>
+            <th colspan="${daysInMonth + 5}" style="background-color:#1e293b; color:#cbd5e1; font-size:10pt; font-weight:bold; text-align:center; padding:6px;">
+              Monthly Operational Log: ${monthHeaderStr}
+            </th>
+          </tr>
+          <tr>
+            <th rowspan="2" style="border:.5pt solid #cbd5e1; padding:6px; background:#334155; color:#ffffff; font-weight:bold; text-align:center;">SL</th>
+            <th rowspan="2" style="border:.5pt solid #cbd5e1; padding:6px 12px; background:#334155; color:#ffffff; font-weight:bold; text-align:left; min-width:220px;">Section Name</th>
+            ${dayNumHeaders}
+            <th rowspan="2" style="border:.5pt solid #cbd5e1; padding:6px; background:#15803d; color:#ffffff; font-weight:bold; text-align:center;">Active (ON)</th>
+            <th rowspan="2" style="border:.5pt solid #cbd5e1; padding:6px; background:#b91c1c; color:#ffffff; font-weight:bold; text-align:center;">Inactive (OFF)</th>
+            <th rowspan="2" style="border:.5pt solid #cbd5e1; padding:6px; background:#1e40af; color:#ffffff; font-weight:bold; text-align:center;">Operational %</th>
+          </tr>
+          <tr>
+            ${dayNameHeaders}
+          </tr>
+        </thead>
+        <tbody>
+          ${sectionRowsHtml}
+          <!-- Bottom Summary Rows -->
+          <tr>
+            <td colspan="2" style="border:.5pt solid #cbd5e1; padding:6px 10px; background:#e2e8f0; font-weight:bold; color:#15803d; text-align:right;">Total Active Sections (ON)</td>
+            ${summaryONCells}
+            <td style="border:.5pt solid #cbd5e1; padding:6px; background:#dcfce7; color:#15803d; font-weight:bold; text-align:center;">${grandON}</td>
+            <td style="border:.5pt solid #cbd5e1; padding:6px; background:#e2e8f0; color:#b91c1c; font-weight:bold; text-align:center;">-</td>
+            <td style="border:.5pt solid #cbd5e1; padding:6px; background:#e2e8f0; color:#1e40af; font-weight:bold; text-align:center;">-</td>
+          </tr>
+          <tr>
+            <td colspan="2" style="border:.5pt solid #cbd5e1; padding:6px 10px; background:#e2e8f0; font-weight:bold; color:#b91c1c; text-align:right;">Total Inactive Sections (OFF)</td>
+            ${summaryOFFCells}
+            <td style="border:.5pt solid #cbd5e1; padding:6px; background:#e2e8f0; color:#15803d; font-weight:bold; text-align:center;">-</td>
+            <td style="border:.5pt solid #cbd5e1; padding:6px; background:#fee2e2; color:#b91c1c; font-weight:bold; text-align:center;">${grandOFF}</td>
+            <td style="border:.5pt solid #cbd5e1; padding:6px; background:#e2e8f0; color:#1e40af; font-weight:bold; text-align:center;">-</td>
+          </tr>
+          <tr>
+            <td colspan="2" style="border:.5pt solid #cbd5e1; padding:6px 10px; background:#cbd5e1; font-weight:bold; color:#0f172a; text-align:right;">Daily Operational Rate (%)</td>
+            ${summaryRateCells}
+            <td colspan="2" style="border:.5pt solid #cbd5e1; padding:6px; background:#cbd5e1; color:#0f172a; font-weight:bold; text-align:center;">Monthly Overall Rate</td>
+            <td style="border:.5pt solid #cbd5e1; padding:6px; background:#1e40af; color:#ffffff; font-weight:bold; text-align:center;">${grandRateStr}</td>
+          </tr>
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+
+  const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Section_Status_Monthly_Report_${monthName}_${year}.xls`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  if (typeof app !== 'undefined' && app.showToast) {
+    app.showToast(`📊 Premium Monthly Excel Report exported for ${monthHeaderStr}!`, 'success');
+  }
+};

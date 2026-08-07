@@ -130,24 +130,24 @@ function buildExportClockMarkup(snapshot = getClockSnapshot(), theme = getActive
   const clockSvg = buildExportAnalogClockSvg(snapshot, theme).replace('width="108" height="108"', `width="${analogSize}" height="${analogSize}"`);
   const isMonochromeExport = theme.id === 'monochrome-export';
   
-  const widgetBg = isMonochromeExport ? '#ffffff' : '#0f172a';
-  const clockBorderColor = isMonochromeExport ? themeDeep : '#1e293b';
+  const widgetBg = options.bg || (isMonochromeExport ? '#ffffff' : '#ffffff');
+  const clockBorderColor = options.borderColor || (isMonochromeExport ? themeDeep : '#0f172a');
   const clockRadius = isMonochromeExport ? '0' : '16px';
-  const clockTextColor = isMonochromeExport ? themeDeep : '#f8fafc';
-  const clockDateColor = isMonochromeExport ? themeDeep : '#94a3b8';
-  const accentColor = isMonochromeExport ? themeMain : '#38bdf8';
+  const clockTextColor = options.textColor || (isMonochromeExport ? themeDeep : '#0f172a');
+  const clockDateColor = options.dateColor || (isMonochromeExport ? themeDeep : '#334155');
+  const accentColor = options.accentColor || (isMonochromeExport ? themeMain : '#0284c7');
   const accentRadius = isMonochromeExport ? '0' : '999px';
 
   return `
-    <div class="export-clock-widget" style="padding:${widgetPadding}; width:${clockWidth}; min-width:${clockWidth}; max-width:${clockWidth}; background:${widgetBg}; border-radius:${clockRadius}; border:1px solid ${clockBorderColor}; margin:0; box-shadow:${isMonochromeExport ? 'none' : '0 8px 16px rgba(0,0,0,0.3)'}; text-align:center; box-sizing:border-box; flex:0 0 auto; position:relative; overflow:hidden;">
-      <div style="position:absolute; top:0; left:0; width:100%; height:30%; background:linear-gradient(180deg, rgba(56,189,248,0.1) 0%, rgba(15,23,42,0) 100%); pointer-events:none;"></div>
-      <div class="export-analog-clock" style="position:relative; width:${analogSize}px; height:${analogSize}px; margin:0.2rem auto 0.6rem auto; line-height:0; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4));">
+    <div class="export-clock-widget" style="padding:${widgetPadding}; width:${clockWidth}; min-width:${clockWidth}; max-width:${clockWidth}; background:${widgetBg}; border-radius:${clockRadius}; border:1.5px solid ${clockBorderColor}; margin:0; box-shadow:${isMonochromeExport ? 'none' : '0 4px 12px rgba(15,23,42,0.12)'}; text-align:center; box-sizing:border-box; flex:0 0 auto; position:relative; overflow:hidden;">
+      <div style="position:absolute; top:0; left:0; width:100%; height:30%; background:linear-gradient(180deg, rgba(2,132,199,0.08) 0%, rgba(255,255,255,0) 100%); pointer-events:none;"></div>
+      <div class="export-analog-clock" style="position:relative; width:${analogSize}px; height:${analogSize}px; margin:0.2rem auto 0.6rem auto; line-height:0; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));">
         ${clockSvg}
       </div>
-      <div class="export-digital-time" style="position:relative; font-weight:800; font-size:${digitalSize}; color:${clockTextColor}; letter-spacing:-0.02em; font-family:'Inter', Arial, sans-serif; margin:0 0 0.25rem; padding:0; background:transparent; border:0; box-shadow:none; display:flex; align-items:flex-start; justify-content:center; line-height:1;">
-        ${snapshot.displayTime}<span style="font-size:${ampmSize}; font-weight:800; margin-left:4px; margin-top:2px; color:${accentColor}; letter-spacing:0;">${snapshot.ampm}</span>
+      <div class="export-digital-time" style="position:relative; font-weight:900; font-size:${digitalSize}; color:${clockTextColor} !important; letter-spacing:-0.02em; font-family:'Inter', Arial, sans-serif; margin:0 0 0.25rem; padding:0; background:transparent; border:0; box-shadow:none; display:flex; align-items:flex-start; justify-content:center; line-height:1;">
+        <span style="color:${clockTextColor} !important;">${snapshot.displayTime}</span><span style="font-size:${ampmSize}; font-weight:900; margin-left:4px; margin-top:2px; color:${accentColor} !important; letter-spacing:0;">${snapshot.ampm}</span>
       </div>
-      <div class="export-clock-date" style="position:relative; font-weight:600; font-size:${dateSize}; color:${clockDateColor}; text-transform:uppercase; letter-spacing:0.06em; background:transparent; line-height:1.2; font-family:'Inter', Arial, sans-serif;">${dateText}</div>
+      <div class="export-clock-date" style="position:relative; font-weight:700; font-size:${dateSize}; color:${clockDateColor} !important; text-transform:uppercase; letter-spacing:0.06em; background:transparent; line-height:1.2; font-family:'Inter', Arial, sans-serif;">${dateText}</div>
       <div class="export-clock-accent" style="position:relative; width:24px; height:3px; margin:0.4rem auto 0.2rem; border-radius:${accentRadius}; background:${accentColor};"></div>
     </div>`;
 }
@@ -951,12 +951,12 @@ function generateSidebar(activePage) {
     <div class="sidebar-divider"></div>
     <nav style="display:flex; flex-direction:column; gap:0.6rem;">`;
   dashboardPages.forEach(p => {
-    const isMainDashboard = p.id === 'index';
-
     let specialClass = '';
-    if (isMainDashboard) specialClass = 'main-dashboard-link';
-    if (p.id === 'overtime-dashboard') specialClass = 'overtime-dashboard-link';
-    
+    if (p.id === 'index') specialClass = 'nav-dashboard main-dashboard-link';
+    else if (p.id === 'iom-dashboard') specialClass = 'nav-iom';
+    else if (p.id === 'section-status-report') specialClass = 'nav-section-status';
+    else if (p.id === 'overtime-dashboard') specialClass = 'overtime-dashboard-link';
+
     let clickHandler = '';
     if (p.id === 'index') {
       clickHandler = `onclick="if(window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname.endsWith('.app')) { event.preventDefault(); history.pushState(null, '', window.location.pathname); if(typeof window.renderDashboard === 'function') window.renderDashboard(); }"`;
@@ -972,7 +972,7 @@ function generateSidebar(activePage) {
 
   html += `
     <div class="entry-sheet-nav ${isEntryMenuExpanded ? 'expanded' : ''}">
-      <button type="button" class="nav-link entry-sheet-toggle ${isEntryPageActive ? 'active' : ''}" aria-expanded="${isEntryMenuExpanded ? 'true' : 'false'}" aria-controls="entry-sheet-menu">
+      <button type="button" class="nav-link entry-sheet-toggle nav-entry-sheet ${isEntryPageActive ? 'active' : ''}" aria-expanded="${isEntryMenuExpanded ? 'true' : 'false'}" aria-controls="entry-sheet-menu">
         ${entrySheetIcon}
         <span>Entry Sheet</span>
         <span class="entry-sheet-chevron" aria-hidden="true">
@@ -984,15 +984,13 @@ function generateSidebar(activePage) {
       <div id="entry-sheet-menu" class="entry-sheet-menu" ${isEntryMenuExpanded ? '' : 'hidden'}>`;
 
   entryPages.forEach(p => {
-    const isSpecialPrimary = p.id === 'anik' || p.id === 'takbir';
-    const isSpecialSecondary = !isSpecialPrimary;
-    const isMainDashboard = p.id === 'index';
-
     let specialClass = '';
-    if (isSpecialPrimary) specialClass = 'special-entry-link';
-    if (isSpecialSecondary) specialClass = 'secondary-entry-link';
-    if (isMainDashboard) specialClass = 'main-dashboard-link';
-    if (p.id === 'overtime-dashboard') specialClass = 'overtime-dashboard-link';
+    if (p.id === 'anik') specialClass = 'entry-sub-anik special-entry-link';
+    else if (p.id === 'takbir') specialClass = 'entry-sub-takbir special-entry-link';
+    else if (p.id === 'monir') specialClass = 'entry-sub-monir secondary-entry-link';
+    else if (p.id === 'anwar') specialClass = 'entry-sub-anwar secondary-entry-link';
+    else if (p.id === 'bikash') specialClass = 'entry-sub-bikash secondary-entry-link';
+    else specialClass = 'secondary-entry-link';
 
     html += `<a href="${p.url}" class="nav-link ${specialClass} ${activePage === p.id ? 'active' : ''}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
       ${p.icon} <span>${p.title}</span>
@@ -1845,9 +1843,26 @@ function exportReportOriginal() {
   clone.classList.add('a4-report');
   clone.setAttribute('data-theme', exportTheme.id);
 
-  applyClockSnapshot(clone, exportClock, {
-    ampmStyle: 'font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #000000; letter-spacing: 0;'
-  });
+  // Replace live clock widget in clone with Entry Sheet's export clock widget
+  const liveClockEl = clone.querySelector('.clock-widget, #clock-widget');
+  if (liveClockEl) {
+    const exportClockMarkup = buildExportClockMarkup(exportClock, exportTheme, {
+      analogSize: 64,
+      width: '130px',
+      minWidth: '130px',
+      digitalSize: '1.05rem',
+      dateSize: '0.55rem',
+      ampmSize: '0.55rem'
+    });
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = exportClockMarkup.trim();
+    const newClockWidget = tempDiv.firstElementChild;
+    liveClockEl.parentNode.replaceChild(newClockWidget, liveClockEl);
+  } else {
+    applyClockSnapshot(clone, exportClock, {
+      ampmStyle: 'font-size: 0.85rem; font-weight: 700; margin-left: 6px; margin-bottom: 2px; color: #000000; letter-spacing: 0;'
+    });
+  }
 
   // Create an off-screen container
   const container = document.createElement('div');
@@ -1865,7 +1880,7 @@ function exportReportOriginal() {
   document.body.appendChild(container);
 
   // Apply computed shadow inline to bypass html2canvas CSS var limitations
-  container.querySelectorAll('.glass-card, .table-container, .report-header-flex, .clock-widget, .analog-clock, .btn').forEach(el => {
+  container.querySelectorAll('.glass-card, .table-container, .report-header-flex, .clock-widget, .export-clock-widget, .analog-clock, .btn').forEach(el => {
     const comp = window.getComputedStyle(el);
     if (comp.boxShadow && comp.boxShadow !== 'none') {
       el.style.boxShadow = comp.boxShadow;

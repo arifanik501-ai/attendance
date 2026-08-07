@@ -1351,20 +1351,6 @@ function _performDashboardRender() {
           </div>
         </div>
 
-        <!-- Force Save Button -->
-        <div class="fab-child save-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-          <button id="force-save-btn" class="no-print solid-fab-btn" data-tip-title="Force Save" data-tip-desc="Write a history snapshot now" data-tip-shortcut="Ctrl+S" data-tip-theme="success" data-tip-placement="left"
-            style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
-            display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
-            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(16,185,129,0.3), 0 0 0 4px rgba(16,185,129,0.1)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
-            onclick="window.forceSaveHistory()">
-            <img class="pfab pfab-save" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Floppy%20disk/3D/floppy_disk_3d.png" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Save" />
-            <span style="font-size:0.52rem; font-weight:800; color:#10b981; letter-spacing:0.04em; font-family:'Inter',sans-serif;">SAVE</span>
-          </button>
-        </div>
 
         <!-- History Button -->
         <div class="fab-child history-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(-20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
@@ -1632,6 +1618,9 @@ window.buildSectionStatusReportHtml = function(state = (localDashboardState || g
     fan_auto_powder_coating: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7 7M10 10l-2 4 4-2M10 10l4-4M18 6a2 2 0 11-4 0 2 2 0 014 0zM19 13a1 1 0 100-2 1 1 0 000 2zM15 17a1 1 0 100-2 1 1 0 000 2zM21 18a1 1 0 100-2 1 1 0 000 2z"/></svg>
     </div>`,
+    fan_lathe: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+    </div>`,
     fan_assemble_line: `<div style="width:34px; height:34px; border-radius:8px; background:rgba(99,102,241,0.12); color:#6366f1; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
     </div>`,
@@ -1775,7 +1764,7 @@ window.downloadSectionStatusReportJpg = function() {
   }
 
   if (typeof app !== 'undefined' && app.showToast) {
-    app.showToast('📸 Generating Ultra-HD Premium JPG Report...', 'info');
+    app.showToast('📸 Generating Clean Section Status Report...', 'info');
   }
 
   const state = (localDashboardState || getAppState());
@@ -1789,9 +1778,32 @@ window.downloadSectionStatusReportJpg = function() {
   const dateFormatted = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   const timeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
+  const exportClock = (typeof getClockSnapshot === 'function') ? getClockSnapshot() : { displayTime: timeFormatted, ampm: '', longDate: dateFormatted };
+  const exportTheme = (typeof getActiveTheme === 'function') ? getActiveTheme() : { palette: ['#6366f1', '#4f46e5', '#3730a3'], id: 'default' };
+  
+  const clockWidgetHtml = (typeof buildExportClockMarkup === 'function')
+    ? buildExportClockMarkup(exportClock, exportTheme, {
+        analogSize: 58,
+        width: '120px',
+        minWidth: '120px',
+        digitalSize: '1.0rem',
+        dateSize: '0.52rem',
+        ampmSize: '0.52rem',
+        textColor: '#0f172a',
+        dateColor: '#334155',
+        accentColor: '#0284c7',
+        bg: '#ffffff',
+        borderColor: '#0f172a'
+      })
+    : `<div style="background:#ffffff; border:1.5px solid #0f172a; border-radius:10px; padding:8px 12px; text-align:center;">
+         <div style="font-size:14px; font-weight:800; color:#0f172a;">${timeFormatted}</div>
+         <div style="font-size:11px; font-weight:700; color:#475569;">${dateFormatted}</div>
+       </div>`;
+
   const rowsData = keys.map((sKey, index) => {
     const eff = (typeof getEffectiveSectionStatus === 'function') ? getEffectiveSectionStatus(sKey, state) : null;
-    const name = eff ? eff.name : sKey;
+    const cfg = (typeof SECTION_STATUS_CONFIG !== 'undefined' ? SECTION_STATUS_CONFIG[sKey] : null);
+    const name = eff ? eff.name : (cfg ? cfg.name : sKey);
     const status = eff ? eff.status : 'PENDING';
     
     let badgeStyle = '';
@@ -1799,26 +1811,30 @@ window.downloadSectionStatusReportJpg = function() {
     
     if (status === 'ON') {
       onCount++;
-      badgeStyle = 'background:linear-gradient(135deg, #10b981, #059669); color:#ffffff; box-shadow:0 3px 8px rgba(16,185,129,0.35);';
+      badgeStyle = 'background: #10b981; color: #ffffff;';
       badgeText = '🟢 ON';
     } else if (status === 'OFF') {
       offCount++;
-      badgeStyle = 'background:linear-gradient(135deg, #ef4444, #dc2626); color:#ffffff; box-shadow:0 3px 8px rgba(239,68,68,0.35);';
+      badgeStyle = 'background: #ef4444; color: #ffffff;';
       badgeText = '🔴 OFF';
     } else {
       pendingCount++;
-      badgeStyle = 'background:linear-gradient(135deg, #f59e0b, #d97706); color:#ffffff; box-shadow:0 3px 8px rgba(245,158,11,0.35);';
+      badgeStyle = 'background: #f59e0b; color: #ffffff;';
       badgeText = '🟡 PENDING';
     }
 
     const rowBg = (index % 2 === 0) ? '#ffffff' : '#f8fafc';
 
     return `
-      <tr style="background:${rowBg}; border-bottom:1px solid #e2e8f0;">
-        <td style="padding:12px 18px; font-size:14px; font-weight:700; color:#1e293b; text-align:center; width:50px;">${index + 1}</td>
-        <td style="padding:12px 18px; font-size:14px; font-weight:700; color:#0f172a;">${name}</td>
-        <td style="padding:12px 18px; text-align:center;">
-          <span style="display:inline-block; padding:6px 18px; border-radius:20px; font-size:13px; font-weight:800; letter-spacing:0.03em; ${badgeStyle}">
+      <tr style="background:${rowBg}; border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 12px 16px; text-align: center; width: 60px; font-size: 13px; font-weight: 800; color: #475569;">
+          ${index + 1}
+        </td>
+        <td style="padding: 12px 18px; font-size: 15px; font-weight: 800; color: #0f172a;">
+          ${name}
+        </td>
+        <td style="padding: 12px 18px; text-align: center; width: 180px;">
+          <span style="display: inline-block; padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 900; letter-spacing: 0.03em; ${badgeStyle}">
             ${badgeText}
           </span>
         </td>
@@ -1826,78 +1842,56 @@ window.downloadSectionStatusReportJpg = function() {
     `;
   }).join('');
 
-  // Create high-res offscreen DOM element
+  const totalCount = keys.length;
+
   const tempContainer = document.createElement('div');
   tempContainer.style.position = 'absolute';
   tempContainer.style.left = '-9999px';
   tempContainer.style.top = '-9999px';
   tempContainer.style.width = '880px';
   tempContainer.style.background = '#f1f5f9';
-  tempContainer.style.padding = '32px';
+  tempContainer.style.padding = '28px';
   tempContainer.style.fontFamily = "'Inter', system-ui, -apple-system, sans-serif";
   tempContainer.style.boxSizing = 'border-box';
 
   tempContainer.innerHTML = `
-    <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.12); border:1px solid #cbd5e1;">
-      
-      <!-- Premium Executive Header -->
-      <div style="background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:28px 32px; color:#ffffff; display:flex; justify-content:space-between; align-items:center;">
+    <div style="background:#ffffff; border-radius:18px; overflow:hidden; box-shadow:0 12px 32px rgba(15,23,42,0.1); border:1px solid #cbd5e1;">
+      <div style="background:#0f172a; padding:22px 28px; color:#ffffff; display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(234,179,8,0.18); border:1px solid rgba(234,179,8,0.4); color:#fef08a; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px;">
-            ⚡ MEP FAN LTD. • PRODUCTION DIVISION
-          </div>
-          <h1 style="margin:0; font-size:22px; font-weight:900; color:#ffffff; letter-spacing:-0.02em;">SECTION OPERATIONAL STATUS REPORT</h1>
+          <h1 style="margin:0; font-size:21px; font-weight:900; color:#ffffff; letter-spacing:-0.02em;">SECTION STATUS REPORT</h1>
+          <div style="font-size:11px; font-weight:600; color:#cbd5e1; margin-top:2px;">MEP FAN LTD. • Factory Floor Daily Operational Tracking</div>
         </div>
-        <div style="text-align:right; background:rgba(255,255,255,0.08); padding:10px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.12);">
-          <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">REPORT DATE</div>
-          <div style="font-size:15px; font-weight:800; color:#ffffff; margin-top:2px;">${dateFormatted}</div>
-          <div style="font-size:11px; font-weight:600; color:#cbd5e1; margin-top:1px;">${timeFormatted}</div>
+        <div style="flex:0 0 auto;">
+          ${clockWidgetHtml}
         </div>
       </div>
 
-      <!-- KPI Metrics Cards Row -->
-      <div style="padding:24px 32px 16px 32px; display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
-        
-        <div style="background:#ffffff; border:1.5px solid #bbf7d0; border-radius:14px; padding:16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 12px rgba(16,185,129,0.08);">
-          <div>
-            <div style="font-size:12px; font-weight:800; color:#15803d; text-transform:uppercase; letter-spacing:0.04em;">Operational (ON)</div>
-            <div style="font-size:28px; font-weight:900; color:#166534; margin-top:4px;">${onCount}</div>
-          </div>
-          <div style="width:44px; height:44px; border-radius:12px; background:#dcfce7; color:#166534; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900;">
-            🟢
-          </div>
+      <div style="padding:16px 28px; display:flex; gap:16px; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+        <div style="flex:1; background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; padding:10px 16px; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:11px; font-weight:800; color:#475569; text-transform:uppercase;">Total Sections</span>
+          <span style="font-size:22px; font-weight:900; color:#0f172a;">${totalCount}</span>
         </div>
-
-        <div style="background:#ffffff; border:1.5px solid #fecaca; border-radius:14px; padding:16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 12px rgba(239,68,68,0.08);">
-          <div>
-            <div style="font-size:12px; font-weight:800; color:#b91c1c; text-transform:uppercase; letter-spacing:0.04em;">OFF / Maintenance</div>
-            <div style="font-size:28px; font-weight:900; color:#991b1b; margin-top:4px;">${offCount}</div>
-          </div>
-          <div style="width:44px; height:44px; border-radius:12px; background:#fee2e2; color:#991b1b; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900;">
-            🔴
-          </div>
+        <div style="flex:1; background:#ffffff; border:1px solid #86efac; border-radius:10px; padding:10px 16px; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:11px; font-weight:800; color:#047857; text-transform:uppercase;">Operational (ON)</span>
+          <span style="font-size:22px; font-weight:900; color:#059669;">${onCount}</span>
         </div>
-
-        <div style="background:#ffffff; border:1.5px solid #fde68a; border-radius:14px; padding:16px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 12px rgba(245,158,11,0.08);">
-          <div>
-            <div style="font-size:12px; font-weight:800; color:#b45309; text-transform:uppercase; letter-spacing:0.04em;">Pending Status</div>
-            <div style="font-size:28px; font-weight:900; color:#92400e; margin-top:4px;">${pendingCount}</div>
-          </div>
-          <div style="width:44px; height:44px; border-radius:12px; background:#fef3c7; color:#92400e; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900;">
-            🟡
-          </div>
+        <div style="flex:1; background:#ffffff; border:1px solid #fca5a5; border-radius:10px; padding:10px 16px; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:11px; font-weight:800; color:#b91c1c; text-transform:uppercase;">Stopped (OFF)</span>
+          <span style="font-size:22px; font-weight:900; color:#dc2626;">${offCount}</span>
         </div>
-
+        <div style="flex:1; background:#ffffff; border:1px solid #fcd34d; border-radius:10px; padding:10px 16px; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:11px; font-weight:800; color:#b45309; text-transform:uppercase;">Pending</span>
+          <span style="font-size:22px; font-weight:900; color:#d97706;">${pendingCount}</span>
+        </div>
       </div>
 
-      <!-- Main Section Status Table -->
-      <div style="padding:24px 32px 32px 32px; background:#ffffff;">
-        <table style="width:100%; border-collapse:collapse; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
+      <div style="padding:20px 28px 24px 28px; background:#ffffff;">
+        <table style="width:100%; border-collapse:collapse; border-radius:10px; overflow:hidden; border:1px solid #cbd5e1; font-family:'Inter', sans-serif;">
           <thead>
             <tr style="background:#0f172a; color:#ffffff;">
-              <th style="padding:14px 18px; text-align:center; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:50px; border-right:1px solid #334155;">SL</th>
-              <th style="padding:14px 18px; text-align:left; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; border-right:1px solid #334155;">Section Name</th>
-              <th style="padding:14px 18px; text-align:center; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; width:200px;">Status</th>
+              <th style="padding:12px 16px; text-align:center; font-size:11px; font-weight:800; text-transform:uppercase; width:60px; border-right:1px solid #334155;">SL</th>
+              <th style="padding:12px 18px; text-align:left; font-size:11px; font-weight:800; text-transform:uppercase; border-right:1px solid #334155;">Section Name</th>
+              <th style="padding:12px 18px; text-align:center; font-size:11px; font-weight:800; text-transform:uppercase; width:180px;">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -1906,15 +1900,10 @@ window.downloadSectionStatusReportJpg = function() {
         </table>
       </div>
 
-      <!-- Premium Footer Stamp -->
-      <div style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:16px 32px; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#64748b; font-weight:600;">
-        <div style="display:flex; align-items:center; gap:6px;">
-          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
-          <span>Verified Official Report • MEP FAN LTD.</span>
-        </div>
-        <div>Generated on ${dateFormatted} at ${timeFormatted}</div>
+      <div style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:12px 28px; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#64748b; font-weight:600;">
+        <div>MEP FAN LTD. • Section Status Report</div>
+        <div>Generated: ${dateFormatted} ${timeFormatted}</div>
       </div>
-
     </div>
   `;
 
@@ -1934,12 +1923,12 @@ window.downloadSectionStatusReportJpg = function() {
     link.click();
 
     if (typeof app !== 'undefined' && app.showToast) {
-      app.showToast('📸 Ultra-HD Premium JPG downloaded successfully!', 'success');
+      app.showToast('📸 Section Status JPG downloaded successfully!', 'success');
     }
   }).catch(err => {
     if (tempContainer.parentNode) document.body.removeChild(tempContainer);
-    console.error('JPG Export error:', err);
-    alert('JPG export failed. Please try again.');
+    console.error("JPG generation failed:", err);
+    alert("Could not generate JPG report: " + err.message);
   });
 };
 

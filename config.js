@@ -36,7 +36,7 @@ const SECTIONS_CONFIG = {
     password: "9696",
     groups: {
       "Fan Armature": ["Engineer", "Technicalman", "Worker"],
-      "Fan Replace": ["Technicalman", "Worker"]
+      "Fan Replace": ["Engineer", "Technicalman", "Worker"]
     }
   },
   monir: {
@@ -72,7 +72,7 @@ let IOM_STAFF_LIST = [
   { id: '11989', name: 'Md. Anwar Hossain', designation: 'Production Engineer', department: 'Fan Admin' },
   { id: '18025', name: 'Md Hafijur Rahman', designation: 'Production Engineer', department: 'Fan Power Press & Stamping' },
   { id: '7544', name: 'MD Hasan Khalifa', designation: 'Asst. Engineer', department: 'Fan Power Press & Stamping' },
-  { id: '16027', name: 'Md Sayed Hossain', designation: 'Jr. Engineer', department: 'Fan Power Press & Stamping' },
+  { id: '16027', name: 'Md Sayed Hossain', designation: 'Jr. Engineer', department: 'Fan Replace' },
   { id: '7620', name: 'Hossainuzzaman', designation: 'Sub-Asst. Engineer', department: 'Fan Auto Powder Coating' },
   { id: '1032', name: 'Md. Masum Talukder', designation: 'Asst. Engineer', department: 'Fan Lathe' },
   { id: '7520', name: 'Bikash Chand Ray', designation: 'Asst. Engineer', department: 'Fan Admin' },
@@ -106,6 +106,11 @@ const SECTION_STATUS_CONFIG = {
   },
   fan_auto_powder_coating: {
     name: "Fan Auto Powder Coating Section",
+    entryBy: "Anwar",
+    ownerPage: "anwar"
+  },
+  fan_lathe: {
+    name: "Fan Lathe Section",
     entryBy: "Anwar",
     ownerPage: "anwar"
   },

@@ -144,6 +144,10 @@ window.openHistoryModal = function() {
             <span class="ios-hm-merge-icon" aria-hidden="true">↔</span>
             <span>Fan Assemble + Dimmer</span>
           </button>
+          <button id="fan-roj-shapla-merge-history-btn" class="ios-hm-merge-btn" onclick="window.showFanRojonigondhaShaplaMergedHistory()" type="button" style="margin-left: 4px;">
+            <span class="ios-hm-merge-icon" aria-hidden="true">↔</span>
+            <span>Fan Rojonigondha + Shapla</span>
+          </button>
           <button class="ios-hm-close" onclick="window.closeHistoryModal()" aria-label="Close">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
@@ -314,7 +318,11 @@ window._loadHistoryForDate = function(dateStr) {
   window.historySelectedDate = dateStr;
   window._renderHistoryCalendar();
 
-  if (window.historyMergedMode) {
+  if (window.historyMergedMode === 'roj_shapla') {
+    window.renderFanRojonigondhaShaplaMergedForDate(dateStr);
+    return;
+  }
+  if (window.historyMergedMode === 'assemble_dimmer' || window.historyMergedMode === true) {
     window.renderFanAssembleDimmerMergedForDate(dateStr);
     return;
   }
@@ -391,9 +399,11 @@ window.deleteHistoryDate = function(dateStr) {
 };
 
 function updateMergedHistoryButtonState() {
-  const btn = document.getElementById('fan-merge-history-btn');
-  if (!btn) return;
-  btn.classList.toggle('is-active', !!window.historyMergedMode);
+  const btn1 = document.getElementById('fan-merge-history-btn');
+  if (btn1) btn1.classList.toggle('is-active', window.historyMergedMode === 'assemble_dimmer' || window.historyMergedMode === true);
+
+  const btn2 = document.getElementById('fan-roj-shapla-merge-history-btn');
+  if (btn2) btn2.classList.toggle('is-active', window.historyMergedMode === 'roj_shapla');
 }
 
 function historyEscapeHtml(value) {
@@ -464,7 +474,7 @@ function collectFanAssembleDimmerTotals(state) {
 }
 
 window.showFanAssembleDimmerMergedHistory = function() {
-  window.historyMergedMode = !window.historyMergedMode;
+  window.historyMergedMode = (window.historyMergedMode === 'assemble_dimmer' || window.historyMergedMode === true) ? false : 'assemble_dimmer';
   updateMergedHistoryButtonState();
   if (!window.historyMergedMode) {
     if (window.historySelectedDate) {
@@ -499,7 +509,7 @@ window.renderFanAssembleDimmerMergedForDate = function(dateStr) {
   const viewer = document.getElementById('history-data-viewer');
   if (!viewer) return;
   window.historySelectedDate = dateStr;
-  window.historyMergedMode = true;
+  window.historyMergedMode = 'assemble_dimmer';
   updateMergedHistoryButtonState();
 
   viewer.innerHTML = `
@@ -634,6 +644,209 @@ function renderFanAssembleDimmerMergedHistory(dateStr, state, container) {
   }, 50);
 }
 
+function collectFanRojonigondhaShaplaTotals(state) {
+  const targetGroups = ["Fan Rojonigondha", "Fan Sada Shapla"];
+  const totals = { authorized: 0, existing: 0, present: 0, absent: 0 };
+  const workerRow = { designation: 'Worker', authorized: 0, existing: 0, present: 0, absent: 0 };
+
+  targetGroups.forEach(function(groupName) {
+    getHistoryRows(state, 'bikash', groupName).forEach(function(row) {
+      if (!row || typeof row !== 'object') return;
+      const designation = String(row.designation || '').trim();
+      if (designation.toLowerCase() !== 'worker') return;
+      const authorized = historyToCount(row.authorized);
+      const existing = historyToCount(row.existing);
+      const present = historyToCount(row.present);
+      let absent = Math.max(0, authorized - present);
+
+      totals.authorized += authorized;
+      totals.existing += existing;
+      totals.present += present;
+      totals.absent += absent;
+      workerRow.authorized += authorized;
+      workerRow.existing += existing;
+      workerRow.present += present;
+      workerRow.absent += absent;
+    });
+  });
+
+  return {
+    totals: totals,
+    rows: workerRow.authorized > 0 || workerRow.existing > 0 || workerRow.present > 0 || workerRow.absent > 0 ? [workerRow] : []
+  };
+}
+
+window.showFanRojonigondhaShaplaMergedHistory = function() {
+  window.historyMergedMode = (window.historyMergedMode === 'roj_shapla') ? false : 'roj_shapla';
+  updateMergedHistoryButtonState();
+  if (!window.historyMergedMode) {
+    if (window.historySelectedDate) {
+      window._loadHistoryForDate(window.historySelectedDate);
+    }
+    return;
+  }
+
+  const selectedDate = window.historySelectedDate || Array.from(window.savedHistoryDates || []).sort().reverse()[0];
+  if (!selectedDate) {
+    if (!window.savedHistoryDates || window.savedHistoryDates.size === 0) {
+      window._fetchSavedHistoryDates(function() {
+        const latestDate = Array.from(window.savedHistoryDates || []).sort().reverse()[0];
+        if (latestDate) {
+          window.historySelectedDate = latestDate;
+          window.renderFanRojonigondhaShaplaMergedForDate(latestDate);
+          return;
+        }
+        const viewer = document.getElementById('history-data-viewer');
+        if (viewer) {
+          viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No saved history found yet.</div><div class="ios-hm-empty-hint">Save attendance snapshots first, then open this merged history.</div></div>';
+        }
+      });
+    }
+    return;
+  }
+  window.historySelectedDate = selectedDate;
+  window.renderFanRojonigondhaShaplaMergedForDate(selectedDate);
+};
+
+window.renderFanRojonigondhaShaplaMergedForDate = function(dateStr) {
+  const viewer = document.getElementById('history-data-viewer');
+  if (!viewer) return;
+  window.historySelectedDate = dateStr;
+  window.historyMergedMode = 'roj_shapla';
+  updateMergedHistoryButtonState();
+
+  viewer.innerHTML = `
+    <div class="ios-hm-loader">
+      <div class="ios-hm-spinner"></div>
+      <div class="ios-hm-loader-text">Loading daily Worker merge…</div>
+    </div>
+  `;
+
+  const loadDailyMerged = function() {
+    if (!window.firebaseDb) {
+      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text" style="color:#ef4444;">Firebase not connected</div><div class="ios-hm-empty-hint">Daily merged history needs saved Firebase snapshots.</div></div>';
+      return;
+    }
+
+    window.firebaseDb.ref('mep_attendance_history/' + dateStr).once('value').then(function(snapshot) {
+      if (snapshot.exists()) {
+        renderFanRojonigondhaShaplaMergedHistory(dateStr, snapshot.val(), viewer);
+      } else {
+        viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No snapshot found for ' + historyEscapeHtml(dateStr) + '.</div></div>';
+      }
+    }).catch(function(err) {
+      console.error('Merged history load error:', err);
+      viewer.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text" style="color:#ef4444;">Error loading merged history</div></div>';
+    });
+  };
+
+  if (!window.savedHistoryDates || !window.savedHistoryDates.has(dateStr)) {
+    window._fetchSavedHistoryDates(loadDailyMerged);
+  } else {
+    loadDailyMerged();
+  }
+};
+
+function renderFanRojonigondhaShaplaMergedHistory(dateStr, state, container) {
+  const merged = collectFanRojonigondhaShaplaTotals(state);
+  if (merged.rows.length === 0) {
+    container.innerHTML = '<div class="ios-hm-empty"><div class="ios-hm-empty-text">No Worker history found for Fan Rojonigondha or Fan Sada Shapla.</div></div>';
+    return;
+  }
+
+  const totalPct = getAttendancePct(merged.totals.present, merged.totals.authorized);
+
+  const rowCards = merged.rows.map(function(row) {
+    const rowPct = getAttendancePct(row.present, row.authorized);
+    return (
+      '<div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:14px; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:0 4px 12px rgba(15,23,42,0.04);">' +
+        '<div>' +
+          '<div style="font-size:16px; font-weight:900; color:#0f172a; letter-spacing:-0.01em;">' + historyEscapeHtml(row.designation) + '</div>' +
+          '<div style="font-size:12px; font-weight:600; color:#64748b; margin-top:2px;">' + row.present + ' / ' + row.existing + ' Present (' + rowPct + '% Turnout)</div>' +
+        '</div>' +
+        '<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">' +
+          '<span style="padding:6px 12px; border-radius:8px; background:#f3e8ff; color:#6d28d9; font-size:12px; font-weight:800;">Auth: ' + row.authorized + '</span>' +
+          '<span style="padding:6px 12px; border-radius:8px; background:#dbeafe; color:#1d4ed8; font-size:12px; font-weight:800;">Exist: ' + row.existing + '</span>' +
+          '<span style="padding:6px 12px; border-radius:8px; background:#d1fae5; color:#047857; font-size:12px; font-weight:800;">Pres: ' + row.present + '</span>' +
+          '<span style="padding:6px 12px; border-radius:8px; background:' + (row.absent > 0 ? '#fee2e2' : '#f1f5f9') + '; color:' + (row.absent > 0 ? '#b91c1c' : '#64748b') + '; font-size:12px; font-weight:800;">Abs: ' + row.absent + '</span>' +
+          '<span style="padding:6px 14px; border-radius:99px; background:linear-gradient(135deg, #10b981, #059669); color:#ffffff; font-size:12px; font-weight:900; margin-left:4px;">' + rowPct + '%</span>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+
+  container.innerHTML =
+    '<div style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px; background:#f8fafc; border:1px solid #cbd5e1; padding:18px 20px; border-radius:16px;">' +
+      '<!-- Row 1: Header Title & Main Badge -->' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">' +
+        '<div>' +
+          '<div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">' +
+            '<h3 style="margin:0; font-size:20px; font-weight:900; color:#0f172a; letter-spacing:-0.02em;">Daily Worker Merge</h3>' +
+            '<span style="font-size:11px; font-weight:800; color:#0284c7; background:rgba(2,132,199,0.12); padding:4px 12px; border-radius:99px; border:1px solid rgba(2,132,199,0.25);">Fan Rojonigondha + Shapla</span>' +
+          '</div>' +
+          '<div style="font-size:12px; font-weight:600; color:#64748b;">📅 ' + historyEscapeHtml(formatHistoryDate(dateStr)) + ' • Merged Section Summary</div>' +
+        '</div>' +
+        '<div style="display:flex; align-items:center; gap:14px;">' +
+          '<div style="text-align:right;">' +
+            '<span style="font-size:10px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; display:block;">Turnout Rate</span>' +
+            '<span style="font-size:22px; font-weight:900; color:#059669;">' + totalPct + '%</span>' +
+          '</div>' +
+          '<button class="ios-ss-delete-btn" onclick="window.deleteHistoryDate(\'' + historyEscapeHtml(dateStr) + '\')" type="button" style="background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; padding:8px 14px; border-radius:10px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">' +
+            '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>' +
+            '<span>Delete Date</span>' +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<!-- Row 2: Export Toolbar -->' +
+      '<div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding-top:14px; border-top:1px solid #cbd5e1;">' +
+        '<span style="font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.04em; margin-right:4px;">Monthly Export:</span>' +
+        '<select id="merged-pdf-month-select" style="padding:6px 12px; border-radius:8px; border:1px solid #cbd5e1; background:white; font-size:12px; font-weight:700; color:#0f172a; outline:none; cursor:pointer; height:34px; box-sizing:border-box;">' +
+          '<option value="" disabled selected>Select Month...</option>' +
+        '</select>' +
+        '<button id="btn-export-pdf" onclick="window.downloadMonthlyHistoryPDF()" type="button" style="background:#f3e8ff; color:#7e22ce; border:1px solid #d8b4fe; padding:0 14px; height:34px; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-sizing:border-box;">' +
+          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>' +
+          '<span>PDF</span>' +
+        '</button>' +
+        '<button id="btn-export-excel" onclick="window.downloadMonthlyHistoryExcel()" type="button" style="background:#dcfce7; color:#15803d; border:1px solid #86efac; padding:0 14px; height:34px; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-sizing:border-box;" title="Download Merged Sections Only">' +
+          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>' +
+          '<span>Excel Merge</span>' +
+        '</button>' +
+        '<button id="btn-export-complete-excel" onclick="window.downloadCompleteMonthlyHistoryExcel()" type="button" style="background:#0f172a; color:#ffffff; border:1px solid #0f172a; padding:0 14px; height:34px; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-sizing:border-box;" title="Download Complete Month Details">' +
+          '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 01-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>' +
+          '<span>Complete Excel</span>' +
+        '</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<!-- Stat Cards Grid -->' +
+    '<div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:20px;">' +
+      '<div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:12px 16px; box-shadow:0 2px 6px rgba(15,23,42,0.04);">' +
+        '<div style="font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.04em;">Authorized</div>' +
+        '<div style="font-size:24px; font-weight:900; color:#6d28d9; margin-top:2px;">' + merged.totals.authorized + '</div>' +
+      '</div>' +
+      '<div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:12px 16px; box-shadow:0 2px 6px rgba(15,23,42,0.04);">' +
+        '<div style="font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.04em;">Existing</div>' +
+        '<div style="font-size:24px; font-weight:900; color:#2563eb; margin-top:2px;">' + merged.totals.existing + '</div>' +
+      '</div>' +
+      '<div style="background:#ffffff; border:1px solid #86efac; border-radius:12px; padding:12px 16px; box-shadow:0 2px 6px rgba(15,23,42,0.04);">' +
+        '<div style="font-size:11px; font-weight:800; color:#047857; text-transform:uppercase; letter-spacing:0.04em;">Present</div>' +
+        '<div style="font-size:24px; font-weight:900; color:#059669; margin-top:2px;">' + merged.totals.present + '</div>' +
+      '</div>' +
+      '<div style="background:#ffffff; border:1px solid ' + (merged.totals.absent > 0 ? '#fca5a5' : '#cbd5e1') + '; border-radius:12px; padding:12px 16px; box-shadow:0 2px 6px rgba(15,23,42,0.04);">' +
+        '<div style="font-size:11px; font-weight:800; color:' + (merged.totals.absent > 0 ? '#b91c1c' : '#475569') + '; text-transform:uppercase; letter-spacing:0.04em;">Absent</div>' +
+        '<div style="font-size:24px; font-weight:900; color:' + (merged.totals.absent > 0 ? '#dc2626' : '#64748b') + '; margin-top:2px;">' + merged.totals.absent + '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<!-- Detailed Row List -->' +
+    '<div style="display:flex; flex-direction:column; gap:10px;">' + rowCards + '</div>';
+
+  setTimeout(function() {
+    window.populatePDFMonthDropdown();
+  }, 50);
+}
+
 function getReportingMonthInfo(dateStr) {
   if (!dateStr || typeof dateStr !== 'string') {
     return { key: "invalid", year: 0, month: 0, monthName: "Invalid", rangeStr: "", displayName: "Invalid Date" };
@@ -649,17 +862,9 @@ function getReportingMonthInfo(dateStr) {
     return { key: "invalid", year: 0, month: 0, monthName: "Invalid", rangeStr: "", displayName: "Invalid Date (" + dateStr + ")" };
   }
 
-  // 26th to 25th month cycle
-  let repYear = y;
-  let repMonth = m;
-
-  if (d >= 26) {
-    repMonth = m + 1;
-    if (repMonth > 12) {
-      repMonth = 1;
-      repYear = y + 1;
-    }
-  }
+  // Calendar month cycle (1st to last day of the month)
+  const repYear = y;
+  const repMonth = m;
 
   const monthNames = [
     "", "January", "February", "March", "April", "May", "June",
@@ -667,17 +872,11 @@ function getReportingMonthInfo(dateStr) {
   ];
 
   const monthName = monthNames[repMonth];
+  const lastDay = new Date(repYear, repMonth, 0).getDate();
+  const lastDayStr = String(lastDay).padStart(2, '0');
 
-  let startMonth = repMonth - 1;
-  let startYear = repYear;
-  if (startMonth < 1) {
-    startMonth = 12;
-    startYear = repYear - 1;
-  }
-  const startMonthName = monthNames[startMonth];
-
-  const rangeStr = "26 " + startMonthName + " to 25 " + monthName + " " + repYear;
-  const displayName = monthName + " Month = 26 " + startMonthName + " to 25 " + monthName + " " + repYear;
+  const rangeStr = "01 " + monthName + " to " + lastDayStr + " " + monthName + " " + repYear;
+  const displayName = monthName + " Month = 01 " + monthName + " to " + lastDayStr + " " + monthName + " " + repYear;
 
   return {
     key: repYear + "-" + String(repMonth).padStart(2, '0'),
@@ -1564,7 +1763,7 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
     const rowBg = isFriday ? '#fee2e2' : '#ffffff';
     const cellBorder = "1px solid #cbd5e1";
 
-    const merged = collectFanAssembleDimmerTotals(res.state);
+    const merged = (window.historyMergedMode === 'roj_shapla') ? collectFanRojonigondhaShaplaTotals(res.state) : collectFanAssembleDimmerTotals(res.state);
     const auth = merged.totals.authorized || 0;
     const exist = merged.totals.existing || 0;
     const pres = merged.totals.present || 0;
@@ -1638,7 +1837,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
     const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     const dayName = dateObj.toLocaleDateString('en-GB', { weekday: 'short' });
 
-    const merged = collectFanAssembleDimmerTotals(res.state);
+    const merged = (window.historyMergedMode === 'roj_shapla') ? collectFanRojonigondhaShaplaTotals(res.state) : collectFanAssembleDimmerTotals(res.state);
     const auth = merged.totals.authorized || 0;
     const exist = merged.totals.existing || 0;
     const pres = merged.totals.present || 0;

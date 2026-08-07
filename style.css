@@ -9221,3 +9221,156 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
     flex: 1;
   }
 }
+
+/* ==========================================================================
+   ULTRA-SMOOTH MODERN UI ENGINE & MICRO-INTERACTION PACK
+   ========================================================================== */
+
+/* 1. Global Smooth Motion Physics */
+*, *::before, *::after {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth !important;
+}
+
+/* 2. Sleek Custom Glass Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.03);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 99px;
+  transition: background 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.65);
+}
+
+/* 3. Smooth Button Feedback & Micro-Interactions */
+button, 
+.btn, 
+.glass-btn, 
+.ios-hm-merge-btn, 
+.admin-premium-btn, 
+.ios-hm-nav-btn, 
+.ios-hm-close, 
+.ios-ss-delete-btn,
+select,
+input[type="button"],
+input[type="submit"] {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, box-shadow;
+}
+
+button:hover, 
+.btn:hover, 
+.glass-btn:hover, 
+.ios-hm-merge-btn:hover, 
+.admin-premium-btn:hover {
+  transform: translate3d(0, -1.5px, 0);
+}
+
+button:active, 
+.btn:active, 
+.glass-btn:active, 
+.ios-hm-merge-btn:active, 
+.admin-premium-btn:active,
+.ios-hm-nav-btn:active,
+.ios-hm-close:active {
+  transform: scale3d(0.96, 0.96, 1) translate3d(0, 0, 0) !important;
+}
+
+/* 4. Butter-Smooth Cards & Hover Elevations */
+.glass-card, 
+.stat-card, 
+.ios-hm-card, 
+.branch-modal-card,
+.section-card,
+.kpi-card,
+.ios-merge-card {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, box-shadow;
+}
+
+.glass-card:hover,
+.stat-card:hover {
+  transform: translate3d(0, -3px, 0);
+  box-shadow: 0 16px 36px -10px rgba(15, 23, 42, 0.12), 0 6px 16px -6px rgba(15, 23, 42, 0.06);
+}
+
+/* 5. Smooth Modal Backdrop & Card Spring Animations */
+.ios-hm-overlay, 
+.branch-modal-overlay,
+.sec-status-modal-overlay {
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.ios-hm-card,
+.branch-modal-card {
+  animation: modalPopIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: scale3d(0.94, 0.94, 1) translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
+  }
+}
+
+/* 6. Form Field Focus Smooth Glow */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  transition: border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+}
+
+/* 7. Table Row Smooth Hover */
+tbody tr {
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+tbody tr:hover {
+  background-color: rgba(99, 102, 241, 0.035) !important;
+}
+
+/* 8. Modern Smooth Badges & Indicators */
+.ios-hm-dot, .badge, .status-pill {
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+

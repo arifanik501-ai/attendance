@@ -1914,11 +1914,7 @@ window.buildSectionStatusReportHtml = function(state = (localDashboardState || g
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
           </div>
           <div>
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <h2 style="margin:0; font-size:1.35rem; font-weight:900; color:#0f172a; letter-spacing:-0.02em;">Section Status Report</h2>
-              <span style="font-size:11px; font-weight:800; color:#4f46e5; background:rgba(99,102,241,0.12); padding:3px 10px; border-radius:99px; border:1px solid rgba(99,102,241,0.25);">Factory Operations</span>
-            </div>
-            <div style="font-size:0.8rem; color:#64748b; font-weight:600; margin-top:2px;">Real-time operational tracking across all factory production sections.</div>
+            <h2 style="margin:0; font-size:1.35rem; font-weight:900; color:#0f172a; letter-spacing:-0.02em;">Section Status Report</h2>
           </div>
         </div>
 
@@ -2008,28 +2004,6 @@ window.downloadSectionStatusReportJpg = function() {
   const dateFormatted = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   const timeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-  const exportClock = (typeof getClockSnapshot === 'function') ? getClockSnapshot() : { displayTime: timeFormatted, ampm: '', longDate: dateFormatted };
-  const exportTheme = (typeof getActiveTheme === 'function') ? getActiveTheme() : { palette: ['#6366f1', '#4f46e5', '#3730a3'], id: 'default' };
-  
-  const clockWidgetHtml = (typeof buildExportClockMarkup === 'function')
-    ? buildExportClockMarkup(exportClock, exportTheme, {
-        analogSize: 58,
-        width: '120px',
-        minWidth: '120px',
-        digitalSize: '1.0rem',
-        dateSize: '0.52rem',
-        ampmSize: '0.52rem',
-        textColor: '#0f172a',
-        dateColor: '#334155',
-        accentColor: '#0284c7',
-        bg: '#ffffff',
-        borderColor: '#0f172a'
-      })
-    : `<div style="background:#ffffff; border:1.5px solid #0f172a; border-radius:10px; padding:8px 12px; text-align:center;">
-         <div style="font-size:14px; font-weight:800; color:#0f172a;">${timeFormatted}</div>
-         <div style="font-size:11px; font-weight:700; color:#475569;">${dateFormatted}</div>
-       </div>`;
-
   const rowsData = keys.map((sKey, index) => {
     const eff = (typeof getEffectiveSectionStatus === 'function') ? getEffectiveSectionStatus(sKey, state) : null;
     const cfg = (typeof SECTION_STATUS_CONFIG !== 'undefined' ? SECTION_STATUS_CONFIG[sKey] : null);
@@ -2042,33 +2016,35 @@ window.downloadSectionStatusReportJpg = function() {
     
     if (status === 'ON') {
       onCount++;
-      badgeStyle = 'background: #059669; color: #ffffff; box-shadow: 0 4px 12px rgba(5,150,105,0.3);';
-      badgeText = '🟢 OPERATIONAL (ON)';
+      badgeStyle = 'background: linear-gradient(135deg, #059669, #10b981); color: #ffffff; box-shadow: 0 3px 10px rgba(16,185,129,0.3);';
+      badgeText = '<span style="width:8px; height:8px; border-radius:50%; background:#ffffff; box-shadow:0 0 6px rgba(255,255,255,0.8); display:inline-block;"></span> OPERATIONAL (ON)';
     } else if (status === 'OFF') {
       offCount++;
-      badgeStyle = 'background: #dc2626; color: #ffffff; box-shadow: 0 4px 12px rgba(220,38,38,0.3);';
-      badgeText = '🔴 STOPPED (OFF)';
+      badgeStyle = 'background: linear-gradient(135deg, #dc2626, #ef4444); color: #ffffff; box-shadow: 0 3px 10px rgba(220,38,38,0.3);';
+      badgeText = '<span style="width:8px; height:8px; border-radius:50%; background:#ffffff; box-shadow:0 0 6px rgba(255,255,255,0.8); display:inline-block;"></span> STOPPED (OFF)';
     } else {
       pendingCount++;
-      badgeStyle = 'background: #d97706; color: #ffffff; box-shadow: 0 4px 12px rgba(217,119,6,0.3);';
-      badgeText = '🟡 PENDING';
+      badgeStyle = 'background: linear-gradient(135deg, #ea580c, #f97316); color: #ffffff; box-shadow: 0 3px 10px rgba(234,88,12,0.3);';
+      badgeText = '<span style="width:8px; height:8px; border-radius:50%; background:#ffffff; box-shadow:0 0 6px rgba(255,255,255,0.8); display:inline-block;"></span> PENDING';
     }
 
     const rowBg = (index % 2 === 0) ? '#ffffff' : '#f8fafc';
 
     return `
-      <tr style="background:${rowBg}; border-bottom: 1px solid #cbd5e1;">
-        <td style="padding: 12px 16px; text-align: center; width: 50px; font-size: 13px; font-weight: 900; color: #475569;">
+      <tr style="background:${rowBg}; border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 10px 16px; text-align: center; width: 55px; font-size: 17px; font-weight: 800; color: #334155;">
           ${String(index + 1).padStart(2, '0')}
         </td>
-        <td style="padding: 12px 18px; font-size: 15px; font-weight: 800; color: #0f172a;">
+        <td style="padding: 10px 20px;">
           <div style="display:flex; align-items:center; gap:12px;">
-            ${icon}
-            <div style="font-weight:900; color:#0f172a; font-size:15px;">${name}</div>
+            <div style="width:34px; height:34px; border-radius:9px; background:#eef2ff; color:#4f46e5; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <div style="width:18px; height:18px; display:flex; align-items:center; justify-content:center;">${icon}</div>
+            </div>
+            <div style="font-weight:900; color:#0f172a; font-size:21px; letter-spacing:-0.01em;">${name}</div>
           </div>
         </td>
-        <td style="padding: 12px 18px; text-align: center; width: 200px;">
-          <span style="display: inline-block; padding: 7px 18px; border-radius: 20px; font-size: 12px; font-weight: 900; letter-spacing: 0.04em; ${badgeStyle}">
+        <td style="padding: 10px 20px; text-align: center; width: 190px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 18px; border-radius: 99px; font-size: 13px; font-weight: 900; letter-spacing: 0.05em; min-width: 125px; ${badgeStyle}">
             ${badgeText}
           </span>
         </td>
@@ -2078,63 +2054,106 @@ window.downloadSectionStatusReportJpg = function() {
 
   const totalCount = keys.length;
 
+  const clockWidgetHtml = `
+    <div style="background:#ffffff; border-radius:12px; padding:4px 12px; display:flex; align-items:center; gap:10px; height:46px; box-sizing:border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div style="position:relative; width:34px; height:34px; border-radius:50%; background:#0f172a; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1.5px solid #cbd5e1;">
+        <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" fill="#0f172a" stroke="#cbd5e1" stroke-width="1.5"/>
+          <line x1="20" y1="20" x2="20" y2="10" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="20" x2="27" y2="23" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="20" cy="20" r="2.2" fill="#ef4444"/>
+        </svg>
+      </div>
+      <div style="display:flex; flex-direction:column; justify-content:center;">
+        <div style="font-size:16px; font-weight:900; color:#0f172a; line-height:1.1; display:flex; align-items:baseline;">
+          ${timeFormatted.replace(/\s*(AM|PM)/i, '')}
+          <span style="font-size:10px; font-weight:800; color:#0284c7; margin-left:3px;">${(timeFormatted.match(/AM|PM/i) || [''])[0]}</span>
+        </div>
+        <div style="font-size:10px; font-weight:800; color:#475569; letter-spacing:0.04em; margin-top:2px;">
+          ${dateFormatted.toUpperCase()}
+        </div>
+      </div>
+    </div>
+  `;
+
   const tempContainer = document.createElement('div');
   tempContainer.style.position = 'absolute';
   tempContainer.style.left = '-9999px';
   tempContainer.style.top = '-9999px';
-  tempContainer.style.width = '900px';
-  tempContainer.style.background = '#f1f5f9';
-  tempContainer.style.padding = '30px';
+  tempContainer.style.width = '1080px';
+  tempContainer.style.background = '#e2e8f0';
+  tempContainer.style.padding = '20px';
   tempContainer.style.fontFamily = "'Inter', system-ui, -apple-system, sans-serif";
   tempContainer.style.boxSizing = 'border-box';
 
   tempContainer.innerHTML = `
-    <div style="background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 20px 50px rgba(15,23,42,0.15); border:2px solid #0f172a;">
-      <!-- Ultra Premium Header -->
-      <div style="background:linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #0f172a 100%); padding:24px 32px; color:#ffffff; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-            <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, #6366f1, #a855f7); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(168,85,247,0.4);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-            </div>
-            <span style="font-size:11px; font-weight:900; color:#c7d2fe; letter-spacing:0.12em; text-transform:uppercase;">MEP FAN LTD. • OFFICIAL FACTORY REPORT</span>
+    <div style="background:#ffffff; border-radius:18px; overflow:hidden; box-shadow:0 20px 50px rgba(15,23,42,0.2); border:2px solid #0f1d36;">
+      <!-- Ultra Premium Compact Header -->
+      <div style="background:#0f1d36; padding:16px 28px; color:#ffffff; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="width:42px; height:42px; border-radius:11px; background:linear-gradient(135deg, #3b82f6, #6366f1); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(99,102,241,0.4); flex-shrink:0;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
           </div>
-          <h1 style="margin:0; font-size:24px; font-weight:900; color:#ffffff; letter-spacing:-0.02em; text-shadow:0 2px 8px rgba(0,0,0,0.3);">SECTION STATUS REPORT</h1>
-          <div style="font-size:12px; font-weight:600; color:#94a3b8; margin-top:3px;">Real-Time Factory Operations & Production Line Health Tracking</div>
+          <h1 style="margin:0; font-size:32px; font-weight:900; color:#ffffff; letter-spacing:-0.01em;">SECTION STATUS REPORT</h1>
         </div>
         <div style="flex:0 0 auto;">
           ${clockWidgetHtml}
         </div>
       </div>
 
-      <!-- Modern KPI Cards Row -->
-      <div style="padding:18px 32px; display:flex; gap:16px; background:#f8fafc; border-bottom:1px solid #cbd5e1;">
-        <div style="flex:1; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:14px; padding:12px 18px; box-shadow:0 4px 10px rgba(15,23,42,0.03);">
-          <div style="font-size:11px; font-weight:900; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Total Sections</div>
-          <div style="font-size:24px; font-weight:900; color:#0f172a; margin-top:2px;">${totalCount}</div>
+      <!-- Modern KPI Cards Row (Icon + Number layout side by side) -->
+      <div style="padding:14px 28px; display:flex; gap:14px; background:#ffffff; border-bottom:1.5px solid #cbd5e1;">
+        
+        <div style="flex:1; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:14px; padding:10px 16px; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
+          <div style="font-size:11px; font-weight:900; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">TOTAL SECTIONS</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; border-radius:10px; background:#e0e7ff; color:#4f46e5; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+            </div>
+            <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${totalCount}</div>
+          </div>
         </div>
-        <div style="flex:1; background:#ffffff; border:1.5px solid #86efac; border-radius:14px; padding:12px 18px; box-shadow:0 4px 10px rgba(16,185,129,0.05);">
-          <div style="font-size:11px; font-weight:900; color:#047857; text-transform:uppercase; letter-spacing:0.05em;">Operational (ON)</div>
-          <div style="font-size:24px; font-weight:900; color:#059669; margin-top:2px;">${onCount}</div>
+
+        <div style="flex:1; background:#ffffff; border:1.5px solid #bbf7d0; border-radius:14px; padding:10px 16px; box-shadow:0 2px 8px rgba(16,185,129,0.06);">
+          <div style="font-size:11px; font-weight:900; color:#047857; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">OPERATIONAL (ON)</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; border-radius:10px; background:#dcfce7; color:#16a34a; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            </div>
+            <div style="font-size:36px; font-weight:900; color:#059669; line-height:1;">${onCount}</div>
+          </div>
         </div>
-        <div style="flex:1; background:#ffffff; border:1.5px solid ${offCount > 0 ? '#fca5a5' : '#cbd5e1'}; border-radius:14px; padding:12px 18px; box-shadow:0 4px 10px rgba(239,68,68,0.05);">
-          <div style="font-size:11px; font-weight:900; color:${offCount > 0 ? '#b91c1c' : '#475569'}; text-transform:uppercase; letter-spacing:0.05em;">Stopped (OFF)</div>
-          <div style="font-size:24px; font-weight:900; color:${offCount > 0 ? '#dc2626' : '#64748b'}; margin-top:2px;">${offCount}</div>
+
+        <div style="flex:1; background:#ffffff; border:1.5px solid ${offCount > 0 ? '#fca5a5' : '#cbd5e1'}; border-radius:14px; padding:10px 16px; box-shadow:0 2px 8px rgba(239,68,68,0.06);">
+          <div style="font-size:11px; font-weight:900; color:${offCount > 0 ? '#b91c1c' : '#475569'}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">STOPPED (OFF)</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; border-radius:10px; background:#f1f5f9; color:#475569; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+            </div>
+            <div style="font-size:36px; font-weight:900; color:${offCount > 0 ? '#dc2626' : '#64748b'}; line-height:1;">${offCount}</div>
+          </div>
         </div>
-        <div style="flex:1; background:#ffffff; border:1.5px solid ${pendingCount > 0 ? '#fde68a' : '#cbd5e1'}; border-radius:14px; padding:12px 18px; box-shadow:0 4px 10px rgba(245,158,11,0.05);">
-          <div style="font-size:11px; font-weight:900; color:${pendingCount > 0 ? '#b45309' : '#475569'}; text-transform:uppercase; letter-spacing:0.05em;">Pending</div>
-          <div style="font-size:24px; font-weight:900; color:${pendingCount > 0 ? '#d97706' : '#64748b'}; margin-top:2px;">${pendingCount}</div>
+
+        <div style="flex:1; background:#ffffff; border:1.5px solid ${pendingCount > 0 ? '#fde68a' : '#cbd5e1'}; border-radius:14px; padding:10px 16px; box-shadow:0 2px 8px rgba(245,158,11,0.06);">
+          <div style="font-size:11px; font-weight:900; color:${pendingCount > 0 ? '#b45309' : '#475569'}; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">PENDING</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; border-radius:10px; background:#ffedd5; color:#ea580c; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div style="font-size:36px; font-weight:900; color:${pendingCount > 0 ? '#d97706' : '#64748b'}; line-height:1;">${pendingCount}</div>
+          </div>
         </div>
+
       </div>
 
       <!-- Main Section Status Table -->
-      <div style="padding:24px 32px 28px 32px; background:#ffffff;">
-        <table style="width:100%; border-collapse:collapse; border-radius:14px; overflow:hidden; border:1.5px solid #cbd5e1; font-family:'Inter', sans-serif;">
+      <div style="padding:16px 28px 20px 28px; background:#ffffff;">
+        <table style="width:100%; border-collapse:collapse; border-radius:12px; overflow:hidden; border:1.5px solid #cbd5e1; font-family:'Inter', sans-serif;">
           <thead>
-            <tr style="background:#0f172a; color:#ffffff;">
-              <th style="padding:14px 16px; text-align:center; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:0.08em; width:50px; border-right:1px solid #334155;">SL</th>
-              <th style="padding:14px 20px; text-align:left; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:0.08em; border-right:1px solid #334155;">Section Name</th>
-              <th style="padding:14px 20px; text-align:center; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:0.08em; width:200px;">Status</th>
+            <tr style="background:#0f1d36; color:#ffffff;">
+              <th style="padding:12px 16px; text-align:center; font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:0.06em; width:55px; border-right:1px solid #1e293b;">SL</th>
+              <th style="padding:12px 20px; text-align:left; font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:0.06em; border-right:1px solid #1e293b;">SECTION NAME</th>
+              <th style="padding:12px 20px; text-align:center; font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:0.06em; width:190px;">STATUS</th>
             </tr>
           </thead>
           <tbody>
@@ -2143,12 +2162,9 @@ window.downloadSectionStatusReportJpg = function() {
         </table>
       </div>
 
-      <!-- Footer Bar -->
-      <div style="background:#f8fafc; border-top:1.5px solid #e2e8f0; padding:14px 32px; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#475569; font-weight:700;">
-        <div style="display:flex; align-items:center; gap:6px;">
-          <span style="display:inline-block; width:8px; height:8px; background:#10b981; border-radius:50%;"></span>
-          <span>MEP FAN LTD. • Factory Operations Intelligence System</span>
-        </div>
+      <!-- Clean Footer Bar -->
+      <div style="background:#0f1d36; border-top:1px solid #1e293b; padding:10px 28px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#94a3b8; font-weight:800;">
+        <div>MEP FAN LTD.</div>
         <div>Generated: ${dateFormatted} ${timeFormatted}</div>
       </div>
     </div>
@@ -2174,8 +2190,8 @@ window.downloadSectionStatusReportJpg = function() {
     }
   }).catch(err => {
     if (tempContainer.parentNode) document.body.removeChild(tempContainer);
-    console.error("JPG generation failed:", err);
-    alert("Could not generate JPG report: " + err.message);
+    console.error("JPG export error:", err);
+    alert("Could not generate report image.");
   });
 };
 

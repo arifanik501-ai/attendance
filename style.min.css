@@ -390,7 +390,8 @@ html.smooth-mode .scroll-reveal {
 }
 
 html.smooth-mode .scroll-reveal,
-html.smooth-mode tbody tr {
+html.smooth-mode tbody tr,
+html.smooth-mode .theme-option {
   opacity: 1 !important;
   transform: none !important;
 }

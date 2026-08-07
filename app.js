@@ -793,25 +793,30 @@ function getEffectiveSectionStatus(sectionKey, state = (localDashboardState || g
   const day = String(now.getDate()).padStart(2, '0');
   const isoDateStr = `${year}-${month}-${day}`;
 
-  let sectionData = (state && state.sectionStatus) ? state.sectionStatus[sectionKey] : null;
+  let sectionData = null;
   const cycleStart = getCurrentCycleStartTime();
 
-  if (!sectionData || !sectionData.timestamp || sectionData.timestamp < cycleStart) {
-    if (state && state.sectionStatusHistory && state.sectionStatusHistory[isoDateStr] && state.sectionStatusHistory[isoDateStr][sectionKey]) {
-      sectionData = state.sectionStatusHistory[isoDateStr][sectionKey];
+  if (state && state.sectionStatus && state.sectionStatus[sectionKey]) {
+    const candidate = state.sectionStatus[sectionKey];
+    if (candidate.entryDate === isoDateStr || (candidate.timestamp && candidate.timestamp >= cycleStart)) {
+      sectionData = candidate;
     }
   }
 
-  if (sectionData && (sectionData.timestamp >= cycleStart || sectionData.entryDate === isoDateStr)) {
+  if (!sectionData && state && state.sectionStatusHistory && state.sectionStatusHistory[isoDateStr] && state.sectionStatusHistory[isoDateStr][sectionKey]) {
+    sectionData = state.sectionStatusHistory[isoDateStr][sectionKey];
+  }
+
+  if (sectionData) {
     return {
       sectionKey: sectionKey,
       name: cfg.name,
       entryBy: sectionData.entryBy || cfg.entryBy,
       status: sectionData.status,
-      entryDate: sectionData.entryDate || '',
+      entryDate: sectionData.entryDate || isoDateStr,
       entryTime: sectionData.entryTime || '',
       lastUpdated: sectionData.lastUpdated || '',
-      timestamp: sectionData.timestamp,
+      timestamp: sectionData.timestamp || 0,
       isPending: false
     };
   }
@@ -901,21 +906,42 @@ window.handleSectionStatusToggle = function(sectionKey, statusVal) {
   if (row) {
     const btnOn = row.querySelector('.btn-status-on');
     const btnOff = row.querySelector('.btn-status-off');
+    const pendingTag = row.querySelector('.status-pending-tag');
+    
+    if (pendingTag) {
+      pendingTag.style.display = 'none';
+    }
+    row.style.borderColor = '#cbd5e1';
+
     if (btnOn && btnOff) {
       if (statusVal === 'ON') {
-        btnOn.style.background = '#10b981';
-        btnOn.style.color = 'white';
-        btnOn.style.boxShadow = '0 3px 10px rgba(16,185,129,0.4)';
-        btnOff.style.background = 'transparent';
-        btnOff.style.color = '#64748b';
+        btnOn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        btnOn.style.color = '#ffffff';
+        btnOn.style.borderColor = '#047857';
+        btnOn.style.boxShadow = '0 4px 14px rgba(16,185,129,0.45)';
+        btnOn.style.transform = 'scale(1.04)';
+        btnOn.style.opacity = '1';
+
+        btnOff.style.background = '#ffffff';
+        btnOff.style.color = '#94a3b8';
+        btnOff.style.borderColor = '#cbd5e1';
         btnOff.style.boxShadow = 'none';
+        btnOff.style.transform = 'scale(1)';
+        btnOff.style.opacity = '0.55';
       } else if (statusVal === 'OFF') {
-        btnOff.style.background = '#ef4444';
-        btnOff.style.color = 'white';
-        btnOff.style.boxShadow = '0 3px 10px rgba(239,68,68,0.4)';
-        btnOn.style.background = 'transparent';
-        btnOn.style.color = '#64748b';
+        btnOff.style.background = 'linear-gradient(135deg, #ef4444, #b91c1c)';
+        btnOff.style.color = '#ffffff';
+        btnOff.style.borderColor = '#991b1b';
+        btnOff.style.boxShadow = '0 4px 14px rgba(239,68,68,0.45)';
+        btnOff.style.transform = 'scale(1.04)';
+        btnOff.style.opacity = '1';
+
+        btnOn.style.background = '#ffffff';
+        btnOn.style.color = '#94a3b8';
+        btnOn.style.borderColor = '#cbd5e1';
         btnOn.style.boxShadow = 'none';
+        btnOn.style.transform = 'scale(1)';
+        btnOn.style.opacity = '0.55';
       }
     }
   }
@@ -1300,20 +1326,20 @@ function _renderEntryContent(pageId) {
       const isOFF = pendingVal === 'OFF';
 
       cardHtml += `
-        <div class="section-status-item-row" data-section="${sKey}" style="background:rgba(255,255,255,0.7); border:1px solid rgba(0,0,0,0.08); border-radius:12px; padding:0.8rem 1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem; transition:all 0.2s;">
-          <div style="flex:1; min-width:180px;">
-            <div style="font-weight:700; font-size:1rem; color:var(--text-dark);">${eff.name}</div>
+        <div class="section-status-item-row" data-section="${sKey}" style="background:#ffffff; border:1.5px solid #cbd5e1; border-radius:14px; padding:0.9rem 1.2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; box-shadow:0 3px 12px rgba(15,23,42,0.04); transition:all 0.25s;">
+          <div style="flex:1; min-width:200px;">
+            <span style="font-weight:800; font-size:1.05rem; color:#0f172a;">${eff.name}</span>
           </div>
           <div style="display:flex; align-items:center; gap:0.75rem;">
-            <div style="display:flex; background:#e2e8f0; padding:3px; border-radius:10px; gap:3px;">
+            <div style="display:flex; background:#f1f5f9; padding:4px; border-radius:12px; gap:6px; border:1px solid #cbd5e1;">
               <button type="button" class="btn-status-toggle btn-status-on ${isON ? 'active-on' : ''}" 
                 onclick="window.handleSectionStatusToggle('${sKey}', 'ON')"
-                style="padding:6px 18px; border:none; border-radius:8px; font-size:0.9rem; font-weight:800; cursor:pointer; transition:all 0.2s; ${isON ? 'background:#10b981; color:white; box-shadow:0 3px 10px rgba(16,185,129,0.4);' : 'background:transparent; color:#64748b;'}">
+                style="padding:8px 22px; border:1px solid ${isON ? '#047857' : '#cbd5e1'}; border-radius:9px; font-size:0.92rem; font-weight:900; cursor:pointer; transition:all 0.2s ease-in-out; ${isON ? 'background:linear-gradient(135deg, #10b981, #059669); color:#ffffff; box-shadow:0 4px 14px rgba(16,185,129,0.45); transform:scale(1.04); opacity:1;' : 'background:#ffffff; color:#94a3b8; opacity:0.65;'}">
                 🟢 ON
               </button>
               <button type="button" class="btn-status-toggle btn-status-off ${isOFF ? 'active-off' : ''}" 
                 onclick="window.handleSectionStatusToggle('${sKey}', 'OFF')"
-                style="padding:6px 18px; border:none; border-radius:8px; font-size:0.9rem; font-weight:800; cursor:pointer; transition:all 0.2s; ${isOFF ? 'background:#ef4444; color:white; box-shadow:0 3px 10px rgba(239,68,68,0.4);' : 'background:transparent; color:#64748b;'}">
+                style="padding:8px 22px; border:1px solid ${isOFF ? '#991b1b' : '#cbd5e1'}; border-radius:9px; font-size:0.92rem; font-weight:900; cursor:pointer; transition:all 0.2s ease-in-out; ${isOFF ? 'background:linear-gradient(135deg, #ef4444, #b91c1c); color:#ffffff; box-shadow:0 4px 14px rgba(239,68,68,0.45); transform:scale(1.04); opacity:1;' : 'background:#ffffff; color:#94a3b8; opacity:0.65;'}">
                 🔴 OFF
               </button>
             </div>
@@ -1991,7 +2017,6 @@ const THEMES = [
   { id: 'peach',        name: 'Coral Sand',      desc: 'Coral beach plate',        swatch: 'linear-gradient(135deg, #ffe4d6, #ff6b6b)',    palette: ['#ffe4d6','#ff6b6b','#7f1d1d'], bg: ['#fff7ed','#ffe4d6','#fca5a5'], contrast: '#450a0a' },
   { id: 'silver-mist',  name: 'Silver Mist',     desc: 'Neutral silver plate',     swatch: 'linear-gradient(135deg, #f8fafc, #94a3b8)',    palette: ['#f8fafc','#94a3b8','#334155'], bg: ['#ffffff','#f1f5f9','#cbd5e1'], contrast: '#0f172a' },
   { id: 'sky-azure',    name: 'Cobalt Sky',      desc: 'Clear blue plate',         swatch: 'linear-gradient(135deg, #dbeafe, #3b82f6)',    palette: ['#dbeafe','#3b82f6','#1e3a8a'], bg: ['#eff6ff','#dbeafe','#93c5fd'], contrast: '#ffffff' },
-  { id: 'honey-glow',   name: 'Honey Bronze',    desc: 'Bronze honey plate',       swatch: 'linear-gradient(135deg, #fef3c7, #d97706)',    palette: ['#fef3c7','#d97706','#78350f'], bg: ['#fffbeb','#fef3c7','#fbbf24'], contrast: '#422006' },
   { id: 'mint-sorbet',  name: 'Pistachio Lime',  desc: 'Fresh lime plate',         swatch: 'linear-gradient(135deg, #ecfccb, #84cc16)',    palette: ['#ecfccb','#84cc16','#365314'], bg: ['#f7fee7','#ecfccb','#bef264'], contrast: '#1a2e05' },
   { id: 'light-maroon', name: 'Burgundy Velvet', desc: 'Wine velvet plate',        swatch: 'linear-gradient(135deg, #fce7f3, #be185d)',    palette: ['#fce7f3','#be185d','#831843'], bg: ['#fdf2f8','#fce7f3','#f9a8d4'], contrast: '#ffffff' },
   { id: 'chocolate',    name: 'Cocoa Mocha',     desc: 'Coffee cocoa plate',       swatch: 'linear-gradient(135deg, #fef3c7, #a16207)',    palette: ['#fef3c7','#a16207','#451a03'], bg: ['#fffbeb','#fde68a','#d97706'], contrast: '#ffffff' },
@@ -2001,44 +2026,9 @@ const THEMES = [
   { id: 'teal-lagoon',  name: 'Teal Lagoon',     desc: 'Lagoon teal plate',        swatch: 'linear-gradient(135deg, #ccfbf1, #0f766e)',    palette: ['#ccfbf1','#0f766e','#042f2e'], bg: ['#f0fdfa','#99f6e4','#2dd4bf'], contrast: '#ffffff' },
   { id: 'crimson',      name: 'Crimson Ruby',    desc: 'Ruby red plate',           swatch: 'linear-gradient(135deg, #fee2e2, #dc2626)',    palette: ['#fee2e2','#dc2626','#7f1d1d'], bg: ['#fef2f2','#fee2e2','#fca5a5'], contrast: '#ffffff' },
   { id: 'copper',       name: 'Copper Clay',     desc: 'Clay copper plate',        swatch: 'linear-gradient(135deg, #ffedd5, #c2410c)',    palette: ['#ffedd5','#c2410c','#431407'], bg: ['#fff7ed','#ffedd5','#fb923c'], contrast: '#ffffff' },
-  { id: 'sapphire',     name: 'Sapphire Royal',  desc: 'Royal sapphire plate',     swatch: 'linear-gradient(135deg, #dbeafe, #2563eb)',    palette: ['#dbeafe','#2563eb','#172554'], bg: ['#eff6ff','#bfdbfe','#60a5fa'], contrast: '#ffffff' },
   { id: 'olive',        name: 'Olive Grove',     desc: 'Earth olive plate',        swatch: 'linear-gradient(135deg, #fef9c3, #65a30d)',    palette: ['#fef9c3','#65a30d','#3f6212'], bg: ['#fefce8','#fef9c3','#bef264'], contrast: '#1a2e05' },
   { id: 'aurora-lite',  name: 'Aurora Pearl',    desc: 'Soft aurora glass',        swatch: 'linear-gradient(135deg, #e0f2fe, #a7f3d0 48%, #fbcfe8)', palette: ['#e0f2fe','#14b8a6','#0f766e'], bg: ['#f8fafc','#e0f2fe','#a7f3d0'], contrast: '#042f2e' },
-  { id: 'opal-gold',    name: 'Opal Gold',       desc: 'Pearl gold ledger',        swatch: 'linear-gradient(135deg, #fff7ed, #fde68a 45%, #fb7185)', palette: ['#fff7ed','#f59e0b','#9a3412'], bg: ['#fffaf0','#fef3c7','#fed7aa'], contrast: '#431407' },
-  { id: 'lotus',        name: 'Lotus Pink',      desc: 'Premium lotus bloom',      swatch: 'linear-gradient(135deg, #fce7f3, #f472b6 52%, #a855f7)', palette: ['#fce7f3','#ec4899','#831843'], bg: ['#fdf2f8','#fce7f3','#f9a8d4'], contrast: '#500724' },
-  { id: 'fresh-leaf',   name: 'Fresh Leaf',      desc: 'Green productivity',       swatch: 'linear-gradient(135deg, #f7fee7, #4ade80 52%, #16a34a)', palette: ['#f7fee7','#22c55e','#166534'], bg: ['#f7fee7','#dcfce7','#86efac'], contrast: '#052e16' },
-  { id: 'powder-blue',  name: 'Powder Blue',     desc: 'Clean blue report',        swatch: 'linear-gradient(135deg, #f0f9ff, #93c5fd 54%, #2563eb)', palette: ['#f0f9ff','#3b82f6','#1e3a8a'], bg: ['#f8fafc','#dbeafe','#93c5fd'], contrast: '#172554' },
-  { id: 'cream-clay',   name: 'Cream Clay',      desc: 'Warm clay paper',          swatch: 'linear-gradient(135deg, #fffbeb, #fdba74 55%, #b45309)', palette: ['#fffbeb','#f97316','#7c2d12'], bg: ['#fff7ed','#fed7aa','#fdba74'], contrast: '#431407' },
-  { id: 'pearl-sunrise', name: 'Pearl Sunrise', desc: 'Pink gold morning', swatch: 'linear-gradient(135deg, #fff7ed, #fecdd3 45%, #f59e0b)', palette: ['#fff7ed','#fb7185','#9f1239'], bg: ['#fff7ed','#ffe4e6','#fdba74'], contrast: '#4c0519' },
-  { id: 'aqua-pearl', name: 'Aqua Pearl', desc: 'Aqua pearl shine', swatch: 'linear-gradient(135deg, #ecfeff, #99f6e4 48%, #0ea5e9)', palette: ['#ecfeff','#14b8a6','#155e75'], bg: ['#f0fdfa','#ccfbf1','#7dd3fc'], contrast: '#083344' },
-  { id: 'orchid-mist', name: 'Orchid Mist', desc: 'Orchid glass mist', swatch: 'linear-gradient(135deg, #faf5ff, #f0abfc 50%, #8b5cf6)', palette: ['#faf5ff','#d946ef','#6b21a8'], bg: ['#fdf4ff','#fae8ff','#e9d5ff'], contrast: '#4a044e' },
-  { id: 'lime-peach', name: 'Lime Peach', desc: 'Lime peach fusion', swatch: 'linear-gradient(135deg, #f7fee7, #fed7aa 50%, #84cc16)', palette: ['#f7fee7','#f97316','#3f6212'], bg: ['#f7fee7','#ffedd5','#bef264'], contrast: '#1a2e05' },
-  { id: 'sky-coral', name: 'Sky Coral', desc: 'Sky coral premium', swatch: 'linear-gradient(135deg, #e0f2fe, #fda4af 48%, #2563eb)', palette: ['#e0f2fe','#fb7185','#1e3a8a'], bg: ['#f0f9ff','#ffe4e6','#bfdbfe'], contrast: '#172554' },
-  { id: 'vanilla-mint', name: 'Vanilla Mint', desc: 'Vanilla mint clean', swatch: 'linear-gradient(135deg, #fffbeb, #a7f3d0 52%, #10b981)', palette: ['#fffbeb','#10b981','#065f46'], bg: ['#fffbeb','#ecfdf5','#a7f3d0'], contrast: '#064e3b' },
-  { id: 'rose-quartz', name: 'Rose Quartz', desc: 'Soft quartz rose', swatch: 'linear-gradient(135deg, #fff1f2, #f9a8d4 50%, #e11d48)', palette: ['#fff1f2','#f472b6','#9f1239'], bg: ['#fff1f2','#fce7f3','#f9a8d4'], contrast: '#831843' },
-  { id: 'citrus-splash', name: 'Citrus Splash', desc: 'Lemon orange splash', swatch: 'linear-gradient(135deg, #fefce8, #fde047 45%, #fb923c)', palette: ['#fefce8','#facc15','#9a3412'], bg: ['#fefce8','#fef3c7','#fdba74'], contrast: '#713f12' },
-  { id: 'glacier-blue', name: 'Glacier Blue', desc: 'Glacier blue glass', swatch: 'linear-gradient(135deg, #f8fafc, #bae6fd 52%, #0284c7)', palette: ['#f8fafc','#38bdf8','#075985'], bg: ['#f8fafc','#e0f2fe','#bae6fd'], contrast: '#0c4a6e' },
-  { id: 'pistachio-cream', name: 'Pistachio Cream', desc: 'Creamy pistachio', swatch: 'linear-gradient(135deg, #fefce8, #d9f99d 48%, #65a30d)', palette: ['#fefce8','#84cc16','#365314'], bg: ['#fefce8','#ecfccb','#d9f99d'], contrast: '#365314' },
-  { id: 'blush-violet', name: 'Blush Violet', desc: 'Blush violet blend', swatch: 'linear-gradient(135deg, #fce7f3, #c4b5fd 52%, #7c3aed)', palette: ['#fce7f3','#8b5cf6','#4c1d95'], bg: ['#fdf2f8','#ede9fe','#ddd6fe'], contrast: '#4c1d95' },
-  { id: 'teal-sand', name: 'Teal Sand', desc: 'Teal warm sand', swatch: 'linear-gradient(135deg, #fef3c7, #5eead4 50%, #0f766e)', palette: ['#fef3c7','#14b8a6','#134e4a'], bg: ['#fffbeb','#ccfbf1','#99f6e4'], contrast: '#134e4a' },
-  { id: 'apricot-ice', name: 'Apricot Ice', desc: 'Apricot ice glow', swatch: 'linear-gradient(135deg, #fff7ed, #fed7aa 48%, #06b6d4)', palette: ['#fff7ed','#f97316','#155e75'], bg: ['#fff7ed','#ffedd5','#cffafe'], contrast: '#7c2d12' },
-  { id: 'lilac-sky', name: 'Lilac Sky', desc: 'Lilac sky premium', swatch: 'linear-gradient(135deg, #f5f3ff, #bfdbfe 50%, #a855f7)', palette: ['#f5f3ff','#60a5fa','#6b21a8'], bg: ['#f5f3ff','#dbeafe','#e9d5ff'], contrast: '#4c1d95' },
-  { id: 'honeydew', name: 'Honeydew Silk', desc: 'Honeydew silk green', swatch: 'linear-gradient(135deg, #f7fee7, #bbf7d0 50%, #16a34a)', palette: ['#f7fee7','#22c55e','#14532d'], bg: ['#f7fee7','#dcfce7','#bbf7d0'], contrast: '#14532d' },
-  { id: 'ruby-cream', name: 'Ruby Cream', desc: 'Ruby cream plate', swatch: 'linear-gradient(135deg, #fff1f2, #fecaca 45%, #dc2626)', palette: ['#fff1f2','#ef4444','#7f1d1d'], bg: ['#fff1f2','#fee2e2','#fecaca'], contrast: '#7f1d1d' },
-  { id: 'turquoise-lime', name: 'Turquoise Lime', desc: 'Turquoise lime pop', swatch: 'linear-gradient(135deg, #ecfeff, #bef264 48%, #0d9488)', palette: ['#ecfeff','#84cc16','#0f766e'], bg: ['#ecfeff','#ecfccb','#99f6e4'], contrast: '#134e4a' },
-  { id: 'champagne', name: 'Champagne Glow', desc: 'Champagne premium', swatch: 'linear-gradient(135deg, #fffdf4, #fde68a 50%, #d97706)', palette: ['#fffdf4','#f59e0b','#78350f'], bg: ['#fffdf4','#fef3c7','#fde68a'], contrast: '#78350f' },
-  { id: 'powder-rose', name: 'Powder Rose', desc: 'Powder rose blue', swatch: 'linear-gradient(135deg, #eff6ff, #fbcfe8 52%, #3b82f6)', palette: ['#eff6ff','#ec4899','#1e40af'], bg: ['#eff6ff','#fce7f3','#bfdbfe'], contrast: '#1e3a8a' },
-  { id: 'jade-gold', name: 'Jade Gold', desc: 'Jade golden glass', swatch: 'linear-gradient(135deg, #ecfdf5, #fde68a 48%, #059669)', palette: ['#ecfdf5','#10b981','#065f46'], bg: ['#ecfdf5','#fef3c7','#a7f3d0'], contrast: '#064e3b' },
-  { id: 'blueberry-cream', name: 'Blueberry Cream', desc: 'Blueberry cream', swatch: 'linear-gradient(135deg, #eef2ff, #c4b5fd 48%, #4f46e5)', palette: ['#eef2ff','#6366f1','#312e81'], bg: ['#eef2ff','#e0e7ff','#c7d2fe'], contrast: '#312e81' },
-  { id: 'papaya', name: 'Papaya Smooth', desc: 'Papaya smooth glow', swatch: 'linear-gradient(135deg, #fff7ed, #fdba74 50%, #fb7185)', palette: ['#fff7ed','#f97316','#be123c'], bg: ['#fff7ed','#ffedd5','#fecdd3'], contrast: '#9a3412' },
-  { id: 'seafoam', name: 'Seafoam Pearl', desc: 'Seafoam pearl', swatch: 'linear-gradient(135deg, #f0fdfa, #67e8f9 50%, #0891b2)', palette: ['#f0fdfa','#06b6d4','#155e75'], bg: ['#f0fdfa','#ccfbf1','#a5f3fc'], contrast: '#164e63' },
-  { id: 'cotton-candy', name: 'Cotton Candy', desc: 'Candy pastel gradient', swatch: 'linear-gradient(135deg, #fdf2f8, #bfdbfe 50%, #f472b6)', palette: ['#fdf2f8','#60a5fa','#be185d'], bg: ['#fdf2f8','#dbeafe','#fbcfe8'], contrast: '#831843' },
-  { id: 'kiwi-frost', name: 'Kiwi Frost', desc: 'Kiwi frosted glass', swatch: 'linear-gradient(135deg, #f7fee7, #a7f3d0 50%, #65a30d)', palette: ['#f7fee7','#22c55e','#3f6212'], bg: ['#f7fee7','#dcfce7','#d9f99d'], contrast: '#365314' },
-  { id: 'mango-tango', name: 'Mango Tango', desc: 'Mango tango glow', swatch: 'linear-gradient(135deg, #fffbeb, #fbbf24 48%, #ea580c)', palette: ['#fffbeb','#f59e0b','#7c2d12'], bg: ['#fffbeb','#fef3c7','#fed7aa'], contrast: '#7c2d12' },
-  { id: 'lavender-mint', name: 'Lavender Mint', desc: 'Lavender mint glass', swatch: 'linear-gradient(135deg, #faf5ff, #99f6e4 50%, #a855f7)', palette: ['#faf5ff','#14b8a6','#6b21a8'], bg: ['#faf5ff','#ccfbf1','#e9d5ff'], contrast: '#4a044e' },
-  { id: 'pearl-indigo', name: 'Pearl Indigo', desc: 'Pearl indigo sheet', swatch: 'linear-gradient(135deg, #f8fafc, #c7d2fe 50%, #4338ca)', palette: ['#f8fafc','#6366f1','#312e81'], bg: ['#f8fafc','#e0e7ff','#c7d2fe'], contrast: '#312e81' },
-  { id: 'coral-mint', name: 'Coral Mint', desc: 'Coral mint premium', swatch: 'linear-gradient(135deg, #fff7ed, #5eead4 48%, #fb7185)', palette: ['#fff7ed','#14b8a6','#be123c'], bg: ['#fff7ed','#ccfbf1','#fecdd3'], contrast: '#831843' },
-  { id: 'golden-sky', name: 'Golden Sky', desc: 'Golden sky glass', swatch: 'linear-gradient(135deg, #eff6ff, #fde047 50%, #0ea5e9)', palette: ['#eff6ff','#eab308','#075985'], bg: ['#eff6ff','#fef9c3','#bae6fd'], contrast: '#075985' }
+  { id: 'lotus',        name: 'Lotus Pink',      desc: 'Premium lotus bloom',      swatch: 'linear-gradient(135deg, #fce7f3, #f472b6 52%, #a855f7)', palette: ['#fce7f3','#ec4899','#831843'], bg: ['#fdf2f8','#fce7f3','#f9a8d4'], contrast: '#500724' }
 ];
 
 function rgbaFromHex(hex, alpha) {

@@ -1307,7 +1307,23 @@ function _renderEntryContent(pageId) {
     statusCard.style.padding = '1.2rem';
 
     let cardHtml = `
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem; border-bottom:1px solid rgba(0,0,0,0.06); padding-bottom:0.6rem;">
+      <style>
+        @media (max-width: 640px) {
+          .section-status-entry-card { padding: 0.35rem 0.4rem !important; margin-bottom: 0.5rem !important; border-radius: 10px !important; }
+          .sec-entry-header-wrap { margin-bottom: 0.4rem !important; padding-bottom: 0.3rem !important; gap: 0.2rem !important; }
+          .section-status-entry-card h3 { font-size: 0.82rem !important; gap: 5px !important; }
+          .section-status-entry-card h3 svg { width: 15px !important; height: 15px !important; }
+          .section-status-entry-card p { font-size: 0.65rem !important; margin-top: 0 !important; display: none !important; }
+          .sec-status-entry-list { gap: 0.25rem !important; }
+          .section-status-item-row { padding: 0.35rem 0.45rem !important; border-radius: 8px !important; gap: 0.3rem !important; flex-wrap: nowrap !important; border-width: 1px !important; box-shadow: none !important; }
+          .section-status-item-row > div:first-child { min-width: 0 !important; }
+          .section-status-item-row > div:first-child span { font-size: 0.75rem !important; font-weight: 700 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+          .section-status-toggle-wrap { gap: 0.2rem !important; flex-shrink: 0 !important; }
+          .section-status-toggle-box { padding: 2px !important; border-radius: 6px !important; gap: 2px !important; }
+          .btn-status-toggle { padding: 4px 10px !important; font-size: 0.72rem !important; border-radius: 5px !important; }
+        }
+      </style>
+      <div class="sec-entry-header-wrap" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem; border-bottom:1px solid rgba(0,0,0,0.06); padding-bottom:0.6rem;">
         <div>
           <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:var(--text-dark); display:flex; align-items:center; gap:8px;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
@@ -1316,7 +1332,7 @@ function _renderEntryContent(pageId) {
           <p style="margin:0.2rem 0 0 0; font-size:0.82rem; color:var(--text-light); font-weight:500;">Select section status for today.</p>
         </div>
       </div>
-      <div style="display:flex; flex-direction:column; gap:0.75rem;">
+      <div class="sec-status-entry-list" style="display:flex; flex-direction:column; gap:0.75rem;">
     `;
 
     sectionsForPage.forEach(sKey => {
@@ -1327,11 +1343,11 @@ function _renderEntryContent(pageId) {
 
       cardHtml += `
         <div class="section-status-item-row" data-section="${sKey}" style="background:#ffffff; border:1.5px solid #cbd5e1; border-radius:14px; padding:0.9rem 1.2rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; box-shadow:0 3px 12px rgba(15,23,42,0.04); transition:all 0.25s;">
-          <div style="flex:1; min-width:200px;">
+          <div style="flex:1; min-width:180px;">
             <span style="font-weight:800; font-size:1.05rem; color:#0f172a;">${eff.name}</span>
           </div>
-          <div style="display:flex; align-items:center; gap:0.75rem;">
-            <div style="display:flex; background:#f1f5f9; padding:4px; border-radius:12px; gap:6px; border:1px solid #cbd5e1;">
+          <div class="section-status-toggle-wrap" style="display:flex; align-items:center; gap:0.75rem;">
+            <div class="section-status-toggle-box" style="display:flex; background:#f1f5f9; padding:4px; border-radius:12px; gap:6px; border:1px solid #cbd5e1;">
               <button type="button" class="btn-status-toggle btn-status-on ${isON ? 'active-on' : ''}" 
                 onclick="window.handleSectionStatusToggle('${sKey}', 'ON')"
                 style="padding:8px 22px; border:1px solid ${isON ? '#047857' : '#cbd5e1'}; border-radius:9px; font-size:0.92rem; font-weight:900; cursor:pointer; transition:all 0.2s ease-in-out; ${isON ? 'background:linear-gradient(135deg, #10b981, #059669); color:#ffffff; box-shadow:0 4px 14px rgba(16,185,129,0.45); transform:scale(1.04); opacity:1;' : 'background:#ffffff; color:#94a3b8; opacity:0.65;'}">

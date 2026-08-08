@@ -3,12 +3,12 @@
 // Daily 8:00 AM & 1:00 PM Attendance Notifications
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-dashboard-cache-v112';
+const CACHE_NAME = 'mep-dashboard-cache-v115';
 const NOTIFICATION_HOUR_AM = 8; // 8:00 AM
 const NOTIFICATION_HOUR_PM = 13; // 1:00 PM
 const NOTIFICATION_MINUTE = 0;
 
-const ASSET_VERSION = 'v=76';
+const ASSET_VERSION = 'v=79';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -28,6 +28,9 @@ const ASSETS_TO_CACHE = [
   './pending-icon.png',
   './theme-icon.png',
   './push-off-icon.png',
+  './fab-main-icon.png',
+  './sec-status-header-icon.png',
+  './iom-header-icon.png',
   './sb-dashboard.png',
   './sb-iom.png',
   './sb-status.png',

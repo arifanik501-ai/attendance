@@ -3766,27 +3766,37 @@ window.toggleFabMenu = function() {
 
   if (window._fabOpen) {
     children.style.display = 'flex';
-    if (icon) icon.style.transform = 'rotate(90deg)';
-    if (btn) { btn.style.transform = 'scale(1.08) rotate(0deg)'; btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)'; btn.style.boxShadow = '0 8px 25px rgba(239,68,68,0.4)'; }
+    if (icon) icon.style.transform = 'rotate(135deg) scale(1.1)';
+    if (btn) {
+      btn.style.transform = 'scale(1.08) rotate(0deg)';
+      btn.style.background = 'linear-gradient(135deg, rgba(239,68,68,0.94), rgba(220,38,38,0.96))';
+      btn.style.borderColor = 'rgba(255,255,255,0.85)';
+      btn.style.boxShadow = 'inset 0 2px 1px #ffffff, 0 12px 35px rgba(239,68,68,0.55)';
+    }
     var items = children.querySelectorAll('.fab-child');
     items.forEach(function(item, i) {
       setTimeout(function() {
         item.style.opacity = '1';
         item.style.transform = 'scale(1) translateY(0)';
-      }, i * 60);
+      }, i * 50);
     });
   } else {
-    if (icon) icon.style.transform = 'rotate(0deg)';
-    if (btn) { btn.style.transform = 'scale(1)'; btn.style.background = 'linear-gradient(135deg,#6366f1,#8b5cf6)'; btn.style.boxShadow = '0 8px 25px rgba(99,102,241,0.4)'; }
+    if (icon) icon.style.transform = 'rotate(0deg) scale(1)';
+    if (btn) {
+      btn.style.transform = 'scale(1) rotate(0deg)';
+      btn.style.background = 'linear-gradient(135deg, #f87171 0%, #ef4444 50%, #dc2626 100%)';
+      btn.style.borderColor = 'rgba(255,255,255,0.4)';
+      btn.style.boxShadow = '0 8px 25px rgba(239,68,68,0.45), inset 0 2px 2px rgba(255,255,255,0.6)';
+    }
     var items = children.querySelectorAll('.fab-child');
     var total = items.length;
     items.forEach(function(item, i) {
       setTimeout(function() {
         item.style.opacity = '0';
         item.style.transform = 'scale(0.3) translateY(-20px)';
-      }, (total - 1 - i) * 40);
+      }, (total - 1 - i) * 35);
     });
-    setTimeout(function() { children.style.display = 'none'; }, total * 40 + 300);
+    setTimeout(function() { children.style.display = 'none'; }, total * 35 + 250);
     // Also close any open dropdowns
     var nd = document.getElementById('noti-dropdown'); if (nd) nd.style.display = 'none';
     var rd = document.getElementById('reminder-dropdown'); if (rd) rd.style.display = 'none';

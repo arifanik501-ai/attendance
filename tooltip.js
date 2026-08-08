@@ -21,6 +21,9 @@
 (function () {
   'use strict';
 
+  // Tooltips disabled per user request
+  return;
+
   if (window.__mepTooltipInstalled) return;
   window.__mepTooltipInstalled = true;
 

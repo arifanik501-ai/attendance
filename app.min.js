@@ -949,11 +949,11 @@ window.handleSectionStatusToggle = function(sectionKey, statusVal) {
 
 function generateSidebar(activePage) {
   const entrySheetIcon = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,88H152V32Z" opacity="0.2"/><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-32-80a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,136Zm0,32a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,168Z"/></svg>';
-  const reportIcon = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,40H48A16,16,0,0,0,32,56V200a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V56A16,16,0,0,0,208,40ZM48,56H200V88H48ZM200,200H48V104H200V200Z" opacity="0.2"/><path d="M208,32H48A24,24,0,0,0,24,56V200a24,24,0,0,0,24,24H200a24,24,0,0,0,24-24V56A24,24,0,0,0,208,32ZM48,48H200a8,8,0,0,1,8,8V80H40V56A8,8,0,0,1,48,48ZM200,208H48a8,8,0,0,1-8-8V96H208V200A8,8,0,0,1,200,208Z"/></svg>';
+  const parentEntryIcon = '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M216,72H130.67L102.94,44.27A16,16,0,0,0,91.63,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V88A16,16,0,0,0,216,72Z" opacity="0.2"/><path d="M216,64H134.63l-24-24A16,16,0,0,0,99.31,36H40A24,24,0,0,0,16,60V196a24,24,0,0,0,24,24H216a24,24,0,0,0,24-24V88A24,24,0,0,0,216,64ZM40,52H99.31l16,16H40ZM224,196a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V84H216a8,8,0,0,1,8,8Z"/></svg>';
   const dashboardPages = [
     { id: 'index', title: 'Dashboard', url: 'index.html', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M112,56v48a8,8,0,0,1-8,8H56a8,8,0,0,1-8-8V56a8,8,0,0,1,8-8h48A8,8,0,0,1,112,56Zm88-8H152a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V56A8,8,0,0,0,200,48Zm-96,96H56a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V152A8,8,0,0,0,104,144Zm96,0H152a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V152A8,8,0,0,0,200,144Z" opacity="0.2"/><path d="M200,136H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,200,136Zm0,64H152V152h48v48ZM104,40H56A16,16,0,0,0,40,56v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,64H56V56h48v48Zm96-64H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,64H152V56h48v48Zm-96,32H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm0,64H56V152h48v48Z"/></svg>' },
     { id: 'iom-dashboard', title: 'IOM Report', url: 'index.html#iom-dashboard', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M40,48V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88L160,32H56A16,16,0,0,0,40,48Z" opacity="0.2"/><path d="M213.66,82.34l-48-48A8,8,0,0,0,160,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,196.69,88H160ZM200,208H56V48h88V88a8,8,0,0,0,8,8h48V208Z"/></svg>' },
-    { id: 'section-status-report', title: 'Section Status', url: 'index.html#section-status-report', icon: reportIcon }
+    { id: 'section-status-report', title: 'Section Status', url: 'index.html#section-status-report', icon: '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,40H48A16,16,0,0,0,32,56V200a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V56A16,16,0,0,0,208,40ZM48,56H200V88H48ZM200,200H48V104H200V200Z" opacity="0.2"/><path d="M208,32H48A24,24,0,0,0,24,56V200a24,24,0,0,0,24,24H200a24,24,0,0,0,24-24V56A24,24,0,0,0,208,32ZM48,48H200a8,8,0,0,1,8,8V80H40V56A8,8,0,0,1,48,48ZM200,208H48a8,8,0,0,1-8-8V96H208V200A8,8,0,0,1,200,208Z"/></svg>' }
   ];
   const entryPages = [
     { id: 'anik', title: 'Entry (Anik)', url: 'entry.html?page=anik', icon: entrySheetIcon },
@@ -999,7 +999,7 @@ function generateSidebar(activePage) {
   html += `
     <div class="entry-sheet-nav ${isEntryMenuExpanded ? 'expanded' : ''}">
       <button type="button" class="nav-link entry-sheet-toggle nav-entry-sheet ${isEntryPageActive ? 'active' : ''}" aria-expanded="${isEntryMenuExpanded ? 'true' : 'false'}" aria-controls="entry-sheet-menu">
-        ${entrySheetIcon}
+        ${parentEntryIcon}
         <span>Entry Sheet</span>
         <span class="entry-sheet-chevron" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
@@ -3532,25 +3532,29 @@ function buildPushNotificationButton() {
     <div class="push-notification-container" style="position:relative;">
       <button id="mep-push-btn" class="no-print" title="${enabled ? 'Daily Notification ON — Click to disable' : 'Enable Daily 8AM Notification'}"
         style="background:${enabled
-          ? 'linear-gradient(135deg, #10b981, #059669)'
-          : 'var(--glass-bg)'};
-        border:1.5px solid ${enabled ? 'rgba(255,255,255,0.35)' : 'var(--glass-border)'};
+          ? 'linear-gradient(135deg, #059669, #047857)'
+          : 'linear-gradient(135deg, #1e293b, #0f172a)'};
+        border:1.5px solid ${enabled ? 'rgba(52,211,153,0.7)' : 'rgba(100,116,139,0.5)'};
         border-radius:16px; width:56px; height:56px;
-        display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
+        display:flex; flex-direction:column; justify-content:center; align-items:center; gap:3px;
         cursor:pointer;
         box-shadow:${enabled
-          ? '0 6px 24px rgba(16,185,129,0.5), 0 0 0 4px rgba(16,185,129,0.15)'
-          : 'var(--glass-shadow)'};
+          ? '0 6px 20px rgba(16,185,129,0.5), inset 0 1.5px 0.5px rgba(255,255,255,0.5)'
+          : '0 4px 14px rgba(15,23,42,0.4), inset 0 1.5px 0.5px rgba(255,255,255,0.2)'};
         transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1); position:relative;
         backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-        onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.boxShadow='${enabled ? '0 10px 35px rgba(16,185,129,0.6), 0 0 0 6px rgba(16,185,129,0.2)' : '0 8px 32px rgba(100,116,139,0.3), 0 0 0 4px rgba(100,116,139,0.1)'}'; this.style.background='${enabled ? 'linear-gradient(135deg,#34d399,#10b981)' : 'rgba(255,255,255,0.85)'}';"
-        onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.boxShadow='${enabled ? '0 6px 24px rgba(16,185,129,0.5),0 0 0 4px rgba(16,185,129,0.15)' : 'var(--glass-shadow)'}'; this.style.background='${enabled ? 'linear-gradient(135deg,#10b981,#059669)' : 'var(--glass-bg)'}';"
+        onmouseover="this.style.transform='scale(1.1) translateY(-2px)';"
+        onmouseout="this.style.transform='scale(1) translateY(0)';"
         onclick="handlePushToggle()">
-        <span class="push-icon" style="line-height:1; filter:${enabled ? 'drop-shadow(0 0 6px rgba(255,255,255,0.55))' : 'none'}; display:flex; align-items:center; justify-content:center;">${enabled
-          ? '<img class="pfab pfab-push pfab-push-on" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Bell/3D/bell_3d.png" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Push On" />'
-          : '<img class="pfab pfab-push pfab-push-off" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Bell%20with%20slash/3D/bell_with_slash_3d.png" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)) grayscale(0.2); opacity:0.85; object-fit:contain;" alt="Push Off" />'
-        }</span>
-        <span class="push-label" style="font-size:0.52rem; font-weight:800; letter-spacing:0.04em; font-family:'Inter',sans-serif; color:${enabled ? 'white' : '#64748b'}; line-height:1;">${enabled ? 'ON' : 'OFF'}</span>
+        
+        <!-- 3D Physical Push Switch Track & Knob -->
+        <div class="push-switch-track" style="width:34px; height:18px; border-radius:10px; background:${enabled ? 'rgba(4,120,87,0.7)' : '#020617'}; border:1px solid ${enabled ? '#34d399' : '#475569'}; position:relative; display:flex; align-items:center; padding:2px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.6);">
+          <div class="push-switch-knob" style="width:14px; height:14px; border-radius:50%; background:linear-gradient(135deg, #ffffff, #cbd5e1); box-shadow:0 2px 5px rgba(0,0,0,0.5), inset 0 1px 0 #ffffff; transform:translateX(${enabled ? '16px' : '0px'}); transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display:flex; align-items:center; justify-content:center;">
+            <span style="width:5px; height:5px; border-radius:50%; background:${enabled ? '#10b981' : '#ef4444'}; box-shadow:0 0 6px ${enabled ? '#10b981' : '#ef4444'};"></span>
+          </div>
+        </div>
+
+        <span class="push-label" style="font-size:0.52rem; font-weight:900; letter-spacing:0.06em; font-family:'Inter',sans-serif; color:${enabled ? '#a7f3d0' : '#94a3b8'}; line-height:1; text-shadow:${enabled ? '0 0 8px rgba(16,185,129,0.5)' : 'none'};">${enabled ? 'ON' : 'OFF'}</span>
       </button>
     </div>
   `;

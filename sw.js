@@ -3,7 +3,7 @@
 // Daily 8:00 AM & 1:00 PM Attendance Notifications
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-dashboard-cache-v129';
+const CACHE_NAME = 'mep-dashboard-cache-v146';
 const NOTIFICATION_HOUR_AM = 8; // 8:00 AM
 const NOTIFICATION_HOUR_PM = 13; // 1:00 PM
 const NOTIFICATION_MINUTE = 0;
@@ -115,45 +115,44 @@ async function checkAndNotify() {
   const hour = now.getHours();
   const minute = now.getMinutes();
   
-  // Determine if we are in one of the notification windows (0 to 5 minutes past the hour)
-  const isAMWindow = (hour === NOTIFICATION_HOUR_AM && minute >= NOTIFICATION_MINUTE && minute <= NOTIFICATION_MINUTE + 5);
-  const isPMWindow = (hour === NOTIFICATION_HOUR_PM && minute >= NOTIFICATION_MINUTE && minute <= NOTIFICATION_MINUTE + 5);
+  // Active window: 0 to 10 minutes past 8:00 AM & 1:00 PM
+  const isAMWindow = (hour === NOTIFICATION_HOUR_AM && minute >= 0 && minute <= 10);
+  const isPMWindow = (hour === NOTIFICATION_HOUR_PM && minute >= 0 && minute <= 10);
 
   if (isAMWindow || isPMWindow) {
     const timeBlock = isAMWindow ? 'AM' : 'PM';
-    const todayKey = `notified_${timeBlock}_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+    const timeStr = isAMWindow ? '8:00 AM' : '1:00 PM';
+    const todayKey = `notified_strictly_once_${timeBlock}_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
 
-    // Use cache API to track daily notification per time block
+    // Track daily notification per time block (strictly ONCE)
     const cache = await caches.open('mep-notification-tracker');
     const response = await cache.match(todayKey);
     
     if (!response) {
-      // Not yet notified for this time block today — show notification
-      const timeStr = isAMWindow ? '8:00 AM' : '1:00 PM';
+      // Exactly ONCE per time block (never repeats)
       await self.registration.showNotification('🏭 MEP FAN LTD.', {
         body: `It's ${timeStr}! Time to update your Attendance Sheet now. Please do it quickly! ⏰`,
         icon: './icon-192.png',
         badge: './icon-192.png',
         tag: `mep-attendance-${timeBlock}`,
-        renotify: true,
+        renotify: false,
         requireInteraction: true,
-        vibrate: [300, 100, 300, 100, 300],
+        vibrate: [300, 100, 300],
         actions: [
           { action: 'open', title: '📋 Open Dashboard' },
           { action: 'dismiss', title: '❌ Dismiss' }
         ]
       });
 
-      // Mark this time block as notified
-      await cache.put(todayKey, new Response('notified'));
+      // Mark this time block as notified strictly once
+      await cache.put(todayKey, new Response('notified_once'));
 
-      // Clean up old keys (keep only last few days)
+      // Clean up old keys (keep only current day's active blocks)
       const keys = await cache.keys();
       for (const key of keys) {
         if (key.url && !key.url.includes(todayKey)) {
-          // Avoid deleting the other timeblock's key for the same day
           const otherTimeBlock = isAMWindow ? 'PM' : 'AM';
-          const otherTodayKey = `notified_${otherTimeBlock}_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+          const otherTodayKey = `notified_strictly_once_${otherTimeBlock}_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
           if (!key.url.includes(otherTodayKey)) {
             await cache.delete(key);
           }

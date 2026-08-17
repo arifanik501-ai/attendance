@@ -104,7 +104,9 @@ function setupFirebaseListener() {
               window._renderSectionStatusReportContent();
             }
           } else if (['monir', 'anwar', 'anik', 'takbir', 'bikash'].includes(currentActivePageId) && typeof _renderEntryContent === 'function') {
-            _renderEntryContent(currentActivePageId);
+            if (sessionStorage.getItem('auth_' + currentActivePageId) === 'true') {
+              _renderEntryContent(currentActivePageId);
+            }
           }
         }
       } else {
@@ -173,28 +175,31 @@ function setupFirebaseListener() {
           }).catch(err => console.warn('Section status live sync error:', err));
         }
 
-        if (data.deviceId !== SESSION_DEVICE_ID) {
-          if ('Notification' in window && Notification.permission === 'granted') {
-            const title = 'MEP FAN LTD.';
-            const options = {
-              body: data.actionStr || `🔄 ${data.pageTitle} has been updated`,
-              icon: './icon-192.png',
-              badge: './icon-192.png',
-              tag: 'mep-update-notification',
-              vibrate: [100, 50, 100],
-              renotify: true
-            };
+        if (data && data.deviceId !== SESSION_DEVICE_ID && data.timestamp) {
+          const lastNotifiedTs = Number(sessionStorage.getItem('mep_last_notified_event_ts') || 0);
+          if (data.timestamp > lastNotifiedTs) {
+            sessionStorage.setItem('mep_last_notified_event_ts', String(data.timestamp));
+            if ('Notification' in window && Notification.permission === 'granted') {
+              const title = 'MEP FAN LTD.';
+              const options = {
+                body: data.actionStr || `🔄 ${data.pageTitle} has been updated`,
+                icon: './icon-192.png',
+                badge: './icon-192.png',
+                tag: `mep-update-${data.timestamp}`,
+                vibrate: [100, 50, 100],
+                renotify: false
+              };
 
-            if ('serviceWorker' in navigator) {
               window.playAlertSoundAndVibrate();
-              navigator.serviceWorker.ready.then(reg => {
-                reg.showNotification(title, options);
-              }).catch(() => {
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(reg => {
+                  reg.showNotification(title, options);
+                }).catch(() => {
+                  new Notification(title, options);
+                });
+              } else {
                 new Notification(title, options);
-              });
-            } else {
-              window.playAlertSoundAndVibrate();
-              new Notification(title, options);
+              }
             }
           }
         }

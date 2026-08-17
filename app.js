@@ -467,6 +467,30 @@ function getAppState() {
 }
 
 // ═══════════════════════════════════════════════════
+// INSTANT SYNCHRONOUS STATE BOOTSTRAP (0ms Initial Load)
+// ═══════════════════════════════════════════════════
+try {
+  const cachedLive = localStorage.getItem('mep_dashboard_live_cache');
+  const cachedState = localStorage.getItem('mep_dashboard_state_cache') || localStorage.getItem('manpowerData');
+  if (cachedLive) {
+    localDashboardState = JSON.parse(cachedLive);
+  }
+  if (cachedState) {
+    globalAppState = JSON.parse(cachedState);
+  } else if (localDashboardState) {
+    globalAppState = JSON.parse(JSON.stringify(localDashboardState));
+  }
+  if (!globalAppState) {
+    globalAppState = getAppState();
+  }
+  if (!localDashboardState) {
+    localDashboardState = JSON.parse(JSON.stringify(globalAppState));
+  }
+} catch (e) {
+  console.warn('Cache bootstrap failed:', e);
+}
+
+// ═══════════════════════════════════════════════════
 // ADMIN BROADCAST SYSTEM
 // ═══════════════════════════════════════════════════
 window.sendAdminBroadcast = function () {

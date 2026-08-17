@@ -3,7 +3,7 @@
 // Daily 8:00 AM & 1:00 PM Attendance Notifications
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-dashboard-cache-v125';
+const CACHE_NAME = 'mep-dashboard-cache-v126';
 const NOTIFICATION_HOUR_AM = 8; // 8:00 AM
 const NOTIFICATION_HOUR_PM = 13; // 1:00 PM
 const NOTIFICATION_MINUTE = 0;
@@ -52,48 +52,35 @@ self.addEventListener('activate', (event) => {
   startNotificationCheck();
 });
 
-// Fetch handler — cache-first for images (0ms instant load), network first for others
+// Fetch handler — Stale-While-Revalidate for 0ms Instant Reloads
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests and Firebase/external URLs
+  // Skip non-GET requests and Firebase/external analytics/fonts APIs
   if (event.request.method !== 'GET') return;
-  if (event.request.url.includes('firebaseio.com') || event.request.url.includes('googleapis.com')) return;
+  if (event.request.url.includes('firebaseio.com') || event.request.url.includes('googleapis.com') || event.request.url.includes('gstatic.com')) return;
 
   const url = new URL(event.request.url);
   const isImage = /\.(png|jpg|jpeg|svg|webp|ico)($|\?)/i.test(url.pathname);
 
-  if (isImage) {
-    event.respondWith((async () => {
-      const cached = await caches.match(event.request);
-      if (cached) return cached;
-      try {
-        const response = await fetch(event.request);
-        if (response && response.status === 200) {
-          const cache = await caches.open(CACHE_NAME);
-          cache.put(event.request, response.clone());
-        }
-        return response;
-      } catch (err) {
-        if (cached) return cached;
-        throw err;
-      }
-    })());
-    return;
-  }
-
+  // Instant response with background update
   event.respondWith((async () => {
-    try {
-      const response = await fetch(event.request, { cache: 'no-store' });
+    const cached = await caches.match(event.request);
+    
+    // Asynchronous background revalidation
+    const fetchPromise = fetch(event.request).then(async (response) => {
       if (response && response.status === 200) {
-        const clone = response.clone();
         const cache = await caches.open(CACHE_NAME);
-        await cache.put(event.request, clone);
+        cache.put(event.request, response.clone());
       }
       return response;
-    } catch (err) {
-      const cached = await caches.match(event.request);
-      if (cached) return cached;
-      throw err;
+    }).catch(() => cached);
+
+    // If already in cache, return immediately with 0ms latency
+    if (cached) {
+      return cached;
     }
+
+    // Otherwise return network response
+    return await fetchPromise;
   })());
 });
 

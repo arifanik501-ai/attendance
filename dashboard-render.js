@@ -1407,9 +1407,10 @@ function calculateDashboardData(state) {
 window.renderDashboard = function () {
   const hash = window.location.hash;
   currentActivePageId = hash === '#iom-dashboard' ? 'iom-dashboard' : (hash === '#section-status-report' ? 'section-status-report' : 'index');
-  if (globalAppState) {
-    _performDashboardRender();
+  if (!globalAppState && typeof getAppState === 'function') {
+    globalAppState = getAppState();
   }
+  _performDashboardRender();
 }
 
 function _performDashboardRender() {
@@ -1454,11 +1455,9 @@ function _performDashboardRender() {
       }
     }
 
-    // Yield to browser main thread so CSS animations can start instantly
-    setTimeout(() => {
-      try {
-      const state = localDashboardState || getAppState();
-      const calculatedData = calculateDashboardData(state);
+    // Render directly and synchronously for 0ms instantaneous load
+    const state = localDashboardState || (typeof getAppState === 'function' ? getAppState() : (globalAppState || {}));
+    const calculatedData = calculateDashboardData(state);
 
       const hasNewNoti = localStorage.getItem('has_new_notifications') === 'true';
       const historyList = (state.history || []).map(h => `
@@ -1774,11 +1773,6 @@ function _performDashboardRender() {
       if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
         window.checkDashboardUpdateNoticeStatus();
       }
-
-      } catch (innerErr) {
-        document.getElementById('dashboard-container').innerHTML = '<div style="padding:2rem;color:red;font-size:20px;font-weight:bold;background:#fee2e2;">Inner Render Error: ' + innerErr.message + '<br><pre>' + innerErr.stack + '</pre></div>';
-      }
-    }); // End setTimeout macro-task
 
   } catch (err) {
     console.error(err);

@@ -3789,51 +3789,21 @@ window.dismissInstallBanner = function () {
    ========================================================================= */
 
 window._fabOpen = false;
-window.toggleFabMenu = function() {
-  var children = document.getElementById('fab-children');
-  var icon = document.getElementById('fab-icon');
-  var btn = document.getElementById('fab-toggle-btn');
+window.toggleFabMenu = function(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  var wrapper = document.getElementById('fab-menu-wrapper');
   var backdrop = document.getElementById('fab-backdrop');
-  if (!children) return;
+  if (!wrapper) return;
 
   window._fabOpen = !window._fabOpen;
 
   if (window._fabOpen) {
+    wrapper.classList.add('fab-open');
     if (backdrop) backdrop.classList.add('active');
-    children.style.display = 'flex';
-    if (icon) icon.style.transform = 'rotate(135deg) scale(1.1)';
-    if (btn) {
-      btn.style.transform = 'scale(1.08)';
-      btn.style.background = 'linear-gradient(135deg, #4338ca 0%, #3730a3 50%, #1e1b4b 100%)';
-      btn.style.borderColor = 'rgba(255,255,255,0.45)';
-      btn.style.boxShadow = '0 12px 35px rgba(67,56,202,0.5), 0 0 0 1.5px rgba(99,102,241,0.5), inset 0 1.5px 1.5px rgba(255,255,255,0.6)';
-    }
-    var items = children.querySelectorAll('.fab-child');
-    items.forEach(function(item, i) {
-      setTimeout(function() {
-        item.style.opacity = '1';
-        item.style.transform = 'scale(1) translateY(0)';
-      }, i * 40);
-    });
   } else {
+    wrapper.classList.remove('fab-open');
     if (backdrop) backdrop.classList.remove('active');
-    if (icon) icon.style.transform = 'rotate(0deg) scale(1)';
-    if (btn) {
-      btn.style.transform = 'scale(1)';
-      btn.style.background = 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)';
-      btn.style.borderColor = 'rgba(255,255,255,0.25)';
-      btn.style.boxShadow = '0 10px 28px rgba(15,23,42,0.38), 0 0 0 1px rgba(99,102,241,0.25), inset 0 1.5px 1.5px rgba(255,255,255,0.35)';
-    }
-    var items = children.querySelectorAll('.fab-child');
-    var total = items.length;
-    items.forEach(function(item, i) {
-      setTimeout(function() {
-        item.style.opacity = '0';
-        item.style.transform = 'scale(0.3) translateY(20px)';
-      }, (total - 1 - i) * 35);
-    });
-    setTimeout(function() { children.style.display = 'none'; }, total * 35 + 250);
-    // Also close any open dropdowns
+    // Close any open dropdowns immediately
     var nd = document.getElementById('noti-dropdown'); if (nd) nd.style.display = 'none';
     var rd = document.getElementById('reminder-dropdown'); if (rd) rd.style.display = 'none';
   }

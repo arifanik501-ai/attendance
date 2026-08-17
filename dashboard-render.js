@@ -565,12 +565,12 @@ function buildIomDashboardReportHtml(state, period) {
           <button id="iom-save-btn" type="button" 
             style="background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#ffffff; border:none; padding:0.55rem 1.2rem; border-radius:10px; font-weight:800; font-size:0.85rem; cursor:${isLocked ? 'not-allowed' : 'pointer'}; box-shadow:0 4px 14px rgba(37,99,235,0.35); transition:all 0.2s;"
             ${isLocked ? 'disabled' : ''}>
-            ðŸ’¾ Save Data
+            Save Data
           </button>
 
           <button class="branch-period-btn" onclick="window.toggleIomLock()" type="button" 
             style="border:none; background:${isLocked ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #10b981, #059669)'}; color:#ffffff; font-weight:800; font-size:0.85rem; padding:0.55rem 1.1rem; border-radius:10px; display:inline-flex; align-items:center; gap:6px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,0.2);">
-            ${isLocked ? 'ðŸ”’ Locked' : 'ðŸ”“ Unlocked'}
+            ${isLocked ? 'Locked' : 'Unlocked'}
           </button>
 
           <button class="branch-period-btn" onclick="window.openIomConfigModal()" type="button" 
@@ -615,7 +615,7 @@ function buildIomDashboardReportHtml(state, period) {
         </div>
         <div class="iom-mob-kpi-card" style="background:#ffffff; border:1px solid ${isLocked ? '#fca5a5' : '#86efac'}; border-radius:14px; padding:0.9rem 1.1rem; box-shadow:0 2px 8px rgba(15,23,42,0.04);">
           <div style="font-size:0.75rem; font-weight:800; color:${isLocked ? '#b91c1c' : '#047857'}; text-transform:uppercase; letter-spacing:0.04em;">Report Status</div>
-          <div class="iom-mob-kpi-val" style="font-size:1.25rem; font-weight:900; color:${isLocked ? '#dc2626' : '#059669'}; margin-top:4px;">${isLocked ? 'ðŸ”’ LOCKED' : 'ðŸ”“ EDITABLE'}</div>
+          <div class="iom-mob-kpi-val" style="font-size:1.25rem; font-weight:900; color:${isLocked ? '#dc2626' : '#059669'}; margin-top:4px;">${isLocked ? 'LOCKED' : 'EDITABLE'}</div>
         </div>
       </div>
       
@@ -1428,8 +1428,8 @@ window.highlightPieSection = function(secId) {
 
   if (slice) {
     slice.style.opacity = '1';
-    slice.style.transform = 'scale(1.05)';
-    slice.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.22))';
+    slice.style.transform = 'scale(1.04)';
+    slice.style.filter = 'drop-shadow(0 4px 10px rgba(0,0,0,0.18))';
   }
 
   if (slice && centerVal && centerSub && centerLbl) {
@@ -1442,7 +1442,17 @@ window.highlightPieSection = function(secId) {
     centerVal.textContent = secRate + '%';
     centerSub.textContent = secPres + ' Present';
     centerSub.setAttribute('fill', rateColor);
-    centerLbl.textContent = secName;
+
+    let displayName = secName;
+    if (secName.length > 20) {
+      displayName = secName.replace(/^Fan\s+/i, '');
+      centerLbl.setAttribute('font-size', '7.8');
+    } else if (secName.length > 14) {
+      centerLbl.setAttribute('font-size', '8.2');
+    } else {
+      centerLbl.setAttribute('font-size', '8.8');
+    }
+    centerLbl.textContent = displayName;
   }
 };
 
@@ -1465,6 +1475,7 @@ window.resetPieHighlight = function() {
     centerVal.textContent = window._pieDefaultStats.overallRate + '%';
     centerSub.textContent = window._pieDefaultStats.totalPres + ' Present';
     centerSub.setAttribute('fill', '#059669');
+    centerLbl.setAttribute('font-size', '8.8');
     centerLbl.textContent = 'Overall Total';
   }
 };
@@ -1537,8 +1548,8 @@ function buildSectionAttendancePieChartCard(state, calculatedData) {
 
   const cx = 110;
   const cy = 110;
-  const outerR = 88;
-  const innerR = 54;
+  const outerR = 96;
+  const innerR = 64;
   let currentAngle = -90; // Start at 12 o'clock
 
   let svgPaths = '';
@@ -1645,10 +1656,12 @@ function getRateBadgeConfig(rate) {
     <div style="display: flex; justify-content: center; align-items: center; height: 220px; margin-bottom: 0.9rem; position: relative;">
       <svg width="220" height="220" viewBox="0 0 220 220" style="overflow: visible; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.06));">
         ${svgPaths}
-        <!-- Center Text -->
-        <text x="110" y="100" text-anchor="middle" font-family="'Inter', sans-serif" font-size="26" font-weight="900" fill="#0f172a" id="pie-center-val">${overallRate}%</text>
-        <text x="110" y="119" text-anchor="middle" font-family="'Inter', sans-serif" font-size="11" font-weight="800" fill="#059669" id="pie-center-sub">${totalPres} Present</text>
-        <text x="110" y="134" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9.5" font-weight="700" fill="#64748b" id="pie-center-lbl">Overall Total</text>
+        <!-- Center Text: Perfectly Centered Vertically & Horizontally -->
+        <g transform="translate(110, 110)">
+          <text x="0" y="-12" text-anchor="middle" dominant-baseline="central" font-family="'Inter', sans-serif" font-size="25" font-weight="900" fill="#0f172a" id="pie-center-val">${overallRate}%</text>
+          <text x="0" y="8" text-anchor="middle" dominant-baseline="central" font-family="'Inter', sans-serif" font-size="10.8" font-weight="800" fill="#059669" id="pie-center-sub">${totalPres} Present</text>
+          <text x="0" y="24" text-anchor="middle" dominant-baseline="central" font-family="'Inter', sans-serif" font-size="8.8" font-weight="700" fill="#64748b" id="pie-center-lbl">Overall Total</text>
+        </g>
       </svg>
     </div>
 
@@ -1739,8 +1752,8 @@ function _performDashboardRender() {
         ${h.page} Updated
       </div>
       <div style="font-size:0.8rem; color:var(--text-light); display:flex; justify-content:space-between; font-weight:500;">
-        <span>ðŸ“… ${h.date}</span>
-        <span>ðŸ•’ ${h.time}</span>
+        <span style="display:inline-flex; align-items:center; gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> ${h.date}</span>
+        <span style="display:inline-flex; align-items:center; gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${h.time}</span>
       </div>
     </div>
   `).join('') || '<div style="padding:1.5rem; text-align:center; color:var(--text-light); font-size:0.95rem; font-weight:500;">No recent updates</div>';
@@ -1748,18 +1761,18 @@ function _performDashboardRender() {
       const container = document.getElementById('dashboard-container');
       container.innerHTML = `
     <!-- FAB Backdrop for background blur -->
-    <div id="fab-backdrop" class="fab-backdrop no-print" onclick="window.toggleFabMenu()"></div>
+    <div id="fab-backdrop" class="fab-backdrop no-print" onclick="window.toggleFabMenu(event)"></div>
 
     <!-- FAB Menu System -->
     <div id="fab-menu-wrapper" style="position:fixed; bottom:1.8rem; right:1.8rem; z-index:9999; display:flex; flex-direction:column-reverse; align-items:flex-end; gap:0;" class="no-print">
       
       <!-- Main Toggle Button -->
-      <button id="fab-toggle-btn" onclick="window.toggleFabMenu()" class="no-print" aria-label="Quick Actions"
+      <button id="fab-toggle-btn" onclick="window.toggleFabMenu(event)" class="no-print" aria-label="Quick Actions"
         style="background:linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%); border:1.5px solid rgba(255,255,255,0.25); border-radius:20px; width:58px; height:58px;
         display:flex; align-items:center; justify-content:center;
-        cursor:pointer; box-shadow:0 10px 28px rgba(15,23,42,0.38), 0 0 0 1px rgba(99,102,241,0.25), inset 0 1.5px 1.5px rgba(255,255,255,0.35), inset 0 -2px 4px rgba(0,0,0,0.3); transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        cursor:pointer; box-shadow:0 10px 28px rgba(15,23,42,0.38), 0 0 0 1px rgba(99,102,241,0.25), inset 0 1.5px 1.5px rgba(255,255,255,0.35), inset 0 -2px 4px rgba(0,0,0,0.3);
         position:relative; z-index:10002;">
-        <svg id="fab-icon" class="pfab pfab-main" width="26" height="26" viewBox="0 0 24 24" style="transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1); filter:drop-shadow(0 2px 5px rgba(0,0,0,0.4)); overflow:visible;">
+        <svg id="fab-icon" class="pfab pfab-main" width="26" height="26" viewBox="0 0 24 24" style="filter:drop-shadow(0 2px 5px rgba(0,0,0,0.4)); overflow:visible;">
           <rect class="pf-tile pf-t1" x="3.5" y="3.5" width="7" height="7" rx="2.5" fill="#ffffff"/>
           <rect class="pf-tile pf-t2" x="13.5" y="3.5" width="7" height="7" rx="2.5" fill="#ffffff"/>
           <rect class="pf-tile pf-t3" x="3.5" y="13.5" width="7" height="7" rx="2.5" fill="#ffffff"/>
@@ -1768,17 +1781,14 @@ function _performDashboardRender() {
       </button>
 
       <!-- FAB Child Items Container (hidden by default, expands upwards) -->
-      <div id="fab-children" style="display:none; flex-direction:column-reverse; align-items:flex-end; gap:0.75rem; margin-bottom:0.75rem;">
+      <div id="fab-children" style="display:flex; flex-direction:column-reverse; align-items:flex-end; gap:0.75rem; margin-bottom:0.75rem;">
 
         <!-- Notification Bell -->
-        <div class="fab-child notification-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+        <div class="fab-child notification-container" style="position:relative;">
           <button id="noti-btn" class="no-print solid-fab-btn"
             style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
-            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(239,68,68,0.3), 0 0 0 4px rgba(239,68,68,0.1)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
+            cursor:pointer; box-shadow:var(--glass-shadow); position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
             onclick="event.stopPropagation(); const d = document.getElementById('noti-dropdown'); const r = document.getElementById('reminder-dropdown'); if(r) r.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; document.getElementById('noti-badge').style.display='none'; localStorage.removeItem('has_new_notifications');">
             <img class="pfab pfab-feed" src="${FAB_ICONS.feed}" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Feed" />
             <span style="font-size:0.52rem; font-weight:800; color:#ef4444; letter-spacing:0.04em; font-family:'Inter',sans-serif;">FEED</span>
@@ -1800,14 +1810,11 @@ function _performDashboardRender() {
         </div>
 
         <!-- Reminder Button -->
-        <div class="fab-child reminder-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+        <div class="fab-child reminder-container" style="position:relative;">
           <button id="reminder-btn" class="no-print solid-fab-btn"
             style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
-            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(234,179,8,0.35), 0 0 0 4px rgba(234,179,8,0.12)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
+            cursor:pointer; box-shadow:var(--glass-shadow); position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
             onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
             <img class="pfab pfab-plan" src="${FAB_ICONS.pending}" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Pending" />
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">PENDING</span>
@@ -1826,14 +1833,11 @@ function _performDashboardRender() {
 
 
         <!-- History Button -->
-        <div class="fab-child history-container" style="position:relative; opacity:0; transform:scale(0.3) translateY(20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+        <div class="fab-child history-container" style="position:relative;">
           <button id="history-btn" class="no-print solid-fab-btn"
             style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
-            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(139,92,246,0.3), 0 0 0 4px rgba(139,92,246,0.1)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
+            cursor:pointer; box-shadow:var(--glass-shadow); position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
             onclick="window.openAdminHistoryModal()">
             <img class="pfab pfab-admin" src="${FAB_ICONS.admin}" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Admin" />
             <span style="font-size:0.52rem; font-weight:800; color:#8b5cf6; letter-spacing:0.04em; font-family:'Inter',sans-serif;">ADMIN</span>
@@ -1841,19 +1845,16 @@ function _performDashboardRender() {
         </div>
 
         <!-- Push Notification Toggle -->
-        <div class="fab-child" style="opacity:0; transform:scale(0.3) translateY(20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+        <div class="fab-child">
           ${buildPushNotificationButton()}
         </div>
 
         <!-- Theme Button -->
-        <div class="fab-child" style="opacity:0; transform:scale(0.3) translateY(20px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+        <div class="fab-child">
           <button class="no-print solid-fab-btn"
             style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
-            cursor:pointer; box-shadow:var(--glass-shadow); transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-            position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onmouseover="this.style.transform='scale(1.1) translateY(-2px)'; this.style.background='rgba(255,255,255,0.98)'; this.style.boxShadow='0 8px 32px rgba(250,204,21,0.3), 0 0 0 4px rgba(250,204,21,0.1)';"
-            onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.background='rgba(255,255,255,0.94)'; this.style.boxShadow='var(--glass-shadow)';"
+            cursor:pointer; box-shadow:var(--glass-shadow); position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
             onclick="event.stopPropagation(); toggleThemeDropdown();">
             <img class="pfab pfab-theme" src="${FAB_ICONS.theme}" width="38" height="38" style="filter:drop-shadow(0 4px 8px rgba(234,179,8,0.3)); object-fit:contain;" alt="Theme" />
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Inter',sans-serif;">THEME</span>
@@ -2495,7 +2496,7 @@ window.downloadSectionStatusReportJpg = function() {
     link.click();
 
     if (typeof app !== 'undefined' && app.showToast) {
-      app.showToast('ðŸ“¸ Section Status JPG downloaded successfully!', 'success');
+      app.showToast('Section Status JPG downloaded successfully!', 'success');
     }
   }).catch(err => {
     if (tempContainer.parentNode) document.body.removeChild(tempContainer);
@@ -2505,18 +2506,18 @@ window.downloadSectionStatusReportJpg = function() {
 };
 
 window.downloadSectionStatusReportExcel = function() {
-  const pwd = prompt("ðŸ” Enter password to download Section Status Excel Report:");
+  const pwd = prompt("Enter password to download Section Status Excel Report:");
   if (pwd === null) return;
   if (pwd.trim() !== 'a') {
     if (typeof app !== 'undefined' && app.showToast) {
-      app.showToast('âŒ Incorrect password! Access denied.', 'error');
+      app.showToast('Incorrect password! Access denied.', 'error');
     }
-    alert('âŒ Incorrect password! Access denied.');
+    alert('Incorrect password! Access denied.');
     return;
   }
 
   if (typeof app !== 'undefined' && app.showToast) {
-    app.showToast('ðŸ“Š Generating Section Status Monthly Excel Report...', 'info');
+    app.showToast('Generating Section Status Monthly Excel Report...', 'info');
   }
 
   const generateExcelWithHistory = (combinedHistory) => {

@@ -1874,16 +1874,16 @@ window.buildSectionStatusReportHtml = function(state = (localDashboardState || g
 
     return `
       <tr style="background:${rowBg}; border-bottom:1px solid #e2e8f0; transition:background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${rowBg}'">
-        <td style="padding:0.75rem 1rem; text-align:center; font-size:0.85rem; font-weight:800; color:#475569; width:50px;">
+        <td class="sec-status-sl-col" style="padding:0.75rem 0.5rem; text-align:center; font-size:0.85rem; font-weight:800; color:#475569;">
           ${index + 1}
         </td>
-        <td style="padding:0.75rem 1rem; text-align:left;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            ${icon}
+        <td class="sec-status-name-col" style="padding:0.75rem 0.8rem; text-align:left;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="sec-status-icon-wrap" style="flex-shrink:0;">${icon}</div>
             <span class="sec-status-name-cell" style="font-weight:800; color:#0f172a; font-size:0.95rem;">${name}</span>
           </div>
         </td>
-        <td style="padding:0.75rem 1rem; text-align:center; width:180px;">${badgeHtml}</td>
+        <td class="sec-status-badge-col" style="padding:0.75rem 0.5rem; text-align:center;">${badgeHtml}</td>
       </tr>
     `;
   }).join('');
@@ -1892,32 +1892,32 @@ window.buildSectionStatusReportHtml = function(state = (localDashboardState || g
     <div id="section-status-report-card" style="padding:1.2rem; background:#ffffff; border-radius:18px; border:1px solid #cbd5e1; box-shadow:0 6px 20px rgba(15,23,42,0.04);">
       <style>
         @media (max-width: 768px) {
-          #section-status-report-card { padding: 0.3rem !important; border-radius: 10px !important; border-width: 1px !important; box-shadow: none !important; }
-          .sec-status-header-wrap { flex-direction: column !important; align-items: stretch !important; gap: 0.35rem !important; padding: 0.45rem 0.55rem !important; border-radius: 8px !important; margin-bottom: 0.4rem !important; }
-          .sec-status-header-wrap h2 { font-size: 0.88rem !important; }
+          #section-status-report-card { padding: 0.35rem !important; border-radius: 12px !important; }
+          .sec-status-header-wrap { flex-direction: column !important; align-items: stretch !important; gap: 0.45rem !important; padding: 0.55rem 0.65rem !important; border-radius: 10px !important; margin-bottom: 0.5rem !important; }
+          .sec-status-header-wrap h2 { font-size: 1.05rem !important; }
           .sec-status-header-wrap p { font-size: 0.65rem !important; display: none !important; }
-          .sec-status-header-wrap > div:first-child > div:first-child { width: 28px !important; height: 28px !important; border-radius: 6px !important; }
-          .sec-status-header-wrap > div:first-child > div:first-child svg { width: 14px !important; height: 14px !important; }
-          .sec-status-actions-wrap { width: 100% !important; display: flex !important; gap: 0.2rem !important; }
-          .sec-status-action-btn { flex: 1 !important; justify-content: center !important; padding: 0.3rem 0 !important; font-size: 0.65rem !important; border-radius: 6px !important; gap: 2px !important; }
-          .sec-status-action-btn svg { width: 12px !important; height: 12px !important; }
-          .sec-status-action-btn span { font-size: 0.65rem !important; }
-          .sec-status-kpi-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 0.2rem !important; margin-bottom: 0.4rem !important; }
-          .sec-status-kpi-card { padding: 0.3rem 0.35rem !important; border-radius: 6px !important; }
-          .sec-status-kpi-card > div:first-child { font-size: 0.5rem !important; letter-spacing: 0 !important; margin-bottom: 1px !important; }
-          .sec-status-kpi-val { font-size: 0.9rem !important; }
-          .sec-status-table-wrap { border-radius: 6px !important; border-width: 1px !important; box-shadow: none !important; overflow: hidden !important; }
-          .sec-status-table { table-layout: fixed !important; width: 100% !important; }
-          .sec-status-table th:first-child, .sec-status-table td:first-child { width: 28px !important; padding: 0.25rem 2px !important; font-size: 0.6rem !important; }
-          .sec-status-table th:nth-child(2), .sec-status-table td:nth-child(2) { padding: 0.25rem 4px !important; overflow: hidden !important; text-overflow: ellipsis !important; }
-          .sec-status-table th:last-child, .sec-status-table td:last-child { width: 72px !important; padding: 0.25rem 2px !important; }
-          .sec-status-table th { padding: 0.3rem 0.2rem !important; font-size: 0.6rem !important; }
-          .sec-status-table td { padding: 0.25rem 2px !important; font-size: 0.72rem !important; }
-          .sec-status-table td > div > div:first-child { display: none !important; }
-          .sec-status-table td > div { gap: 4px !important; }
-          .sec-status-name-cell { font-size: 0.72rem !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; display: block !important; max-width: 100% !important; }
-          .sec-status-badge { padding: 2px 5px !important; font-size: 0.58rem !important; border-radius: 10px !important; gap: 2px !important; white-space: nowrap !important; }
-          .sec-status-badge > span:first-child { width: 5px !important; height: 5px !important; }
+          .sec-status-header-wrap > div:first-child > div:first-child { width: 32px !important; height: 32px !important; border-radius: 8px !important; }
+          .sec-status-header-wrap > div:first-child > div:first-child img { width: 24px !important; height: 24px !important; }
+          .sec-status-actions-wrap { width: 100% !important; display: flex !important; gap: 0.3rem !important; }
+          .sec-status-action-btn { flex: 1 !important; justify-content: center !important; padding: 0.45rem 0.2rem !important; font-size: 0.72rem !important; border-radius: 8px !important; gap: 3px !important; }
+          .sec-status-action-btn svg { width: 13px !important; height: 13px !important; }
+          .sec-status-action-btn span { font-size: 0.72rem !important; }
+          .sec-status-kpi-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 0.25rem !important; margin-bottom: 0.5rem !important; }
+          .sec-status-kpi-card { padding: 0.4rem 0.3rem !important; border-radius: 8px !important; }
+          .sec-status-kpi-card > div:first-child { font-size: 0.52rem !important; letter-spacing: 0 !important; margin-bottom: 1px !important; line-height: 1.15 !important; }
+          .sec-status-kpi-val { font-size: 1.1rem !important; margin-top: 1px !important; }
+          .sec-status-table-wrap { border-radius: 8px !important; width: 100% !important; overflow: hidden !important; border-width: 1px !important; }
+          .sec-status-table { width: 100% !important; table-layout: fixed !important; }
+          .sec-status-col-sl { width: 30px !important; }
+          .sec-status-col-name { width: auto !important; }
+          .sec-status-col-status { width: 85px !important; }
+          .sec-status-sl-col { width: 30px !important; padding: 0.5rem 2px !important; font-size: 0.75rem !important; font-weight: 800 !important; text-align: center !important; }
+          .sec-status-name-col { padding: 0.5rem 6px !important; text-align: left !important; }
+          .sec-status-badge-col { width: 85px !important; padding: 0.5rem 2px !important; text-align: center !important; }
+          .sec-status-icon-wrap { display: none !important; }
+          .sec-status-name-cell { font-size: 0.78rem !important; font-weight: 800 !important; line-height: 1.25 !important; white-space: normal !important; word-break: break-word !important; display: block !important; }
+          .sec-status-badge { padding: 3px 8px !important; font-size: 0.68rem !important; font-weight: 900 !important; border-radius: 999px !important; gap: 4px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; box-shadow: none !important; }
+          .sec-status-badge > span:first-child { width: 6px !important; height: 6px !important; }
         }
       </style>
 
@@ -1980,11 +1980,16 @@ window.buildSectionStatusReportHtml = function(state = (localDashboardState || g
       <!-- Clean Section Table -->
       <div class="sec-status-table-wrap" style="border-radius:12px; overflow:hidden; border:1px solid #cbd5e1; box-shadow:0 2px 10px rgba(15,23,42,0.03);">
         <table class="sec-status-table" style="width:100%; border-collapse:collapse; background:#ffffff; font-family:'Inter', sans-serif;">
+          <colgroup>
+            <col class="sec-status-col-sl" style="width:50px;">
+            <col class="sec-status-col-name" style="width:auto;">
+            <col class="sec-status-col-status" style="width:170px;">
+          </colgroup>
           <thead>
             <tr style="background:#0f172a; color:#ffffff;">
-              <th style="padding:0.8rem 1rem; text-align:center; font-size:0.78rem; font-weight:900; text-transform:uppercase; letter-spacing:0.06em; width:50px;">SL</th>
-              <th style="padding:0.8rem 1rem; text-align:left; font-size:0.78rem; font-weight:900; text-transform:uppercase; letter-spacing:0.06em;">Section Name</th>
-              <th style="padding:0.8rem 1rem; text-align:center; font-size:0.78rem; font-weight:900; text-transform:uppercase; letter-spacing:0.06em; width:180px;">Status</th>
+              <th class="sec-status-sl-col" style="padding:0.8rem 0.5rem; text-align:center; font-size:0.78rem; font-weight:900; text-transform:uppercase; letter-spacing:0.06em;">SL</th>
+              <th class="sec-status-name-col" style="padding:0.8rem 0.8rem; text-align:left; font-size:0.78rem; font-weight:900; text-transform:uppercase; letter-spacing:0.06em;">Section Name</th>
+              <th class="sec-status-badge-col" style="padding:0.8rem 0.5rem; text-align:center; font-size:0.78rem; font-weight:900; text-transform:uppercase; letter-spacing:0.06em;">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -2700,17 +2705,17 @@ window.renderSectionStatusHistoryForSelectedDate = function(targetDateStr) {
 
       return `
         <tr style="background:${rowBg}; border-bottom:1px solid #e2e8f0;">
-          <td style="padding:0.75rem 1rem; text-align:center; font-size:0.85rem; font-weight:800; color:#475569; width:50px;">${index + 1}</td>
-          <td style="padding:0.75rem 1rem; text-align:left;">
-            <div style="display:flex; align-items:center; gap:12px;">
-              ${icon}
+          <td class="sec-status-sl-col" style="padding:0.75rem 0.5rem; text-align:center; font-size:0.85rem; font-weight:800; color:#475569;">${index + 1}</td>
+          <td class="sec-status-name-col" style="padding:0.75rem 0.8rem; text-align:left;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="sec-status-icon-wrap" style="flex-shrink:0;">${icon}</div>
               <div>
-                <div style="font-weight:800; color:#0f172a; font-size:0.92rem;">${name}</div>
-                <div style="font-size:0.75rem; color:#64748b; font-weight:600;">In Charge: ${entryBy} â€¢ Time: ${entryTime}</div>
+                <div class="sec-status-name-cell" style="font-weight:800; color:#0f172a; font-size:0.92rem;">${name}</div>
+                <div style="font-size:0.72rem; color:#64748b; font-weight:600; line-height:1.2; margin-top:2px;">In Charge: ${entryBy} • Time: ${entryTime}</div>
               </div>
             </div>
           </td>
-          <td style="padding:0.75rem 1rem; text-align:center; width:180px;">${badgeHtml}</td>
+          <td class="sec-status-badge-col" style="padding:0.75rem 0.5rem; text-align:center;">${badgeHtml}</td>
         </tr>
       `;
     }).join('');
@@ -2720,12 +2725,12 @@ window.renderSectionStatusHistoryForSelectedDate = function(targetDateStr) {
     body.innerHTML = `
       <div>
         <!-- Date Subheader Card -->
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem; margin-bottom:1.2rem; background:#f8fafc; border:1px solid #cbd5e1; padding:1rem 1.2rem; border-radius:14px;">
+        <div class="sec-status-header-wrap" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.8rem; margin-bottom:1.2rem; background:#f8fafc; border:1px solid #cbd5e1; padding:1rem 1.2rem; border-radius:14px;">
           <div>
             <div style="font-size:0.8rem; font-weight:800; color:#4f46e5; text-transform:uppercase; letter-spacing:0.05em;">Archived Section Status Log</div>
             <div style="font-size:1.3rem; font-weight:900; color:#0f172a; margin-top:2px;">${formattedDisplayDate}</div>
           </div>
-          <button type="button" onclick="window.downloadSectionStatusReportJpg()" 
+          <button type="button" class="sec-status-action-btn" onclick="window.downloadSectionStatusReportJpg()" 
             style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; border-radius:10px; padding:0.55rem 1.1rem; font-weight:800; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3);">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             <span>Download JPG</span>
@@ -2733,33 +2738,38 @@ window.renderSectionStatusHistoryForSelectedDate = function(targetDateStr) {
         </div>
 
         <!-- 4 KPI Cards Grid -->
-        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.8rem; margin-bottom:1.2rem;">
-          <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:0.8rem 1rem;">
+        <div class="sec-status-kpi-grid" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.8rem; margin-bottom:1.2rem;">
+          <div class="sec-status-kpi-card" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:0.8rem 1rem;">
             <div style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">Total Sections</div>
-            <div style="font-size:1.45rem; font-weight:900; color:#0f172a; margin-top:2px;">${keys.length}</div>
+            <div class="sec-status-kpi-val" style="font-size:1.45rem; font-weight:900; color:#0f172a; margin-top:2px;">${keys.length}</div>
           </div>
-          <div style="background:#ffffff; border:1px solid #86efac; border-radius:12px; padding:0.8rem 1rem;">
+          <div class="sec-status-kpi-card" style="background:#ffffff; border:1px solid #86efac; border-radius:12px; padding:0.8rem 1rem;">
             <div style="font-size:0.75rem; font-weight:800; color:#047857; text-transform:uppercase;">Operational (ON)</div>
-            <div style="font-size:1.45rem; font-weight:900; color:#059669; margin-top:2px;">${onCount}</div>
+            <div class="sec-status-kpi-val" style="font-size:1.45rem; font-weight:900; color:#059669; margin-top:2px;">${onCount}</div>
           </div>
-          <div style="background:#ffffff; border:1px solid ${offCount > 0 ? '#fca5a5' : '#cbd5e1'}; border-radius:12px; padding:0.8rem 1rem;">
+          <div class="sec-status-kpi-card" style="background:#ffffff; border:1px solid ${offCount > 0 ? '#fca5a5' : '#cbd5e1'}; border-radius:12px; padding:0.8rem 1rem;">
             <div style="font-size:0.75rem; font-weight:800; color:${offCount > 0 ? '#b91c1c' : '#475569'}; text-transform:uppercase;">Stopped (OFF)</div>
-            <div style="font-size:1.45rem; font-weight:900; color:${offCount > 0 ? '#dc2626' : '#64748b'}; margin-top:2px;">${offCount}</div>
+            <div class="sec-status-kpi-val" style="font-size:1.45rem; font-weight:900; color:${offCount > 0 ? '#dc2626' : '#64748b'}; margin-top:2px;">${offCount}</div>
           </div>
-          <div style="background:#ffffff; border:1px solid ${pendingCount > 0 ? '#fde68a' : '#cbd5e1'}; border-radius:12px; padding:0.8rem 1rem;">
+          <div class="sec-status-kpi-card" style="background:#ffffff; border:1px solid ${pendingCount > 0 ? '#fde68a' : '#cbd5e1'}; border-radius:12px; padding:0.8rem 1rem;">
             <div style="font-size:0.75rem; font-weight:800; color:${pendingCount > 0 ? '#b45309' : '#475569'}; text-transform:uppercase;">Pending</div>
-            <div style="font-size:1.45rem; font-weight:900; color:${pendingCount > 0 ? '#d97706' : '#64748b'}; margin-top:2px;">${pendingCount}</div>
+            <div class="sec-status-kpi-val" style="font-size:1.45rem; font-weight:900; color:${pendingCount > 0 ? '#d97706' : '#64748b'}; margin-top:2px;">${pendingCount}</div>
           </div>
         </div>
 
         <!-- Section Table -->
-        <div style="border-radius:12px; overflow:hidden; border:1px solid #cbd5e1;">
-          <table style="width:100%; border-collapse:collapse; background:#ffffff; font-family:'Inter', sans-serif;">
+        <div class="sec-status-table-wrap" style="border-radius:12px; overflow:hidden; border:1px solid #cbd5e1;">
+          <table class="sec-status-table" style="width:100%; border-collapse:collapse; background:#ffffff; font-family:'Inter', sans-serif;">
+            <colgroup>
+              <col class="sec-status-col-sl" style="width:50px;">
+              <col class="sec-status-col-name" style="width:auto;">
+              <col class="sec-status-col-status" style="width:170px;">
+            </colgroup>
             <thead>
               <tr style="background:#0f172a; color:#ffffff;">
-                <th style="padding:0.8rem 1rem; text-align:center; font-size:0.78rem; font-weight:900; text-transform:uppercase; width:50px;">SL</th>
-                <th style="padding:0.8rem 1rem; text-align:left; font-size:0.78rem; font-weight:900; text-transform:uppercase;">Section Details</th>
-                <th style="padding:0.8rem 1rem; text-align:center; font-size:0.78rem; font-weight:900; text-transform:uppercase; width:180px;">Status</th>
+                <th class="sec-status-sl-col" style="padding:0.8rem 0.5rem; text-align:center; font-size:0.78rem; font-weight:900; text-transform:uppercase;">SL</th>
+                <th class="sec-status-name-col" style="padding:0.8rem 0.8rem; text-align:left; font-size:0.78rem; font-weight:900; text-transform:uppercase;">Section Details</th>
+                <th class="sec-status-badge-col" style="padding:0.8rem 0.5rem; text-align:center; font-size:0.78rem; font-weight:900; text-transform:uppercase;">Status</th>
               </tr>
             </thead>
             <tbody>

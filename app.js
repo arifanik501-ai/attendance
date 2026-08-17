@@ -2507,15 +2507,9 @@ function lockMobilePortraitOrientation() {
 }
 
 function initHighRefreshMotion() {
-  if (isSmoothModeEnabled()) {
-    document.documentElement.classList.remove('high-refresh-motion');
-    document.documentElement.style.setProperty('--motion-target-fps', '60');
-    document.documentElement.style.setProperty('--motion-frame', `${(1000 / 60).toFixed(3)}ms`);
-    return;
-  }
-  document.documentElement.classList.add('high-refresh-motion');
-  document.documentElement.style.setProperty('--motion-target-fps', '120');
-  document.documentElement.style.setProperty('--motion-frame', `${(1000 / 120).toFixed(3)}ms`);
+  document.documentElement.classList.remove('high-refresh-motion');
+  document.documentElement.style.setProperty('--motion-target-fps', '60');
+  document.documentElement.style.setProperty('--motion-frame', '16.667ms');
 }
 
 function isSmoothModeEnabled() {
@@ -2525,10 +2519,9 @@ function isSmoothModeEnabled() {
 
 function applySmoothModeState(enabled = isSmoothModeEnabled()) {
   document.documentElement.classList.toggle('smooth-mode', enabled);
-  document.documentElement.classList.toggle('high-refresh-motion', !enabled);
   document.body?.classList.toggle('smooth-mode', enabled);
-  document.documentElement.style.setProperty('--motion-target-fps', enabled ? '60' : '120');
-  document.documentElement.style.setProperty('--motion-frame', `${(1000 / (enabled ? 60 : 120)).toFixed(3)}ms`);
+  document.documentElement.style.setProperty('--motion-target-fps', '60');
+  document.documentElement.style.setProperty('--motion-frame', '16.667ms');
   if (enabled) {
     document.querySelectorAll('.scroll-reveal').forEach(el => el.classList.add('visible'));
     document.querySelectorAll('tbody tr').forEach(row => {
@@ -2851,30 +2844,6 @@ function initSmoothModeToggle() {
   applySmoothModeState();
 }
 
-function initRefreshButton() {
-  if (document.getElementById('refresh-app-btn')) return;
-
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.id = 'refresh-app-btn';
-  btn.className = 'smooth-mode-toggle no-print';
-  btn.style.bottom = 'calc(1rem + 40px + 0.75rem)';
-  btn.setAttribute('aria-label', 'Refresh Application');
-  btn.setAttribute('title', 'Refresh Application');
-  btn.innerHTML = `
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5" />
-    </svg>
-    <span class="smooth-mode-label">Refresh</span>
-  `;
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    location.reload();
-  });
-  document.body.appendChild(btn);
-}
-
 function runWithOriginalExportMotion(task) {
   const html = document.documentElement;
   const body = document.body;
@@ -3182,9 +3151,10 @@ function setupFirebaseListener() {
 
 // Auto-initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+  const existingRefreshBtn = document.getElementById('refresh-app-btn');
+  if (existingRefreshBtn) existingRefreshBtn.remove();
   initHighRefreshMotion();
   initSmoothModeToggle();
-  initRefreshButton();
   lockMobilePortraitOrientation();
   initThemePicker();
 

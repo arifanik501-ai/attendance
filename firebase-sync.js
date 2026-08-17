@@ -257,7 +257,6 @@ function setupFirebaseListener() {
 document.addEventListener('DOMContentLoaded', () => {
   initHighRefreshMotion();
   initSmoothModeToggle();
-  initRefreshButton();
   lockMobilePortraitOrientation();
   initThemePicker();
 

@@ -3,22 +3,21 @@
 // Daily 8:00 AM & 1:00 PM Attendance Notifications
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-dashboard-cache-v115';
+const CACHE_NAME = 'mep-dashboard-cache-v125';
 const NOTIFICATION_HOUR_AM = 8; // 8:00 AM
 const NOTIFICATION_HOUR_PM = 13; // 1:00 PM
 const NOTIFICATION_MINUTE = 0;
 
-const ASSET_VERSION = 'v=79';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './entry.html',
-  `./config.min.js?${ASSET_VERSION}`,
-  `./app.min.js?${ASSET_VERSION}`,
-  `./dashboard-render.min.js?${ASSET_VERSION}`,
-  `./history.min.js?${ASSET_VERSION}`,
-  `./style.min.css?${ASSET_VERSION}`,
-  `./tooltip.js?${ASSET_VERSION}`,
+  './config.min.js',
+  './app.min.js',
+  './dashboard-render.min.js',
+  './history.min.js',
+  './style.min.css',
+  './tooltip.js',
   './firebase-init.js',
   './manifest.json',
   './icon-192.png',
@@ -30,12 +29,7 @@ const ASSETS_TO_CACHE = [
   './push-off-icon.png',
   './fab-main-icon.png',
   './sec-status-header-icon.png',
-  './iom-header-icon.png',
-  './sb-dashboard.png',
-  './sb-iom.png',
-  './sb-status.png',
-  './sb-entry-parent.png',
-  './sb-entry-sheet.png'
+  './iom-header-icon.png'
 ];
 
 // Check interval inside service worker (every 30 seconds when active)
@@ -58,11 +52,33 @@ self.addEventListener('activate', (event) => {
   startNotificationCheck();
 });
 
-// Fetch handler — network first, fallback to cache (required for PWA installability)
+// Fetch handler — cache-first for images (0ms instant load), network first for others
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests and Firebase/external URLs
   if (event.request.method !== 'GET') return;
   if (event.request.url.includes('firebaseio.com') || event.request.url.includes('googleapis.com')) return;
+
+  const url = new URL(event.request.url);
+  const isImage = /\.(png|jpg|jpeg|svg|webp|ico)($|\?)/i.test(url.pathname);
+
+  if (isImage) {
+    event.respondWith((async () => {
+      const cached = await caches.match(event.request);
+      if (cached) return cached;
+      try {
+        const response = await fetch(event.request);
+        if (response && response.status === 200) {
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(event.request, response.clone());
+        }
+        return response;
+      } catch (err) {
+        if (cached) return cached;
+        throw err;
+      }
+    })());
+    return;
+  }
 
   event.respondWith((async () => {
     try {

@@ -598,9 +598,16 @@ function saveAppState(state, customActionStr = null) {
     const sheetName = currentActivePageId ? (SECTIONS_CONFIG[currentActivePageId]?.title || 'An entry sheet') : 'The dashboard';
     const actionMessage = customActionStr || `🔄 ${sheetName} has been updated`;
 
+    const updateTs = Date.now();
+    localStorage.setItem('mep_last_update_ts', updateTs);
+    window.mepHasPendingDashboardUpdates = true;
+    if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
+      window.checkDashboardUpdateNoticeStatus();
+    }
+
     window.firebaseDb.ref('mep_last_update_info').set({
       deviceId: SESSION_DEVICE_ID,
-      timestamp: Date.now(),
+      timestamp: updateTs,
       pageTitle: sheetName,
       actionStr: actionMessage
     });
@@ -612,6 +619,11 @@ function saveAppState(state, customActionStr = null) {
       .catch(() => {});
   } else {
     localStorage.setItem('manpowerData', JSON.stringify(state));
+    localStorage.setItem('mep_last_update_ts', Date.now());
+    window.mepHasPendingDashboardUpdates = true;
+    if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
+      window.checkDashboardUpdateNoticeStatus();
+    }
   }
 }
 
@@ -1805,6 +1817,27 @@ function exportReport() {
   return runWithOriginalExportMotion(exportReportOriginal);
 }
 
+window.checkDashboardUpdateNoticeStatus = function() {
+  const noticeEl = document.getElementById('dashboard-update-notice');
+  const btnEl = document.getElementById('btn-update-dashboard');
+  if (!noticeEl) return;
+
+  const lastUpdate = Number(localStorage.getItem('mep_last_update_ts') || 0);
+  const lastPublish = Number(localStorage.getItem('mep_last_publish_ts') || 0);
+
+  const hasUpdates = (lastUpdate > lastPublish) || !!window.mepHasPendingDashboardUpdates;
+
+  if (hasUpdates) {
+    noticeEl.style.display = 'inline-flex';
+    noticeEl.classList.add('is-visible');
+    if (btnEl) btnEl.classList.add('has-pending-update');
+  } else {
+    noticeEl.style.display = 'none';
+    noticeEl.classList.remove('is-visible');
+    if (btnEl) btnEl.classList.remove('has-pending-update');
+  }
+};
+
 function publishDashboardUpdates() {
   const overlay = document.createElement('div');
   overlay.style.position = 'fixed';
@@ -1860,8 +1893,14 @@ function publishDashboardUpdates() {
   input.addEventListener('input', (e) => {
     if (e.target.value === 'a') {
       document.body.removeChild(overlay);
+      const publishTs = Date.now();
+      localStorage.setItem('mep_last_publish_ts', publishTs);
+      window.mepHasPendingDashboardUpdates = false;
+      if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
+        window.checkDashboardUpdateNoticeStatus();
+      }
       if (window.firebaseDb) {
-        window.firebaseDb.ref('mep_dashboard_publish_trigger').set(Date.now());
+        window.firebaseDb.ref('mep_dashboard_publish_trigger').set(publishTs);
         // Use setTimeout to ensure the DOM is cleared before the alert blocks the thread
         setTimeout(() => {
           alert("Live Data published to all Dashboards successfully.");
@@ -2998,11 +3037,19 @@ function setupFirebaseListener() {
     // Listen for publish trigger to update live dashboard globally
     let initialPublishLoad = true;
     window.firebaseDb.ref('mep_dashboard_publish_trigger').on('value', (snapshot) => {
+      const trigger = snapshot.val();
+      if (trigger) {
+        const pubTs = (typeof trigger === 'number') ? trigger : Date.now();
+        localStorage.setItem('mep_last_publish_ts', pubTs);
+        window.mepHasPendingDashboardUpdates = false;
+        if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
+          window.checkDashboardUpdateNoticeStatus();
+        }
+      }
       if (initialPublishLoad) {
         initialPublishLoad = false;
         return;
       }
-      const trigger = snapshot.val();
       if (trigger) {
         localDashboardState = JSON.parse(JSON.stringify(globalAppState));
         localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
@@ -3015,11 +3062,21 @@ function setupFirebaseListener() {
     // Listen for entry sheet updates from other devices/users
     let initialUpdateLoad = true;
     window.firebaseDb.ref('mep_last_update_info').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data && data.timestamp) {
+        localStorage.setItem('mep_last_update_ts', data.timestamp);
+        const lastPub = Number(localStorage.getItem('mep_last_publish_ts') || 0);
+        if (data.timestamp > lastPub) {
+          window.mepHasPendingDashboardUpdates = true;
+        }
+        if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
+          window.checkDashboardUpdateNoticeStatus();
+        }
+      }
       if (initialUpdateLoad) {
         initialUpdateLoad = false;
         return;
       }
-      const data = snapshot.val();
       if (data && data.deviceId !== SESSION_DEVICE_ID) {
         if ('Notification' in window && Notification.permission === 'granted') {
           const title = 'MEP FAN LTD.';

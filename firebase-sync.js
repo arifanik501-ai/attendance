@@ -80,6 +80,7 @@ function setupFirebaseListener() {
               }
             }
           }
+        }
         if (data.sectionStatus || data.sectionStatusHistory) {
           if (!localDashboardState) {
             localDashboardState = JSON.parse(JSON.stringify(data));
@@ -115,11 +116,19 @@ function setupFirebaseListener() {
     // Listen for publish trigger to update live dashboard globally
     let initialPublishLoad = true;
     window.firebaseDb.ref('mep_dashboard_publish_trigger').on('value', (snapshot) => {
+      const trigger = snapshot.val();
+      if (trigger) {
+        const pubTs = (typeof trigger === 'number') ? trigger : Date.now();
+        localStorage.setItem('mep_last_publish_ts', pubTs);
+        window.mepHasPendingDashboardUpdates = false;
+        if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
+          window.checkDashboardUpdateNoticeStatus();
+        }
+      }
       if (initialPublishLoad) {
         initialPublishLoad = false;
         return;
       }
-      const trigger = snapshot.val();
       if (trigger) {
         localDashboardState = JSON.parse(JSON.stringify(globalAppState));
         localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
@@ -132,11 +141,21 @@ function setupFirebaseListener() {
     // Listen for entry sheet updates from other devices/users
     let initialUpdateLoad = true;
     window.firebaseDb.ref('mep_last_update_info').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data && data.timestamp) {
+        localStorage.setItem('mep_last_update_ts', data.timestamp);
+        const lastPub = Number(localStorage.getItem('mep_last_publish_ts') || 0);
+        if (data.timestamp > lastPub) {
+          window.mepHasPendingDashboardUpdates = true;
+        }
+        if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
+          window.checkDashboardUpdateNoticeStatus();
+        }
+      }
       if (initialUpdateLoad) {
         initialUpdateLoad = false;
         return;
       }
-      const data = snapshot.val();
       if (data) {
         if (window.firebaseDb) {
           window.firebaseDb.ref('mep_dashboard_state/sectionStatus').once('value').then(snap => {

@@ -870,7 +870,7 @@ function getEffectiveSectionStatus(sectionKey, state = (localDashboardState || g
   };
 }
 
-window.updateSectionStatus = function(sectionKey, statusVal, entryBy = null) {
+window.updateSectionStatus = function(sectionKey, statusVal, entryBy = null, silent = false) {
   const cfg = (typeof SECTION_STATUS_CONFIG !== 'undefined' ? SECTION_STATUS_CONFIG[sectionKey] : null);
   if (!cfg) return;
   const now = new Date();
@@ -914,12 +914,14 @@ window.updateSectionStatus = function(sectionKey, statusVal, entryBy = null) {
     window.firebaseDb.ref(`mep_dashboard_state/sectionStatusHistory/${isoDateStr}/${sectionKey}`).set(entryObj).catch(err => {
       console.warn('Firebase sectionStatusHistory update failed:', err);
     });
-    window.firebaseDb.ref('mep_last_update_info').set({
-      deviceId: SESSION_DEVICE_ID,
-      timestamp: Date.now(),
-      pageTitle: cfg.name,
-      actionStr: `⚙️ ${cfg.name} status updated to ${statusVal} by ${entryObj.entryBy}`
-    });
+    if (!silent) {
+      window.firebaseDb.ref('mep_last_update_info').set({
+        deviceId: SESSION_DEVICE_ID,
+        timestamp: Date.now(),
+        pageTitle: cfg.name,
+        actionStr: `⚙️ ${cfg.name} status updated to ${statusVal} by ${entryObj.entryBy}`
+      });
+    }
   }
 
   if (typeof app !== 'undefined' && app.showToast) {
@@ -1410,10 +1412,9 @@ function _renderEntryContent(pageId) {
     container.appendChild(statusCard);
   }
 
-  setTimeout(() => {
-    for (const [groupName, rows] of Object.entries(pageState)) {
-      const card = document.createElement('div');
-      card.className = 'glass-card';
+  for (const [groupName, rows] of Object.entries(pageState)) {
+    const card = document.createElement('div');
+    card.className = 'glass-card';
 
       let html = `<h3>${groupName}</h3>
       <div class="table-container">
@@ -1484,43 +1485,28 @@ function _renderEntryContent(pageId) {
 
         // Handle authorized column edits
         if (e.target.classList.contains('auth-input')) {
-          state[pageId][g][i].authorized = val;
+          if (state[pageId] && state[pageId][g] && state[pageId][g][i]) {
+            state[pageId][g][i].authorized = val;
             globalAppState = state;
             updateGroupTotals(e.target.closest('table'), state[pageId][g]);
-            if (window.firebaseDb) {
-              window.firebaseDb.ref(`mep_dashboard_state/${pageId}/${g}/${i}/authorized`).set(val);
-              // Also update last update info without full re-render
-              window.firebaseDb.ref('mep_last_update_info').set({
-                deviceId: SESSION_DEVICE_ID,
-                timestamp: Date.now(),
-                pageTitle: SECTIONS_CONFIG[pageId].title,
-                actionStr: "dY, " + SECTIONS_CONFIG[pageId].title + " has been updated"
-              });
-            }
-            return;
+          }
+          return;
         }
 
-        state[pageId][g][i][f] = val;
+        if (state[pageId] && state[pageId][g] && state[pageId][g][i] && f) {
+          state[pageId][g][i][f] = val;
 
           if (f === 'existing' || f === 'present') {
             calculateRow(state[pageId][g][i]);
-            e.target.closest('tr').querySelector('.absent-val').textContent = state[pageId][g][i].absent;
+            const rowEl = e.target.closest('tr');
+            if (rowEl) {
+              const absentCell = rowEl.querySelector('.absent-val');
+              if (absentCell) absentCell.textContent = state[pageId][g][i].absent;
+            }
           }
 
           updateGroupTotals(e.target.closest('table'), state[pageId][g]);
-
-          if (window.firebaseDb) {
-            window.firebaseDb.ref(`mep_dashboard_state/${pageId}/${g}/${i}/${f}`).set(val);
-            if (f === 'existing' || f === 'present') {
-              window.firebaseDb.ref(`mep_dashboard_state/${pageId}/${g}/${i}/absent`).set(state[pageId][g][i].absent);
-            }
-            window.firebaseDb.ref('mep_last_update_info').set({
-              deviceId: SESSION_DEVICE_ID,
-              timestamp: Date.now(),
-              pageTitle: SECTIONS_CONFIG[pageId].title,
-              actionStr: "dY, " + SECTIONS_CONFIG[pageId].title + " has been updated"
-            });
-          }
+        }
       });
     });
 
@@ -1562,7 +1548,7 @@ function _renderEntryContent(pageId) {
       saveBtn.style.opacity = '0.6';
       saveBtn.querySelector('span') && (saveBtn.querySelector('span').textContent = 'Saving...');
 
-      // Commit section status updates
+      // Commit section status updates (silent: true so single sheet notification is sent by saveAppState)
       if (sectionsForPage.length > 0) {
         sectionsForPage.forEach(sKey => {
           const cfg = SECTION_STATUS_CONFIG[sKey];
@@ -1576,7 +1562,7 @@ function _renderEntryContent(pageId) {
           }
 
           if (statusToSave) {
-            updateSectionStatus(sKey, statusToSave, cfg.entryBy);
+            updateSectionStatus(sKey, statusToSave, cfg.entryBy, true);
             if (window.pendingSectionStatus) delete window.pendingSectionStatus[sKey];
           }
         });
@@ -1673,8 +1659,6 @@ function _renderEntryContent(pageId) {
         doSaveAndNavigate();
       }
     };
-
-  }, 10); // End setTimeout macro task
 }
 
 function exportEntryReport(pageId, title) {

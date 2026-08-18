@@ -103,10 +103,6 @@ function setupFirebaseListener() {
             } else if (typeof window._renderSectionStatusReportContent === 'function') {
               window._renderSectionStatusReportContent();
             }
-          } else if (['monir', 'anwar', 'anik', 'takbir', 'bikash'].includes(currentActivePageId) && typeof _renderEntryContent === 'function') {
-            if (sessionStorage.getItem('auth_' + currentActivePageId) === 'true') {
-              _renderEntryContent(currentActivePageId);
-            }
           }
         }
       } else {

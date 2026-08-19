@@ -18,6 +18,9 @@ function getClockSnapshot(date = new Date()) {
   const mins = date.getMinutes();
   const hour = date.getHours();
   const day = date.getDate();
+  const suffix = getOrdinalSuffix(day);
+  const monthYear = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  const monthYearUpper = monthYear.toUpperCase();
 
   return {
     hourDegrees: ((hour / 12) * 360) + ((mins / 60) * 30),
@@ -26,7 +29,8 @@ function getClockSnapshot(date = new Date()) {
     displayTime: `${String(hour % 12 || 12).padStart(2, '0')}:${String(mins).padStart(2, '0')}`,
     ampm: hour >= 12 ? 'PM' : 'AM',
     shortDate: date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: '2-digit' }),
-    longDate: `${day}${getOrdinalSuffix(day)} ${date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`
+    longDate: `${day}${suffix} ${monthYear}`,
+    longDateHtml: `${day}<span class="ordinal-suffix" style="font-size:0.62em; vertical-align:0.35em; text-transform:lowercase; font-weight:700; display:inline-block; line-height:0; margin-left:1px; margin-right:2px;">${suffix}</span> ${monthYearUpper}`
   };
 }
 
@@ -124,7 +128,7 @@ function buildExportClockMarkup(snapshot = getClockSnapshot(), theme = getActive
   const widgetPadding = options.widgetPadding || '0.5rem 0.5rem';
   const clockWidth = options.width || options.minWidth || '120px';
   const digitalSize = options.digitalSize || '1.05rem';
-  const dateText = options.dateText || snapshot.longDate;
+  const dateText = options.dateText || snapshot.longDateHtml || snapshot.longDate;
   const dateSize = options.dateSize || '0.55rem';
   const ampmSize = options.ampmSize || '0.55rem';
   const clockSvg = buildExportAnalogClockSvg(snapshot, theme).replace('width="108" height="108"', `width="${analogSize}" height="${analogSize}"`);
@@ -147,7 +151,7 @@ function buildExportClockMarkup(snapshot = getClockSnapshot(), theme = getActive
       <div class="export-digital-time" style="position:relative; font-weight:900; font-size:${digitalSize}; color:${clockTextColor} !important; letter-spacing:-0.02em; font-family:'Inter', Arial, sans-serif; margin:0 0 0.25rem; padding:0; background:transparent; border:0; box-shadow:none; display:flex; align-items:flex-start; justify-content:center; line-height:1;">
         <span style="color:${clockTextColor} !important;">${snapshot.displayTime}</span><span style="font-size:${ampmSize}; font-weight:900; margin-left:4px; margin-top:2px; color:${accentColor} !important; letter-spacing:0;">${snapshot.ampm}</span>
       </div>
-      <div class="export-clock-date" style="position:relative; font-weight:700; font-size:${dateSize}; color:${clockDateColor} !important; text-transform:uppercase; letter-spacing:0.06em; background:transparent; line-height:1.2; font-family:'Inter', Arial, sans-serif;">${dateText}</div>
+      <div class="export-clock-date" style="position:relative; font-weight:700; font-size:${dateSize}; color:${clockDateColor} !important; letter-spacing:0.06em; background:transparent; line-height:1.2; font-family:'Inter', Arial, sans-serif;">${dateText}</div>
       <div class="export-clock-accent" style="position:relative; width:24px; height:3px; margin:0.4rem auto 0.2rem; border-radius:${accentRadius}; background:${accentColor};"></div>
     </div>`;
 }
@@ -164,7 +168,7 @@ function applyClockSnapshot(root, snapshot = getClockSnapshot(), ids = {}) {
   if (minHand) minHand.style.transform = `rotate(${snapshot.minDegrees}deg)`;
   if (secondHand) secondHand.style.transform = `rotate(${snapshot.secondDegrees}deg)`;
   if (digitalTime) digitalTime.innerHTML = `${snapshot.displayTime}<span style="${ampmStyle}">${snapshot.ampm}</span>`;
-  if (clockDate) clockDate.textContent = snapshot.longDate;
+  if (clockDate) clockDate.innerHTML = snapshot.longDateHtml || snapshot.longDate;
 }
 
 function buildCustomPeriodFromStart(startDate) {
@@ -870,7 +874,7 @@ function getEffectiveSectionStatus(sectionKey, state = (localDashboardState || g
   };
 }
 
-window.updateSectionStatus = function(sectionKey, statusVal, entryBy = null, silent = false) {
+window.updateSectionStatus = function(sectionKey, statusVal, entryBy = null) {
   const cfg = (typeof SECTION_STATUS_CONFIG !== 'undefined' ? SECTION_STATUS_CONFIG[sectionKey] : null);
   if (!cfg) return;
   const now = new Date();
@@ -914,14 +918,6 @@ window.updateSectionStatus = function(sectionKey, statusVal, entryBy = null, sil
     window.firebaseDb.ref(`mep_dashboard_state/sectionStatusHistory/${isoDateStr}/${sectionKey}`).set(entryObj).catch(err => {
       console.warn('Firebase sectionStatusHistory update failed:', err);
     });
-    if (!silent) {
-      window.firebaseDb.ref('mep_last_update_info').set({
-        deviceId: SESSION_DEVICE_ID,
-        timestamp: Date.now(),
-        pageTitle: cfg.name,
-        actionStr: `⚙️ ${cfg.name} status updated to ${statusVal} by ${entryObj.entryBy}`
-      });
-    }
   }
 
   if (typeof app !== 'undefined' && app.showToast) {
@@ -1562,7 +1558,7 @@ function _renderEntryContent(pageId) {
           }
 
           if (statusToSave) {
-            updateSectionStatus(sKey, statusToSave, cfg.entryBy, true);
+            updateSectionStatus(sKey, statusToSave, cfg.entryBy);
             if (window.pendingSectionStatus) delete window.pendingSectionStatus[sKey];
           }
         });
@@ -1662,12 +1658,12 @@ function _renderEntryContent(pageId) {
 }
 
 function exportEntryReport(pageId, title) {
-  return runWithOriginalExportMotion(() => exportEntryReportOriginal(pageId, title));
+  return exportEntryReportOriginal(pageId, title);
 }
 
 function exportEntryReportOriginal(pageId, title) {
   const content = document.getElementById('report-container');
-  const exportScale = Math.max(8, Math.min(10, Math.ceil((window.devicePixelRatio || 1) * 4)));
+  const exportScale = Math.max(4.5, Math.min(5.5, Math.ceil((window.devicePixelRatio || 1) * 3)));
   const exportTheme = getActiveTheme();
   const [themeSoft, themeMain, themeDeep] = exportTheme.palette;
   const exportClock = getClockSnapshot();
@@ -1706,10 +1702,14 @@ function exportEntryReportOriginal(pageId, title) {
 
   // Setup off-screen rendering
   const container = document.createElement('div');
-  container.style.position = 'absolute';
-  container.style.top = '-9999px';
+  container.style.position = 'fixed';
+  container.style.top = '0';
   container.style.left = '-9999px';
   container.style.width = '850px';
+  container.style.zIndex = '-9999';
+  container.style.opacity = '0';
+  container.style.pointerEvents = 'none';
+  container.style.overflow = 'hidden';
   container.style.background = getThemeBackground(exportTheme, 0.22);
   container.style.padding = '40px';
   container.style.boxSizing = 'border-box';
@@ -1790,7 +1790,7 @@ function exportEntryReportOriginal(pageId, title) {
 
   if (typeof html2canvas === 'undefined') {
     alert("Missing html2canvas script! Please ensure html2canvas is loaded on the entry sheet.");
-    document.body.removeChild(container);
+    if (container.parentNode) document.body.removeChild(container);
     return;
   }
 
@@ -1799,16 +1799,24 @@ function exportEntryReportOriginal(pageId, title) {
     backgroundColor: '#ffffff',
     useCORS: true,
     allowTaint: true,
+    logging: false,
     imageTimeout: 0,
     scrollX: 0,
     scrollY: 0,
     windowWidth: 850
   }).then(canvas => {
-    document.body.removeChild(container);
+    if (container.parentNode) document.body.removeChild(container);
     const link = document.createElement('a');
     link.download = `MEP_${title.replace(/[^a-zA-Z0-9]/g, '_')}_Report.jpg`;
     link.href = canvas.toDataURL('image/jpeg', 1.0);
     link.click();
+    if (typeof app !== 'undefined' && app.showToast) {
+      app.showToast('Entry Report JPG downloaded successfully!', 'success');
+    }
+  }).catch(err => {
+    if (container.parentNode) document.body.removeChild(container);
+    console.error('Export Entry Report error:', err);
+    alert('Failed to generate Entry Report JPG.');
   });
 }
 
@@ -1825,10 +1833,6 @@ function updateGroupTotals(table, rows) {
   table.querySelector('.sum-exist').textContent = sums.exist;
   table.querySelector('.sum-pres').textContent = sums.pres;
   table.querySelector('.sum-abs').textContent = sums.abs;
-}
-
-function exportReport() {
-  return runWithOriginalExportMotion(exportReportOriginal);
 }
 
 window.checkDashboardUpdateNoticeStatus = function() {
@@ -1924,13 +1928,200 @@ function publishDashboardUpdates() {
   });
 }
 
+window.showDownloadPasscodeModal = function (status, onSuccess) {
+  const existing = document.getElementById('download-passcode-modal');
+  if (existing) existing.remove();
+
+  const pendingNames = (status && status.pendingSheets && status.pendingSheets.length > 0)
+    ? status.pendingSheets.map(s => s.name).join(', ')
+    : 'In-charges';
+  const pendingCount = (status && status.pendingCount) ? status.pendingCount : '';
+
+  const modalOverlay = document.createElement('div');
+  modalOverlay.id = 'download-passcode-modal';
+  modalOverlay.style.cssText = `
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 1rem;
+    box-sizing: border-box;
+  `;
+
+  modalOverlay.innerHTML = `
+    <div class="passcode-card" style="
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 20px;
+      box-shadow: 0 20px 45px -10px rgba(220, 38, 38, 0.35), 0 0 0 1px rgba(0,0,0,0.06);
+      padding: 2rem 1.8rem;
+      max-width: 390px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, sans-serif;
+    ">
+      <div style="width: 58px; height: 58px; margin: 0 auto 1.1rem; border-radius: 16px; background: linear-gradient(135deg, #fee2e2, #fecaca); color: #dc2626; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(220, 38, 38, 0.22);">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h3 style="margin: 0 0 0.4rem; font-size: 1.28rem; font-weight: 800; color: #1e293b; letter-spacing: -0.02em;">Download Passcode Required</h3>
+      <p style="margin: 0 0 1.2rem; font-size: 0.86rem; color: #64748b; font-weight: 500; line-height: 1.45;">
+        All sheets have not been updated today <span style="color:#dc2626; font-weight:750;">(${pendingCount} Pending: ${pendingNames})</span>. Enter passcode <strong>(1212)</strong> to download.
+      </p>
+
+      <div style="margin-bottom: 0.85rem;">
+        <input type="password" id="download-passcode-input" placeholder="Enter pass (1212)" autocomplete="off" inputmode="numeric" style="
+          width: 100%;
+          padding: 0.85rem 1rem;
+          font-size: 1.35rem;
+          font-weight: 700;
+          text-align: center;
+          letter-spacing: 0.2em;
+          border: 2px solid #e2e8f0;
+          border-radius: 12px;
+          outline: none;
+          background: #f8fafc;
+          color: #0f172a;
+          box-sizing: border-box;
+          transition: all 0.2s ease;
+        " />
+      </div>
+
+      <div id="download-passcode-err" style="font-size: 0.82rem; color: #dc2626; font-weight: 700; min-height: 1.2rem; margin-bottom: 0.85rem; opacity: 0; transition: opacity 0.2s;">
+        &#10005; Incorrect passcode! Pass: 1212
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button id="download-passcode-cancel" type="button" style="
+          flex: 1;
+          padding: 0.8rem;
+          background: #f1f5f9;
+          border: none;
+          border-radius: 12px;
+          color: #475569;
+          font-weight: 700;
+          font-size: 0.92rem;
+          cursor: pointer;
+          transition: background 0.2s;
+        ">Cancel</button>
+        <button id="download-passcode-submit" type="button" style="
+          flex: 1.4;
+          padding: 0.8rem;
+          background: linear-gradient(135deg, #ef4444, #dc2626);
+          color: #ffffff;
+          border: none;
+          border-radius: 12px;
+          font-weight: 750;
+          font-size: 0.92rem;
+          cursor: pointer;
+          box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+          transition: all 0.2s;
+        ">Authorize & Download</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modalOverlay);
+
+  const inputEl = document.getElementById('download-passcode-input');
+  const errEl = document.getElementById('download-passcode-err');
+  const cancelBtn = document.getElementById('download-passcode-cancel');
+  const submitBtn = document.getElementById('download-passcode-submit');
+
+  setTimeout(() => inputEl && inputEl.focus(), 60);
+
+  const close = () => modalOverlay.remove();
+
+  cancelBtn.addEventListener('click', close);
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) close();
+  });
+
+  const verifyAndSubmit = () => {
+    const val = (inputEl.value || '').trim();
+    if (val === '1212') {
+      close();
+      if (typeof onSuccess === 'function') onSuccess();
+    } else {
+      errEl.style.opacity = '1';
+      inputEl.style.borderColor = '#ef4444';
+      inputEl.style.background = '#fef2f2';
+      inputEl.classList.add('shake-anim');
+      setTimeout(() => inputEl.classList.remove('shake-anim'), 400);
+      inputEl.value = '';
+      inputEl.focus();
+    }
+  };
+
+  submitBtn.addEventListener('click', verifyAndSubmit);
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      verifyAndSubmit();
+    } else if (e.key === 'Escape') {
+      close();
+    }
+  });
+};
+
+function exportReport() {
+  const state = (typeof localDashboardState !== 'undefined' && localDashboardState) ? localDashboardState : (typeof globalAppState !== 'undefined' ? globalAppState : {});
+  const status = (typeof window.getTodayAllEntryStatus === 'function') ? window.getTodayAllEntryStatus(state) : { allDone: true };
+
+  if (status && !status.allDone) {
+    if (typeof window.showDownloadPasscodeModal === 'function') {
+      window.showDownloadPasscodeModal(status, function () {
+        exportReportOriginal();
+      });
+    } else {
+      const pass = prompt(`All sheets have not been updated today (${status.pendingCount} pending). Enter Passcode (1212) to download:`);
+      if (pass === '1212') {
+        exportReportOriginal();
+      } else if (pass !== null) {
+        alert('Incorrect passcode!');
+      }
+    }
+    return;
+  }
+
+  return exportReportOriginal();
+}
+
 function exportReportOriginal() {
   if (window.forceSaveHistory) window.forceSaveHistory(true);
   const content = document.getElementById('export-content');
-  const exportScale = Math.max(8, Math.min(10, Math.ceil((window.devicePixelRatio || 1) * 4)));
+  if (!content) return;
+  const exportScale = Math.max(4.5, Math.min(5.5, Math.ceil((window.devicePixelRatio || 1) * 3)));
   const exportTheme = getActiveTheme();
   const [themeSoft, themeMain, themeDeep] = exportTheme.palette;
   const exportClock = getClockSnapshot();
+
+  const downloadBtn = document.querySelector('button[onclick="exportReport()"]');
+  let originalBtnHtml = '';
+  if (downloadBtn) {
+    downloadBtn.disabled = true;
+    originalBtnHtml = downloadBtn.innerHTML;
+    downloadBtn.innerHTML = `
+      <svg class="glass-btn-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="animation: spin 1s linear infinite;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      <span>Downloading...</span>
+    `;
+  }
+
+  const restoreBtn = () => {
+    if (downloadBtn) {
+      downloadBtn.disabled = false;
+      downloadBtn.innerHTML = originalBtnHtml;
+    }
+  };
 
   // Clone the node to prevent screen jumping and layout breaking
   const clone = content.cloneNode(true);
@@ -1958,12 +2149,16 @@ function exportReportOriginal() {
     });
   }
 
-  // Create an off-screen container
+  // Create an off-screen container that will not affect page layout or viewport
   const container = document.createElement('div');
-  container.style.position = 'absolute';
-  container.style.top = '-9999px';
+  container.style.position = 'fixed';
+  container.style.top = '0';
   container.style.left = '-9999px';
   container.style.width = '210mm'; // Match A4 width
+  container.style.zIndex = '-9999';
+  container.style.opacity = '0';
+  container.style.pointerEvents = 'none';
+  container.style.overflow = 'hidden';
 
   // Carry current theme into the export container
   applyThemeToExportRoot(container, exportTheme);
@@ -2046,25 +2241,40 @@ function exportReportOriginal() {
     }
   });
 
-  // Use configuration to ensure entire table renders
+  if (typeof html2canvas === 'undefined') {
+    restoreBtn();
+    if (container.parentNode) container.remove();
+    alert("Missing html2canvas script!");
+    return;
+  }
+
   return html2canvas(clone, {
     scale: exportScale,
     backgroundColor: '#ffffff',
     useCORS: true,
     allowTaint: true,
+    logging: false,
     imageTimeout: 0,
     scrollX: 0,
     scrollY: 0,
-    windowWidth: clone.scrollWidth,
-    windowHeight: clone.scrollHeight
+    windowWidth: clone.scrollWidth || 794,
+    windowHeight: clone.scrollHeight || 1123
   }).then(canvas => {
-    // Clean up
-    document.body.removeChild(container);
+    if (container.parentNode) document.body.removeChild(container);
+    restoreBtn();
 
     const link = document.createElement('a');
     link.download = 'MEP_Fan_Manpower_Report_Full.jpg';
     link.href = canvas.toDataURL('image/jpeg', 1.0);
     link.click();
+    if (typeof app !== 'undefined' && app.showToast) {
+      app.showToast('JPG Report downloaded successfully!', 'success');
+    }
+  }).catch(err => {
+    if (container.parentNode) document.body.removeChild(container);
+    restoreBtn();
+    console.error('Export JPG error:', err);
+    alert('Failed to generate JPG report.');
   });
 }
 
@@ -2113,17 +2323,17 @@ function getActiveTheme() {
   return THEMES.find(t => t.id === themeId) || THEMES.find(t => t.id === 'rose') || THEMES[0];
 }
 
-function getThemeBackground(theme, accentAlpha = 0.34) {
-  const main = theme.palette[1];
-  const deep = theme.palette[2];
+function getThemeBackground(theme, accentAlpha = 0.38) {
+  const [soft, main, deep] = theme.palette;
+  const [bg0, bg1, bg2] = theme.bg || [soft, main, deep];
   
   return `
-    radial-gradient(circle at 0% 0%, ${rgbaFromHex(main, accentAlpha + 0.15)} 0%, transparent 45%),
-    radial-gradient(circle at 100% 0%, ${rgbaFromHex(deep, accentAlpha + 0.05)} 0%, transparent 40%),
-    radial-gradient(circle at 100% 100%, ${rgbaFromHex(main, accentAlpha + 0.1)} 0%, transparent 50%),
-    radial-gradient(circle at 0% 100%, ${rgbaFromHex(deep, accentAlpha - 0.05)} 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
-    linear-gradient(135deg, ${theme.bg[0]} 0%, ${theme.bg[1]} 50%, ${theme.bg[2]} 100%)`;
+    radial-gradient(circle at 5% 5%, ${rgbaFromHex(main, 0.32)} 0%, transparent 45%),
+    radial-gradient(circle at 95% 5%, ${rgbaFromHex(deep, 0.22)} 0%, transparent 40%),
+    radial-gradient(circle at 90% 95%, ${rgbaFromHex(main, 0.28)} 0%, transparent 48%),
+    radial-gradient(circle at 10% 95%, ${rgbaFromHex(deep, 0.2)} 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.45) 0%, transparent 60%),
+    linear-gradient(135deg, ${bg0} 0%, ${bg1} 50%, ${bg2} 100%)`;
 }
 
 function applyThemeToExportRoot(root, theme) {
@@ -2233,12 +2443,17 @@ function applyThemeToOvertimeExport(sheet) {
 function applyThemeSurface(theme) {
   if (!theme) return;
   const [soft, main, deep] = theme.palette;
+  const bgGrad = getThemeBackground(theme);
+  
   document.body.style.setProperty('--theme-color', main);
   document.body.style.setProperty('--total-bg', rgbaFromHex(soft, 0.72));
   document.body.style.setProperty('--total-text', deep);
   document.body.style.setProperty('--theme-contrast', theme.contrast || '#fff');
   document.body.style.setProperty('--glass-shadow', `0 15px 45px 0 ${rgbaFromHex(main, 0.24)}`);
-  document.body.style.background = getThemeBackground(theme);
+  
+  document.documentElement.style.background = bgGrad;
+  document.documentElement.style.backgroundAttachment = 'fixed';
+  document.body.style.background = bgGrad;
   document.body.style.backgroundAttachment = 'fixed';
 }
 
@@ -2272,11 +2487,8 @@ function setTheme(themeId) {
   }
   applyThemeSurface(selectedTheme);
 
-  if (themeId === 'rose') {
-    document.body.removeAttribute('data-theme');
-  } else {
-    document.body.setAttribute('data-theme', themeId);
-  }
+  document.body.setAttribute('data-theme', themeId);
+  document.documentElement.setAttribute('data-theme', themeId);
   localStorage.setItem('mep_theme', themeId);
 
   // Update active state in dropdown
@@ -3287,7 +3499,23 @@ window.updateReminderList = function (silent = false) {
     }
   }
 
-  // Dashboard pending container logic removed
+  // Dynamically refresh the top entry status banner if rendered in DOM
+  const bannerContainer = document.querySelector('.today-entry-status-banner');
+  if (bannerContainer && typeof window.buildTodayEntryStatusBannerHtml === 'function') {
+    const parent = bannerContainer.parentElement;
+    if (parent) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = window.buildTodayEntryStatusBannerHtml(state);
+      if (tempDiv.firstElementChild) {
+        parent.replaceChild(tempDiv.firstElementChild, bannerContainer);
+      }
+    }
+  }
+
+  // Dynamically refresh the download button state (Red locked vs amber normal)
+  if (typeof window.updateDashboardDownloadButtonState === 'function') {
+    window.updateDashboardDownloadButtonState(state);
+  }
 };
 
 // ═══════════════════════════════════════════════════

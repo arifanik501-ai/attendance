@@ -16,6 +16,48 @@ function _saveAttendanceHistory(state) {
   } catch(e) { console.error('_saveAttendanceHistory error:', e); }
 }
 
+window.sendTestWhatsAppMessage = function() {
+  const btn = document.getElementById('btn-admin-test-whatsapp');
+  const originalHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳ Sending...</span>';
+  }
+
+  const payload = {
+    chatId: '120363347313467988@g.us',
+    message: 'Test Message.'
+  };
+
+  fetch('https://api.green-api.com/waInstance710722718282/sendMessage/daeb1508fc4942fa86057c95ed74a695e2b75d6d0c424e2fad', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(function(res) {
+    if (!res.ok) throw new Error('Status ' + res.status);
+    return res.json();
+  })
+  .then(function(data) {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>✅ Sent!</span>';
+      setTimeout(function() { btn.innerHTML = originalHtml; }, 2500);
+    }
+    alert('✅ WhatsApp গ্রুপে "Test Message." পাঠানো হয়েছে!');
+  })
+  .catch(function(err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }
+    console.error('WhatsApp Test Error:', err);
+    alert('❌ মেসেজ পাঠানো যায়নি: ' + err.message);
+  });
+};
+
 window.openAdminHistoryModal = function() {
   const overlay = document.createElement('div');
   overlay.style.position = 'fixed';
@@ -151,6 +193,10 @@ window.openHistoryModal = function() {
               <svg class="ios-hm-merge-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
             </span>
             <span class="ios-hm-merge-label">Fan Rojonigondha + Shapla</span>
+          </button>
+          <button id="btn-admin-test-whatsapp" class="admin-premium-btn" onclick="window.sendTestWhatsAppMessage()" type="button" title="Send WhatsApp Test Message" style="background:linear-gradient(135deg,#25D366,#128C7E);border-color:#25D366;color:#fff;box-shadow:0 4px 12px rgba(37,211,102,0.3);cursor:pointer;">
+            <svg class="admin-premium-icon" width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>WhatsApp Test</span>
           </button>
           <button class="ios-hm-close" onclick="window.closeHistoryModal()" aria-label="Close">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>

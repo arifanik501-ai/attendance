@@ -1,0 +1,29 @@
+name: Daily WhatsApp Attendance Reminder
+
+on:
+  schedule:
+    # 03:00 UTC = 09:00 AM Bangladesh Standard Time (UTC+6)
+    - cron: '0 3 * * *'
+  # Allows manual triggering from GitHub Actions UI tab anytime
+  workflow_dispatch:
+
+jobs:
+  check-and-remind:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Run WhatsApp Reminder Bot
+        env:
+          GREEN_API_INSTANCE: ${{ secrets.GREEN_API_INSTANCE }}
+          GREEN_API_TOKEN: ${{ secrets.GREEN_API_TOKEN }}
+          WHATSAPP_CHAT_ID: ${{ secrets.WHATSAPP_CHAT_ID }}
+          FIREBASE_DB_URL: 'https://whatsapp-c10ef-default-rtdb.firebaseio.com/mep_dashboard_state/history.json'
+        run: node scripts/whatsapp-reminder.js

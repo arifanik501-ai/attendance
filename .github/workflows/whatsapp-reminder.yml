@@ -3,7 +3,7 @@ name: Daily WhatsApp Attendance Reminder
 on:
   schedule:
     # 03:00 UTC = 09:00 AM Bangladesh Standard Time (UTC+6)
-    - cron: '0 3 * * *'
+    - cron: '0 3,4,5,6,7,8 * * *'
   # Allows manual triggering from GitHub Actions UI tab anytime
   workflow_dispatch:
 

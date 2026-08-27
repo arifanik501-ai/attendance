@@ -1,0 +1,28 @@
+name: Monthly WhatsApp OEE Reminder
+
+on:
+  schedule:
+    # 03:00 UTC = 09:00 AM BST (Bangladesh Time, UTC+6) on the 29th of every month
+    # 13:00 UTC = 07:00 PM BST (Bangladesh Time, UTC+6) on the 29th of every month
+    - cron: '0 3,13 29 * *'
+  workflow_dispatch: # Allows manual trigger anytime from GitHub Actions tab for testing
+
+jobs:
+  send-whatsapp-reminder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Execute WhatsApp Reminder Script
+        env:
+          GREEN_API_ID_INSTANCE: ${{ secrets.GREEN_API_ID_INSTANCE }}
+          GREEN_API_TOKEN: ${{ secrets.GREEN_API_TOKEN }}
+          WHATSAPP_CHAT_ID: ${{ secrets.WHATSAPP_CHAT_ID }}
+        run: node send_whatsapp_reminder.js

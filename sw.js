@@ -3,7 +3,7 @@
 // Daily 8:00 AM & 1:00 PM Attendance Notifications
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'mep-dashboard-cache-v151';
+const CACHE_NAME = 'mep-dashboard-cache-v170';
 const NOTIFICATION_HOUR_AM = 8; // 8:00 AM
 const NOTIFICATION_HOUR_PM = 13; // 1:00 PM
 const NOTIFICATION_MINUTE = 0;
@@ -29,7 +29,6 @@ const ASSETS_TO_CACHE = [
   './push-off-icon.png',
   './fab-main-icon.png',
   './sec-status-header-icon.png',
-  './iom-header-icon.png'
 ];
 
 // Check interval inside service worker (every 30 seconds when active)

@@ -11,11 +11,13 @@
     <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>Fan Attendance - Entry Sheet</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,50;1,9..144,400..700,50&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.min.css?v=155">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.min.css?v=170">
 </head>
 
-<body style="opacity:0; transform: translate3d(14px, 0, 0); transition: opacity var(--motion-slow, 0.32s) cubic-bezier(0.2, 0.8, 0.2, 1), transform var(--motion-slow, 0.32s) cubic-bezier(0.2, 0.8, 0.2, 1);">
+<body>
     <div id="sidebar" class="sidebar"></div>
 
     <main class="main-content">
@@ -24,32 +26,32 @@
                 <h1 id="page-title">Loading...</h1>
             </div>
             <div class="page-header-actions">
-                <a href="index.html" class="btn glass-btn glass-btn-amber">
-                    <svg class="glass-btn-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <a href="index.html" class="btn-secondary-enterprise">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                     <span>Back to Dashboard</span>
                 </a>
-                <button id="btn-settings" class="btn glass-btn glass-btn-amber" onclick="openSettingsModal()"
+                <button id="btn-settings" class="btn-secondary-enterprise" onclick="openSettingsModal()"
                     data-tip-title="Settings Panel"
                     data-tip-desc="Access dashboard configuration and authorized manpower options"
                     data-tip-placement="bottom"
                     data-tip-theme="warning">
-                    <svg class="glass-btn-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                         <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"></circle>
                     </svg>
                     <span>Settings</span>
                 </button>
-                <button id="btn-export" class="btn glass-btn glass-btn-amber">
-                    <svg class="glass-btn-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <button id="btn-export" class="btn-secondary-enterprise">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                     </svg>
                     <span>Export</span>
                 </button>
-                <button id="btn-save" class="btn btn-primary glass-btn glass-btn-primary">
-                    <svg class="glass-btn-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 13l4 4L19 7"></path>
+                <button id="btn-save" class="btn-primary-enterprise">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M5 13l4 4L19 7"></path>
                     </svg>
                     <span>Entry Update</span>
                 </button>
@@ -64,21 +66,16 @@
     <!-- Firebase Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
-    <script src="config.min.js?v=1"></script>
-    <script src="app.min.js?v=171"></script>
-    <script src="dashboard-render.min.js?v=59"></script>
-    <script src="history.min.js?v=14"></script>
+    <script src="config.min.js?v=16"></script>
+    <script src="app.min.js?v=190"></script>
+    <script src="dashboard-render.min.js?v=65"></script>
+    <script src="history.min.js?v=16"></script>
     <script src="tooltip.js?v=111" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const pageId = urlParams.get('page') || 'anik'; // fallback
             renderEntryPage(pageId);
-            const reveal = () => {
-                document.body.style.opacity = '1';
-                document.body.style.transform = 'translate3d(0, 0, 0)';
-            };
-            requestAnimationFrame(() => requestAnimationFrame(reveal));
         });
     </script>
 </body>

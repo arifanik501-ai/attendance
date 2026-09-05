@@ -86,7 +86,7 @@ window.openAdminHistoryModal = function() {
   title.innerText = 'Admin Access';
   title.style.margin = '0';
   title.style.color = '#1e293b';
-  title.style.fontFamily = 'Inter, sans-serif';
+  title.style.fontFamily = "'Plus Jakarta Sans', sans-serif";
 
   const input = document.createElement('input');
   input.type = 'password';
@@ -494,8 +494,16 @@ function collectFanAssembleDimmerTotals(state) {
   const totals = { authorized: 0, existing: 0, present: 0, absent: 0 };
   const workerRow = { designation: 'Worker', authorized: 0, existing: 0, present: 0, absent: 0 };
 
+  const assembleOwner = (typeof window.resolveAssembleDimmerOwner === 'function')
+    ? window.resolveAssembleDimmerOwner(state)
+    : 'anik';
+
   targetGroups.forEach(function(groupName) {
-    getHistoryRows(state, 'anik', groupName).forEach(function(row) {
+    let rows = getHistoryRows(state, assembleOwner, groupName);
+    if ((!rows || rows.length === 0) && assembleOwner !== 'anik') {
+      rows = getHistoryRows(state, 'anik', groupName);
+    }
+    rows.forEach(function(row) {
       if (!row || typeof row !== 'object') return;
       const designation = String(row.designation || '').trim();
       if (designation.toLowerCase() !== 'worker') return;
@@ -1313,10 +1321,9 @@ window.downloadCompleteMonthlyHistoryExcel = function() {
     if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
   });
 };
-function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
+function buildCompleteAttendanceTableHtml(monthKey, results) {
   if (results.length === 0) {
-    alert("No data available for the selected month.");
-    return;
+    return "";
   }
 
   const monthInfo = getReportingMonthInfo(results[0].dateStr);
@@ -1398,32 +1405,7 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
   });
 
   // 3. Build HTML Table for Excel
-  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-  <head>
-    <meta charset="utf-8">
-    <!--[if gte mso 9]>
-    <xml>
-      <x:ExcelWorkbook>
-        <x:ExcelWorksheets>
-          <x:ExcelWorksheet>
-            <x:Name>Attendance Report</x:Name>
-            <x:WorksheetOptions>
-              <x:DoNotDisplayGridlines/>
-              <x:FreezePanes/>
-              <x:FrozenNoSplit/>
-              <x:SplitHorizontal>3</x:SplitHorizontal>
-              <x:TopRowBottomPane>3</x:TopRowBottomPane>
-              <x:SplitVertical>2</x:SplitVertical>
-              <x:LeftColumnRightPane>2</x:LeftColumnRightPane>
-              <x:ActivePane>0</x:ActivePane>
-            </x:WorksheetOptions>
-          </x:ExcelWorksheet>
-        </x:ExcelWorksheets>
-      </x:ExcelWorkbook>
-    </xml>
-    <![endif]-->
-  </head><body>
-  <table border="1" style="border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 10pt; border: 1px solid #94a3b8;">
+  let html = `<table border="1" style="border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 10pt; border: 1px solid #94a3b8;">
     <thead>
       <tr>
         <th colspan="${2 + dates.length * 4 + 6}" style="font-size: 18pt; font-weight: bold; text-align: center; padding: 12px; background-color: #064e3b; color: #ffffff; border: 1px solid #94a3b8;">
@@ -1468,10 +1450,29 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     </thead>
     <tbody>`;
 
+  // 1. Pre-calculate date totals across all sections and designations
   const dateTotals = {};
   dates.forEach(dStr => {
-      dateTotals[dStr] = { auth: 0, exist: 0, pres: 0, abs: 0 };
+    dateTotals[dStr] = { auth: 0, exist: 0, pres: 0, abs: 0 };
   });
+
+  Object.keys(dataMap).forEach(section => {
+    Object.keys(dataMap[section]).forEach(desig => {
+      dates.forEach(dStr => {
+        const cell = dataMap[section][desig][dStr];
+        if (cell) {
+          dateTotals[dStr].auth += cell.auth;
+          dateTotals[dStr].exist += cell.exist;
+          dateTotals[dStr].pres += cell.pres;
+          dateTotals[dStr].abs += cell.abs;
+        }
+      });
+    });
+  });
+
+  // A date is considered a working day if there was active presence across the factory (pres > 0).
+  // Days when the factory was closed (Fridays/holidays with 0 presence) are NOT counted in working days.
+  const isWorkingDay = (dStr) => Boolean(dateTotals[dStr] && dateTotals[dStr].pres > 0);
 
   Object.keys(dataMap).sort().forEach(section => {
     // 3. Remove Empty Rows: Skip designations that have 0 auth/exist across all dates
@@ -1506,7 +1507,7 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
       html += `<td style="background-color: #ffffff; color: #000000; border: 1px solid #cbd5e1; border-right: 2px solid #94a3b8; padding: 5px; font-weight: 500;">${desig}</td>`;
         
       let rowAuthSum = 0, rowExistSum = 0, rowPresSum = 0, rowAbsSum = 0;
-      let rowDaysWithData = 0;
+      let rowWorkingDays = 0;
       
       dates.forEach(dStr => {
         const cell = dataMap[section][desig][dStr];
@@ -1519,16 +1520,14 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
                    <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: ${existBg}; mso-number-format:'0';">${cell.exist}</td>
                    <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${cell.pres}</td>
                    <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${cell.abs}</td>`;
-          rowAuthSum += cell.auth;
-          rowExistSum += cell.exist;
-          rowPresSum += cell.pres;
-          rowAbsSum += cell.abs;
-          rowDaysWithData++;
           
-          dateTotals[dStr].auth += cell.auth;
-          dateTotals[dStr].exist += cell.exist;
-          dateTotals[dStr].pres += cell.pres;
-          dateTotals[dStr].abs += cell.abs;
+          if (isWorkingDay(dStr)) {
+            rowAuthSum += cell.auth;
+            rowExistSum += cell.exist;
+            rowPresSum += cell.pres;
+            rowAbsSum += cell.abs;
+            rowWorkingDays++;
+          }
           
           sectionTotals[dStr].auth += cell.auth;
           sectionTotals[dStr].exist += cell.exist;
@@ -1542,10 +1541,10 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
         }
       });
       
-      const avgAuth = rowDaysWithData > 0 ? Math.round(rowAuthSum / rowDaysWithData) : 0;
-      const avgExist = rowDaysWithData > 0 ? Math.round(rowExistSum / rowDaysWithData) : 0;
-      const avgPres = rowDaysWithData > 0 ? Math.round(rowPresSum / rowDaysWithData) : 0;
-      const avgAbs = rowDaysWithData > 0 ? Math.round(rowAbsSum / rowDaysWithData) : 0;
+      const avgAuth = rowWorkingDays > 0 ? Math.round(rowAuthSum / rowWorkingDays) : 0;
+      const avgExist = rowWorkingDays > 0 ? Math.round(rowExistSum / rowWorkingDays) : 0;
+      const avgPres = rowWorkingDays > 0 ? Math.round(rowPresSum / rowWorkingDays) : 0;
+      const avgAbs = rowWorkingDays > 0 ? Math.round(rowAbsSum / rowWorkingDays) : 0;
       
       const rawAvgPct = rowAuthSum > 0 ? (rowPresSum / rowAuthSum) : 0;
       const rawAbsPct = rowAuthSum > 0 ? (rowAbsSum / rowAuthSum) : 0;
@@ -1564,6 +1563,7 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     html += `<td style="background-color: #f8fafc; color: #000000; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; border-right: 2px solid #94a3b8; padding: 5px; font-weight: bold; font-style: italic; text-align: right;">Total</td>`;
     
     let secAuthTotal = 0, secExistTotal = 0, secPresTotal = 0, secAbsTotal = 0;
+    let secWorkingDays = 0;
     dates.forEach(dStr => {
       const t = sectionTotals[dStr];
       const isFriday = new Date(dStr).getDay() === 5;
@@ -1573,17 +1573,19 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
                <td style="text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; background-color: ${existBg}; color: #000000; mso-number-format:'0';">${t.exist}</td>
                <td style="text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; background-color: #a7f3d0; color: #000000; mso-number-format:'0';">${t.pres}</td>
                <td style="text-align: center; border: 1px solid #cbd5e1; border-top: 2px solid #000000; border-bottom: 2px solid #94a3b8; padding: 5px; font-weight: bold; background-color: #ffedd5; color: #9a3412; mso-number-format:'0';">${t.abs}</td>`;
-      secAuthTotal += t.auth;
-      secExistTotal += t.exist;
-      secPresTotal += t.pres;
-      secAbsTotal += t.abs;
+      if (isWorkingDay(dStr)) {
+        secAuthTotal += t.auth;
+        secExistTotal += t.exist;
+        secPresTotal += t.pres;
+        secAbsTotal += t.abs;
+        secWorkingDays++;
+      }
     });
 
-    const numDates = dates.length;
-    const sAvgAuth = numDates > 0 ? Math.round(secAuthTotal / numDates) : 0;
-    const sAvgExist = numDates > 0 ? Math.round(secExistTotal / numDates) : 0;
-    const sAvgPres = numDates > 0 ? Math.round(secPresTotal / numDates) : 0;
-    const sAvgAbs = numDates > 0 ? Math.round(secAbsTotal / numDates) : 0;
+    const sAvgAuth = secWorkingDays > 0 ? Math.round(secAuthTotal / secWorkingDays) : 0;
+    const sAvgExist = secWorkingDays > 0 ? Math.round(secExistTotal / secWorkingDays) : 0;
+    const sAvgPres = secWorkingDays > 0 ? Math.round(secPresTotal / secWorkingDays) : 0;
+    const sAvgAbs = secWorkingDays > 0 ? Math.round(secAbsTotal / secWorkingDays) : 0;
     
     const sRawPct = secAuthTotal > 0 ? (secPresTotal / secAuthTotal) : 0;
     const sRawAbsPct = secAuthTotal > 0 ? (secAbsTotal / secAuthTotal) : 0;
@@ -1616,21 +1618,21 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
   });
   
   let gTotalAuth = 0, gTotalExist = 0, gTotalPres = 0, gTotalAbs = 0;
-  let gDaysWithData = 0;
+  let gWorkingDays = 0;
   dates.forEach(dStr => {
     const t = dateTotals[dStr];
-    if (t.auth > 0 || t.exist > 0 || t.pres > 0 || t.abs > 0) {
+    if (isWorkingDay(dStr)) {
       gTotalAuth += t.auth;
       gTotalExist += t.exist;
       gTotalPres += t.pres;
       gTotalAbs += t.abs;
-      gDaysWithData++;
+      gWorkingDays++;
     }
   });
-  const gAvgAuth = gDaysWithData > 0 ? Math.round(gTotalAuth / gDaysWithData) : 0;
-  const gAvgExist = gDaysWithData > 0 ? Math.round(gTotalExist / gDaysWithData) : 0;
-  const gAvgPres = gDaysWithData > 0 ? Math.round(gTotalPres / gDaysWithData) : 0;
-  const gAvgAbs = gDaysWithData > 0 ? Math.round(gTotalAbs / gDaysWithData) : 0;
+  const gAvgAuth = gWorkingDays > 0 ? Math.round(gTotalAuth / gWorkingDays) : 0;
+  const gAvgExist = gWorkingDays > 0 ? Math.round(gTotalExist / gWorkingDays) : 0;
+  const gAvgPres = gWorkingDays > 0 ? Math.round(gTotalPres / gWorkingDays) : 0;
+  const gAvgAbs = gWorkingDays > 0 ? Math.round(gTotalAbs / gWorkingDays) : 0;
   const gPct = gTotalAuth > 0 ? Math.round((gTotalPres / gTotalAuth) * 100) + '%' : '0%';
   const gAbsPct = gTotalAuth > 0 ? Math.round((gTotalAbs / gTotalAuth) * 100) + '%' : '0%';
 
@@ -1707,6 +1709,7 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
     html += `<tr><td colspan="2" style="background-color: #ffffff; color: #000000; border: 1px solid #cbd5e1; border-right: 2px solid #94a3b8; padding: 5px; font-weight: bold; font-size: 10pt;">${desig}</td>`;
     
     let rAuth = 0, rExist = 0, rPres = 0, rAbs = 0;
+    let desigWorkingDays = 0;
     
     dates.forEach(dStr => {
       const cell = desigTotals[desig][dStr];
@@ -1718,16 +1721,19 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
                 <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #000000; background-color: #a7f3d0; mso-number-format:'0';">${cell.pres}</td>
                 <td style="text-align: center; border: 1px solid #cbd5e1; padding: 4px; color: #9a3412; background-color: #ffedd5; mso-number-format:'0';">${cell.abs}</td>`;
       
-      rAuth += cell.auth;
-      rExist += cell.exist;
-      rPres += cell.pres;
-      rAbs += cell.abs;
+      if (isWorkingDay(dStr)) {
+        rAuth += cell.auth;
+        rExist += cell.exist;
+        rPres += cell.pres;
+        rAbs += cell.abs;
+        desigWorkingDays++;
+      }
     });
     
-    const aAuth = numDates > 0 ? Math.round(rAuth / numDates) : 0;
-    const aExist = numDates > 0 ? Math.round(rExist / numDates) : 0;
-    const aPres = numDates > 0 ? Math.round(rPres / numDates) : 0;
-    const aAbs = numDates > 0 ? Math.round(rAbs / numDates) : 0;
+    const aAuth = desigWorkingDays > 0 ? Math.round(rAuth / desigWorkingDays) : 0;
+    const aExist = desigWorkingDays > 0 ? Math.round(rExist / desigWorkingDays) : 0;
+    const aPres = desigWorkingDays > 0 ? Math.round(rPres / desigWorkingDays) : 0;
+    const aAbs = desigWorkingDays > 0 ? Math.round(rAbs / desigWorkingDays) : 0;
     const rawPct = rAuth > 0 ? (rPres / rAuth) : 0;
     const rawAbsPct = rAuth > 0 ? (rAbs / rAuth) : 0;
     
@@ -1742,9 +1748,233 @@ function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
   
 
   // Make the primary HTML a complete document
-  html += `</tbody></table></body></html>`;
+  html += `</tbody></table>`;
+  return html;
+}
 
-  const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+function buildMergedAttendanceTableHtml(monthKey, results, mode) {
+  const monthInfo = getReportingMonthInfo(results[0].dateStr);
+  const endParts = results[results.length - 1].dateStr.split('-');
+  const endDayStr = String(parseInt(endParts[2], 10)).padStart(2, '0');
+  const headerTitleRange = `${monthInfo.monthName} Month = 01 ${monthInfo.monthName} to ${endDayStr} ${monthInfo.monthName} ${monthInfo.year}`;
+
+  const isRoj = (mode === 'roj_shapla');
+  const modeTitle = isRoj ? 'Fan Rojonigondha + Shapla' : 'Fan Assemble + Dimmer';
+
+  let html = `<table border="1" style="border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 11pt; border: 1px solid #94a3b8; text-align: center;">
+    <colgroup>
+      <col width="90" style="mso-width-source:userset;mso-width-alt:3200;width:68pt" />
+      <col width="60" style="mso-width-source:userset;mso-width-alt:2100;width:45pt" />
+      <col width="90" style="mso-width-source:userset;mso-width-alt:3200;width:68pt" />
+      <col width="90" style="mso-width-source:userset;mso-width-alt:3200;width:68pt" />
+      <col width="90" style="mso-width-source:userset;mso-width-alt:3200;width:68pt" />
+      <col width="170" style="mso-width-source:userset;mso-width-alt:6000;width:128pt" />
+      <col width="95" style="mso-width-source:userset;mso-width-alt:3400;width:72pt" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th colspan="7" style="font-size: 16pt; font-weight: bold; text-align: center; vertical-align: middle; padding: 10px; background-color: #064e3b; color: #ffffff; border: 1px solid #94a3b8; border-bottom: 2px solid #94a3b8;">
+          Worker Attendance (${modeTitle}) - ${headerTitleRange}
+        </th>
+      </tr>
+      <tr>
+        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Date</th>
+        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Day</th>
+        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Authorized</th>
+        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Existing</th>
+        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Present</th>
+        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 6px 10px; border: 1px solid #cbd5e1;">Absent</th>
+        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Percentage</th>
+      </tr>
+      <tr>
+        <th style="background-color: #047857; color: #ffffff; font-size: 9pt; font-weight: normal; text-align: center; vertical-align: middle; padding: 4px 8px; border: 1px solid #cbd5e1;">(from Authorize Manpower)</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  let totalAuthSum = 0;
+  let totalExistSum = 0;
+  let totalPresentSum = 0;
+  let totalAbsentSum = 0;
+  let daysWithDataCount = 0;
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  results.forEach(function(res) {
+    const parts = res.dateStr.split('-');
+    const dateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+
+    const dayNum = dateObj.getDate();
+    const monthShort = monthNames[dateObj.getMonth()];
+    const yearShort = String(dateObj.getFullYear()).slice(-2);
+    const formattedDate = `${dayNum}-${monthShort}-${yearShort}`;
+    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+
+    const isFriday = dateObj.getDay() === 5;
+    const cellBorder = "1px solid #cbd5e1";
+
+    let auth = 0;
+    let exist = 0;
+    let pres = 0;
+    let abs = 0;
+    let pct = 0;
+    let hasData = false;
+
+    if (res.hasSnapshot && res.state) {
+      const merged = isRoj ? collectFanRojonigondhaShaplaTotals(res.state) : collectFanAssembleDimmerTotals(res.state);
+      auth = merged.totals.authorized || 0;
+      exist = merged.totals.existing || 0;
+      pres = merged.totals.present || 0;
+      abs = merged.totals.absent || 0;
+      pct = auth > 0 ? Math.round((pres / auth) * 100) : 0;
+      if (pres > 0) hasData = true;
+    }
+
+    if (hasData) {
+      totalAuthSum += auth;
+      totalExistSum += exist;
+      totalPresentSum += pres;
+      totalAbsentSum += abs;
+      daysWithDataCount++;
+    }
+
+    const rowBg = isFriday ? '#fee2e2' : '#ffffff';
+    const authBg = isFriday ? '#fecaca' : (hasData ? '#ecfdf5' : '#ffffff');
+    const existBg = isFriday ? '#fecaca' : (hasData ? '#d1fae5' : '#ffffff');
+    const presBg = isFriday ? '#fecaca' : (hasData ? '#a7f3d0' : '#ffffff');
+    const absBg = isFriday ? '#fecaca' : (hasData ? '#ffedd5' : '#ffffff');
+
+    html += `<tr>
+      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${rowBg}; mso-number-format:'\\@';">${formattedDate}</td>
+      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${rowBg}; mso-number-format:'\\@';">${dayName}</td>
+      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${authBg}; mso-number-format:'0';">${auth}</td>
+      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${existBg}; mso-number-format:'0';">${exist}</td>
+      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${presBg}; mso-number-format:'0';">${pres}</td>
+      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: ${abs > 0 ? '#9a3412' : '#000000'}; background-color: ${absBg}; mso-number-format:'0';">${abs}</td>
+      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; font-weight: bold; background-color: ${rowBg}; mso-number-format:'0%';">${pct}%</td>
+    </tr>`;
+  });
+
+  const overallPct = totalAuthSum > 0 ? Math.round((totalPresentSum / totalAuthSum) * 100) : 0;
+  const avgAuthNum = daysWithDataCount > 0 ? (totalAuthSum / daysWithDataCount) : 0;
+  const avgAuth = (avgAuthNum % 1 === 0) ? String(Math.round(avgAuthNum)) : avgAuthNum.toFixed(1);
+  const avgExistNum = daysWithDataCount > 0 ? (totalExistSum / daysWithDataCount) : 0;
+  const avgExist = (avgExistNum % 1 === 0) ? String(Math.round(avgExistNum)) : avgExistNum.toFixed(1);
+
+  html += `
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="2" style="background-color: #0f766e; color: #ffffff; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">Total / Average</th>
+        <th style="background-color: #e2e8f0; color: #000000; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8; mso-number-format:'0';">${avgAuth}</th>
+        <th style="background-color: #cbd5e1; color: #000000; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8; mso-number-format:'0.0';">${avgExist}</th>
+        <th style="background-color: #a7f3d0; color: #000000; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8; mso-number-format:'0';">${totalPresentSum}</th>
+        <th style="background-color: #ffedd5; color: #9a3412; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8; mso-number-format:'0';">${totalAbsentSum}</th>
+        <th style="background-color: #166534; color: #ffffff; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8; mso-number-format:'0%';">${overallPct}%</th>
+      </tr>
+    </tfoot>
+  </table>`;
+
+  return html;
+}
+
+function buildMultiSheetWorkbookMHTML(sheets) {
+  const boundary = "----=_NextPart_01D_MEP_ATTENDANCE_" + Date.now();
+
+  let mhtml = `MIME-Version: 1.0\r\n` +
+    `X-Document-Type: Workbook\r\n` +
+    `Content-Type: multipart/related; boundary="${boundary}"\r\n\r\n` +
+    `--${boundary}\r\n` +
+    `Content-Location: file:///C:/workbook.htm\r\n` +
+    `Content-Transfer-Encoding: text/html\r\n` +
+    `Content-Type: text/html; charset="utf-8"\r\n\r\n` +
+    `<html xmlns:o="urn:schemas-microsoft-com:office:office"\r\n` +
+    `xmlns:x="urn:schemas-microsoft-com:office:excel"\r\n` +
+    `xmlns="http://www.w3.org/TR/REC-html40">\r\n` +
+    `<head>\r\n` +
+    `<meta name="Excel Workbook Frameset">\r\n` +
+    `<meta http-equiv="Content-Type" content="text/html; charset=utf-8">\r\n` +
+    `<!--[if gte mso 9]><xml>\r\n` +
+    ` <x:ExcelWorkbook>\r\n` +
+    `  <x:ExcelWorksheets>\r\n`;
+
+  sheets.forEach((s, idx) => {
+    mhtml += `   <x:ExcelWorksheet>\r\n` +
+      `    <x:Name>${s.name}</x:Name>\r\n` +
+      `    <x:WorksheetSource HRef="sheet${idx}.htm"/>\r\n` +
+      `   </x:ExcelWorksheet>\r\n`;
+  });
+
+  mhtml += `  </x:ExcelWorksheets>\r\n` +
+    ` </x:ExcelWorkbook>\r\n` +
+    `</xml><![endif]-->\r\n` +
+    `</head>\r\n` +
+    `<frameset>\r\n` +
+    ` <frame src="sheet0.htm" name="frSheet">\r\n` +
+    `</frameset>\r\n` +
+    `</html>\r\n\r\n`;
+
+  sheets.forEach((s, idx) => {
+    mhtml += `--${boundary}\r\n` +
+      `Content-Location: file:///C:/sheet${idx}.htm\r\n` +
+      `Content-Transfer-Encoding: text/html\r\n` +
+      `Content-Type: text/html; charset="utf-8"\r\n\r\n` +
+      `<html xmlns:o="urn:schemas-microsoft-com:office:office"\r\n` +
+      `xmlns:x="urn:schemas-microsoft-com:office:excel"\r\n` +
+      `xmlns="http://www.w3.org/TR/REC-html40">\r\n` +
+      `<head>\r\n` +
+      `<meta http-equiv="Content-Type" content="text/html; charset=utf-8">\r\n` +
+      `<!--[if gte mso 9]><xml>\r\n` +
+      ` <x:WorksheetOptions>\r\n` +
+      `  <x:DisplayGridlines/>\r\n` +
+      (s.freezePanes ? `  <x:FreezePanes/>\r\n  <x:FrozenNoSplit/>\r\n  <x:SplitHorizontal>${s.splitH || 3}</x:SplitHorizontal>\r\n  <x:TopRowBottomPane>${s.splitH || 3}</x:TopRowBottomPane>\r\n  <x:SplitVertical>${s.splitV || 2}</x:SplitVertical>\r\n  <x:LeftColumnRightPane>${s.splitV || 2}</x:LeftColumnRightPane>\r\n  <x:ActivePane>0</x:ActivePane>\r\n` : '') +
+      ` </x:WorksheetOptions>\r\n` +
+      `</xml><![endif]-->\r\n` +
+      `</head>\r\n` +
+      `<body>\r\n` +
+      s.tableHtml + `\r\n` +
+      `</body>\r\n` +
+      `</html>\r\n\r\n`;
+  });
+
+  mhtml += `--${boundary}--\r\n`;
+  return mhtml;
+}
+
+function generateAndDownloadCompleteMonthlyExcel(monthKey, results) {
+  if (!results || results.length === 0) {
+    alert("No data available for the selected month.");
+    return;
+  }
+
+  const monthInfo = getReportingMonthInfo(results[0].dateStr);
+
+  const table1 = buildCompleteAttendanceTableHtml(monthKey, results);
+  const table2 = buildMergedAttendanceTableHtml(monthKey, results, 'assemble_dimmer');
+  const table3 = buildMergedAttendanceTableHtml(monthKey, results, 'roj_shapla');
+
+  const sheets = [
+    {
+      name: "Complete Attendance",
+      tableHtml: table1,
+      freezePanes: true,
+      splitH: 3,
+      splitV: 2
+    },
+    {
+      name: "Fan Assemble + Dimmer",
+      tableHtml: table2,
+      freezePanes: false
+    },
+    {
+      name: "Fan Rojonigondha + Shapla",
+      tableHtml: table3,
+      freezePanes: false
+    }
+  ];
+
+  const fullMhtml = buildMultiSheetWorkbookMHTML(sheets);
+  const blob = new Blob([fullMhtml], { type: 'application/vnd.ms-excel' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
@@ -1812,9 +2042,10 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
   }
 
   const monthInfo = getReportingMonthInfo(results[0].dateStr);
-  const endParts = results[results.length - 1].dateStr.split('-');
-  const endDayStr = String(parseInt(endParts[2], 10)).padStart(2, '0');
-  const headerTitleRange = `${monthInfo.monthName} Month = 01 ${monthInfo.monthName} to ${endDayStr} ${monthInfo.monthName} ${monthInfo.year}`;
+  const mode = window.historyMergedMode;
+  const isRoj = (mode === 'roj_shapla');
+  const sheetName = isRoj ? "Fan Rojonigondha + Shapla" : "Fan Assemble + Dimmer";
+  const tableHtml = buildMergedAttendanceTableHtml(monthKey, results, mode);
 
   let html = `
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -1824,7 +2055,7 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
     <x:ExcelWorkbook>
       <x:ExcelWorksheets>
         <x:ExcelWorksheet>
-          <x:Name>Monthly Merge</x:Name>
+          <x:Name>${sheetName}</x:Name>
           <x:WorksheetOptions>
             <x:DisplayGridlines/>
           </x:WorksheetOptions>
@@ -1834,122 +2065,7 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
   </xml>
 </head>
 <body>
-  <table border="1" style="border-collapse: collapse; font-family: 'Times New Roman', Times, serif; font-size: 11pt; border: 1px solid #94a3b8; text-align: center;">
-    <colgroup>
-      <col width="90" style="mso-width-source:userset;mso-width-alt:3200;width:68pt" />
-      <col width="60" style="mso-width-source:userset;mso-width-alt:2100;width:45pt" />
-      <col width="90" style="mso-width-source:userset;mso-width-alt:3200;width:68pt" />
-      <col width="90" style="mso-width-source:userset;mso-width-alt:3200;width:68pt" />
-      <col width="90" style="mso-width-source:userset;mso-width-alt:3200;width:68pt" />
-      <col width="170" style="mso-width-source:userset;mso-width-alt:6000;width:128pt" />
-      <col width="95" style="mso-width-source:userset;mso-width-alt:3400;width:72pt" />
-    </colgroup>
-    <thead>
-      <tr>
-        <th colspan="7" style="font-size: 16pt; font-weight: bold; text-align: center; vertical-align: middle; padding: 10px; background-color: #064e3b; color: #ffffff; border: 1px solid #94a3b8; border-bottom: 2px solid #94a3b8;">
-          Worker Attendance - ${headerTitleRange}
-        </th>
-      </tr>
-      <tr>
-        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Date</th>
-        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Day</th>
-        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Authorized</th>
-        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Existing</th>
-        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Present</th>
-        <th style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 6px 10px; border: 1px solid #cbd5e1;">Absent</th>
-        <th rowspan="2" style="background-color: #047857; color: #ffffff; font-weight: bold; text-align: center; vertical-align: middle; padding: 8px; border: 1px solid #cbd5e1;">Percentage</th>
-      </tr>
-      <tr>
-        <th style="background-color: #047857; color: #ffffff; font-size: 9pt; font-weight: normal; text-align: center; vertical-align: middle; padding: 4px 8px; border: 1px solid #cbd5e1;">(from Authorize Manpower)</th>
-      </tr>
-    </thead>
-    <tbody>
-`;
-
-  let totalAuthSum = 0;
-  let totalExistSum = 0;
-  let totalPresentSum = 0;
-  let totalAbsentSum = 0;
-  let daysWithDataCount = 0;
-
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-  results.forEach(function(res) {
-    const parts = res.dateStr.split('-');
-    const dateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-
-    const dayNum = dateObj.getDate();
-    const monthShort = monthNames[dateObj.getMonth()];
-    const yearShort = String(dateObj.getFullYear()).slice(-2);
-    const formattedDate = `${dayNum}-${monthShort}-${yearShort}`;
-    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-
-    const isFriday = dateObj.getDay() === 5;
-    const cellBorder = "1px solid #cbd5e1";
-
-    let auth = 0;
-    let exist = 0;
-    let pres = 0;
-    let abs = 0;
-    let pct = 0;
-    let hasData = false;
-
-    if (res.hasSnapshot && res.state) {
-      const merged = (window.historyMergedMode === 'roj_shapla') ? collectFanRojonigondhaShaplaTotals(res.state) : collectFanAssembleDimmerTotals(res.state);
-      auth = merged.totals.authorized || 0;
-      exist = merged.totals.existing || 0;
-      pres = merged.totals.present || 0;
-      abs = merged.totals.absent || 0;
-      pct = auth > 0 ? Math.round((pres / auth) * 100) : 0;
-      if (auth > 0 || exist > 0 || pres > 0) {
-        hasData = true;
-      }
-    }
-
-    if (hasData) {
-      totalAuthSum += auth;
-      totalExistSum += exist;
-      totalPresentSum += pres;
-      totalAbsentSum += abs;
-      daysWithDataCount++;
-    }
-
-    const rowBg = isFriday ? '#fee2e2' : '#ffffff';
-    const authBg = isFriday ? '#fecaca' : (hasData ? '#ecfdf5' : '#ffffff');
-    const existBg = isFriday ? '#fecaca' : (hasData ? '#d1fae5' : '#ffffff');
-    const presBg = isFriday ? '#fecaca' : (hasData ? '#a7f3d0' : '#ffffff');
-    const absBg = isFriday ? '#fecaca' : (hasData ? '#ffedd5' : '#ffffff');
-
-    html += `<tr>
-      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${rowBg}; mso-number-format:'\\@';">${formattedDate}</td>
-      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${rowBg}; mso-number-format:'\\@';">${dayName}</td>
-      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${authBg}; mso-number-format:'0';">${auth}</td>
-      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${existBg}; mso-number-format:'0';">${exist}</td>
-      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; background-color: ${presBg}; mso-number-format:'0';">${pres}</td>
-      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: ${abs > 0 ? '#9a3412' : '#000000'}; background-color: ${absBg}; mso-number-format:'0';">${abs}</td>
-      <td style="text-align: center; vertical-align: middle; padding: 6px; border: ${cellBorder}; color: #000000; font-weight: bold; background-color: ${rowBg}; mso-number-format:'0%';">${pct}%</td>
-    </tr>`;
-  });
-
-  const overallPct = totalAuthSum > 0 ? Math.round((totalPresentSum / totalAuthSum) * 100) : 0;
-  const avgAuthNum = daysWithDataCount > 0 ? (totalAuthSum / daysWithDataCount) : 0;
-  const avgAuth = (avgAuthNum % 1 === 0) ? String(Math.round(avgAuthNum)) : avgAuthNum.toFixed(1);
-  const avgExistNum = daysWithDataCount > 0 ? (totalExistSum / daysWithDataCount) : 0;
-  const avgExist = (avgExistNum % 1 === 0) ? String(Math.round(avgExistNum)) : avgExistNum.toFixed(1);
-  
-  html += `
-    </tbody>
-    <tfoot>
-      <tr>
-        <th colspan="2" style="background-color: #0f766e; color: #ffffff; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8;">Total / Average</th>
-        <th style="background-color: #e2e8f0; color: #000000; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8; mso-number-format:'0';">${avgAuth}</th>
-        <th style="background-color: #cbd5e1; color: #000000; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8; mso-number-format:'0.0';">${avgExist}</th>
-        <th style="background-color: #a7f3d0; color: #000000; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8; mso-number-format:'0';">${totalPresentSum}</th>
-        <th style="background-color: #ffedd5; color: #9a3412; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8; mso-number-format:'0';">${totalAbsentSum}</th>
-        <th style="background-color: #166534; color: #ffffff; text-align: center; vertical-align: middle; font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; border-top: 2px solid #94a3b8; mso-number-format:'0%';">${overallPct}%</th>
-      </tr>
-    </tfoot>
-  </table>
+  ${tableHtml}
 </body>
 </html>`;
 
@@ -1957,7 +2073,7 @@ function generateAndDownloadMonthlyExcel(monthKey, results) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
-  link.setAttribute("download", `Worker_Attendance_${monthInfo.monthName}_${monthInfo.year}.xls`);
+  link.setAttribute("download", `Worker_Attendance_${isRoj ? 'Rojonigondha_Shapla' : 'Assemble_Dimmer'}_${monthInfo.monthName}_${monthInfo.year}.xls`);
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
@@ -2004,7 +2120,7 @@ function generateAndPrintMonthlyReport(monthKey, results) {
       pres = merged.totals.present || 0;
       abs = merged.totals.absent || 0;
       pct = auth > 0 ? Math.round((pres / auth) * 100) : 0;
-      if (auth > 0 || exist > 0 || pres > 0) {
+      if (pres > 0) {
         hasData = true;
       }
     }

@@ -41,46 +41,14 @@ function setupFirebaseListener() {
         }
         // --- MIGRATION BLOCK END ---
         
-        if (data.iom_staff_list) {
-          let list = Array.isArray(data.iom_staff_list) 
-            ? data.iom_staff_list 
-            : Object.values(data.iom_staff_list);
-          IOM_STAFF_LIST = list.filter(item => item && item.id);
-        }
+        
 
         globalAppState = data;
         localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(data));
 
-        if (typeof data.iom_locked !== 'undefined') {
-          if (!localDashboardState) {
-            localDashboardState = JSON.parse(JSON.stringify(data));
-          }
-          const lockChanged = localDashboardState.iom_locked !== data.iom_locked;
-          localDashboardState.iom_locked = data.iom_locked;
-          localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
-          if (lockChanged && currentActivePageId === 'iom-dashboard') {
-            if (typeof _performDashboardRender === 'function') {
-              _performDashboardRender();
-            }
-          }
-        }
+        
 
-        if (data.iom) {
-          if (!localDashboardState) {
-            localDashboardState = JSON.parse(JSON.stringify(data));
-          }
-          const iomStr = JSON.stringify(data.iom);
-          const currentIomStr = localDashboardState.iom ? JSON.stringify(localDashboardState.iom) : '';
-          if (iomStr !== currentIomStr) {
-            localDashboardState.iom = data.iom;
-            localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
-            if (currentActivePageId === 'iom-dashboard') {
-              if (typeof _performDashboardRender === 'function') {
-                _performDashboardRender();
-              }
-            }
-          }
-        }
+        
         if (data.sectionStatus || data.sectionStatusHistory) {
           if (!localDashboardState) {
             localDashboardState = JSON.parse(JSON.stringify(data));
@@ -130,7 +98,7 @@ function setupFirebaseListener() {
       if (trigger) {
         localDashboardState = JSON.parse(JSON.stringify(globalAppState));
         localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
-        if (currentActivePageId === 'index' || currentActivePageId === 'iom-dashboard' || currentActivePageId === 'section-status-report') {
+        if (currentActivePageId === 'index'  || currentActivePageId === 'section-status-report') {
           _performDashboardRender();
         }
       }
@@ -210,7 +178,7 @@ function setupFirebaseListener() {
       const lastSeenStr = localStorage.getItem('mep_last_seen_broadcast');
       const lastSeen = lastSeenStr ? parseInt(lastSeenStr) : 0;
 
-      if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard' || currentActivePageId === 'iom-dashboard') {
+      if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard' ) {
         window.scrollTo(0, 0);
       }
 

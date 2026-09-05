@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.39';
+const APP_VERSION = '2.6.58';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -36,7 +36,8 @@ const SECTIONS_CONFIG = {
     password: "9696",
     groups: {
       "Fan Armature": ["Engineer", "Technicalman", "Worker"],
-      "Fan Replace": ["Engineer", "Technicalman", "Worker"]
+      "Fan Assemble": ["Manager", "In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Jr. Officer", "Worker"],
+      "Fan Dimmer & Blade": ["Engineer", "Worker"]
     }
   },
   monir: {
@@ -60,27 +61,11 @@ const SECTIONS_CONFIG = {
     password: "0011",
     groups: {
       "Fan Rojonigondha": ["In-charge", "Engineer", "Technicalman", "Worker"],
-      "Fan Sada Shapla": ["Supervisor", "Worker"]
+      "Fan Sada Shapla": ["Supervisor", "Worker"],
+      "Fan Replace": ["Engineer", "Technicalman", "Worker"]
     }
   }
 };
-
-let IOM_STAFF_LIST = [
-  { id: '3746', name: 'Md. Saiful Islam', designation: 'Manager (Fan)', department: 'Fan Admin' },
-  { id: '15387', name: 'Arif Ahmed', designation: 'Asst. Engineer', department: 'Fan Admin' },
-  { id: '966', name: 'MD Zohirul Islam Monir', designation: 'Sr. Engineer', department: 'Fan Admin' },
-  { id: '11989', name: 'Md. Anwar Hossain', designation: 'Production Engineer', department: 'Fan Admin' },
-  { id: '18025', name: 'Md Hafijur Rahman', designation: 'Production Engineer', department: 'Fan Power Press & Stamping' },
-  { id: '7544', name: 'MD Hasan Khalifa', designation: 'Asst. Engineer', department: 'Fan Power Press & Stamping' },
-  { id: '16027', name: 'Md Sayed Hossain', designation: 'Jr. Engineer', department: 'Fan Replace' },
-  { id: '7620', name: 'Hossainuzzaman', designation: 'Sub-Asst. Engineer', department: 'Fan Auto Powder Coating' },
-  { id: '1032', name: 'Md. Masum Talukder', designation: 'Asst. Engineer', department: 'Fan Lathe' },
-  { id: '7520', name: 'Bikash Chand Ray', designation: 'Asst. Engineer', department: 'Fan Admin' },
-  { id: '15998', name: 'Lucky Akter', designation: 'Jr. Engineer', department: 'Fan Rojonigondha' },
-  { id: '7571', name: 'Bithi Rani Das', designation: 'Sub-Asst. Engineer', department: 'Fan Assemble' },
-  { id: '16749', name: 'Nafija Islam', designation: 'Jr.Engineer', department: 'Fan Dimmer & Blade' },
-  { id: '16976', name: 'Md Takbir Hossain', designation: 'Asst. Engineer', department: 'Fan Armature' }
-];
 
 let globalAppState = null;
 let localDashboardState = null;
@@ -116,13 +101,13 @@ const SECTION_STATUS_CONFIG = {
   },
   fan_assemble_line: {
     name: "Fan Assemble Line",
-    entryBy: "Anik",
-    ownerPage: "anik"
+    entryBy: "Takbir",
+    ownerPage: "takbir"
   },
   fan_dimmer_and_blade: {
     name: "Fan Dimmer and Blade",
-    entryBy: "Anik",
-    ownerPage: "anik"
+    entryBy: "Takbir",
+    ownerPage: "takbir"
   },
   fan_armature_winding: {
     name: "Fan Armature Winding",
@@ -131,8 +116,8 @@ const SECTION_STATUS_CONFIG = {
   },
   cf_5607_production: {
     name: "CF 5607 Production",
-    entryBy: "Takbir",
-    ownerPage: "takbir"
+    entryBy: "Bikash",
+    ownerPage: "bikash"
   },
   exhaust_fan_production: {
     name: "Exhaust Fan Production",
@@ -151,7 +136,7 @@ const SECTION_STATUS_CONFIG = {
   }
 };
 
-const META_STATE_KEYS = ['history', 'branchAttendance', 'iom', 'iom_staff_list', 'iom_locked', 'rocketEntries', 'sectionStatus'];
+const META_STATE_KEYS = ['history', 'branchAttendance', 'rocketEntries', 'sectionStatus'];
 const SMOOTH_MODE_STORAGE_KEY = 'mep_smooth_mode_enabled';
 const EDIT_AUTH_STORAGE_KEY = 'mep_edit_auth_enabled';
 

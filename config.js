@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.58';
+const APP_VERSION = '2.6.63';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -23,14 +23,6 @@ if (typeof firebase !== 'undefined') {
 }
 
 const SECTIONS_CONFIG = {
-  anik: {
-    title: "Entry Sheet (Anik)",
-    password: "8250",
-    groups: {
-      "Fan Assemble": ["Manager", "In-charge", "Engineer", "Technicalman", "Sr. Supervisor", "Jr. Officer", "Worker"],
-      "Fan Dimmer & Blade": ["Engineer", "Worker"]
-    }
-  },
   takbir: {
     title: "Entry Sheet (Takbir)",
     password: "9696",
@@ -136,7 +128,7 @@ const SECTION_STATUS_CONFIG = {
   }
 };
 
-const META_STATE_KEYS = ['history', 'branchAttendance', 'rocketEntries', 'sectionStatus'];
+const META_STATE_KEYS = ['history', 'branchAttendance', 'rocketEntries', 'sectionStatus', 'sectionStatusHistory', 'machineStatus', 'iom', 'iom_locked', 'iom_staff_list'];
 const SMOOTH_MODE_STORAGE_KEY = 'mep_smooth_mode_enabled';
 const EDIT_AUTH_STORAGE_KEY = 'mep_edit_auth_enabled';
 

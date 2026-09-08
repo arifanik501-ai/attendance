@@ -653,43 +653,14 @@ const EXACT_DASHBOARD_ROWS = [
 ];
 
 function resolveAssembleDimmerOwner(state) {
-  if (!state) return 'takbir';
-  let anikTs = Number(state.anik?.lastUpdatedTimestamp) || 0;
-  let takbirTs = Number(state.takbir?.lastUpdatedTimestamp) || 0;
-
-  if (Array.isArray(state.history)) {
-    for (const h of state.history) {
-      if (!h || !h.timestamp) continue;
-      const ts = Number(h.timestamp) || 0;
-      const page = h.page || '';
-      const pageId = h.pageId || '';
-      if ((page.includes('Anik') || pageId === 'anik') && !anikTs) {
-        anikTs = ts;
-      }
-      if ((page.includes('Takbir') || pageId === 'takbir') && !takbirTs) {
-        takbirTs = ts;
-      }
-      if (anikTs && takbirTs) break;
-    }
-  }
-
-  if (state.sectionStatus) {
-    const assembleStatus = state.sectionStatus.fan_assemble_line;
-    if (assembleStatus && assembleStatus.timestamp) {
-      const ts = Number(assembleStatus.timestamp) || 0;
-      if (assembleStatus.entryBy?.toLowerCase() === 'anik' && !anikTs) anikTs = ts;
-      if (assembleStatus.entryBy?.toLowerCase() === 'takbir' && !takbirTs) takbirTs = ts;
-    }
-  }
-
-  return (anikTs > takbirTs) ? 'anik' : 'takbir';
+  return 'takbir';
 }
 window.resolveAssembleDimmerOwner = resolveAssembleDimmerOwner;
 
 function calculateDashboardData(state) {
   const values = {};
-  const activeOwner = resolveAssembleDimmerOwner(state);
-  const inactiveOwner = (activeOwner === 'takbir') ? 'anik' : 'takbir';
+  const activeOwner = 'takbir';
+  const inactiveOwner = 'anik';
 
   // Dynamic row links pointing to the latest updater
   const r11 = EXACT_DASHBOARD_ROWS.find(r => r.id === 'R11');
@@ -877,21 +848,15 @@ function extractSectionStatsFromState(state) {
     const actualPageId = (s.id === 'sec_assemble' || s.id === 'sec_blade_dimmer') ? activeOwner : s.pageId;
     const pageGroups = state && state[actualPageId];
     if (pageGroups && Array.isArray(pageGroups[s.groupKey])) {
-      pageGroups[s.groupKey].forEach(row => {
-        const a = parseInt(row.authorized) || 0;
-        const e = parseInt(row.existing) || 0;
-        const p = parseInt(row.present) || 0;
-        const ab = Math.max(0, a - p);
-
-        secAuth += a;
-        secExist += e;
-        secPres += p;
-        secAbs += ab;
-
-        if (p > 0 || a > 0) {
-          postSummaries.push(`${row.designation}: ${p}/${a}`);
-        }
-      });
+      // Use the section's Worker row to accurately reflect updated section present manpower
+      const workerRow = pageGroups[s.groupKey].find(r => r.designation === 'Worker') || pageGroups[s.groupKey][pageGroups[s.groupKey].length - 1];
+      if (workerRow) {
+        secAuth = parseInt(workerRow.authorized) || 0;
+        secExist = parseInt(workerRow.existing) || 0;
+        secPres = parseInt(workerRow.present) || 0;
+        secAbs = Math.max(0, secAuth - secPres);
+        postSummaries.push(`Worker: ${secPres}/${secAuth}`);
+      }
     }
 
     totalPres += secPres;
@@ -930,7 +895,7 @@ function getAggregatedSectionAnalytics(period, currentState) {
       ...currentSnap,
       period: 'daily',
       periodLabel: 'Daily Live',
-      periodSubLabel: 'Overall Presence & Rate Across All Designations (Daily)',
+      periodSubLabel: 'Overall Section Presence & Rate (Daily Live)',
       centerSubText: `${currentSnap.totalPres} Present`,
       kpiNote: 'Today'
     };
@@ -1110,7 +1075,7 @@ window.preloadRecentHistorySnapshots = function () {
 };
 
 function buildSectionAttendancePieChartCard(state, calculatedData, selectedPeriod) {
-  const period = selectedPeriod || window.currentSectionAnalyticsPeriod || 'daily';
+  const period = 'daily';
   const data = getAggregatedSectionAnalytics(period, state);
   const { sectionStats, totalPres, totalExist, totalAuth, totalAbs, overallRate } = data;
 
@@ -1187,7 +1152,8 @@ function buildSectionAttendancePieChartCard(state, calculatedData, selectedPerio
 
   let listHtml = '';
   sectionStats.forEach(s => {
-    const ratePct = s.auth > 0 ? ((s.pres / s.auth) * 100).toFixed(1) : (s.exist > 0 ? ((s.pres / s.exist) * 100).toFixed(1) : '0.0');
+    const rawPct = s.auth > 0 ? (s.pres / s.auth) * 100 : (s.exist > 0 ? (s.pres / s.exist) * 100 : 0);
+    const ratePct = (s.auth > 0 && s.pres >= s.auth) ? '100.0' : rawPct.toFixed(1);
     const badge = getRateBadgeConfig(ratePct);
 
     listHtml += `
@@ -1212,7 +1178,7 @@ function buildSectionAttendancePieChartCard(state, calculatedData, selectedPerio
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
         <div style="font-size: 1.02rem; font-weight: 800; color: var(--text-dark, #0f172a); display: flex; align-items: center; gap: 6px;">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--theme-color, #6366f1)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
-          <span>Section Analytics <span style="font-size: 0.82rem; font-weight: 600; color: #64748b;">(All Posts)</span></span>
+          <span>Section Analytics</span>
         </div>
         <div class="analytics-rate-badge">
           <span class="analytics-rate-label">ATT. RATE</span>
@@ -1220,13 +1186,11 @@ function buildSectionAttendancePieChartCard(state, calculatedData, selectedPerio
         </div>
       </div>
       
-      <!-- Subtitle & Daily/Weekly/Monthly Switcher -->
+      <!-- Subtitle & Daily Live Badge -->
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px; gap: 8px; flex-wrap: wrap;">
         <span style="font-size: 0.76rem; color: #64748b; font-weight: 600;">${data.periodSubLabel}</span>
-        <div class="analytics-period-pill-wrap">
-          <button class="analytics-period-pill-btn ${period === 'daily' ? 'active' : ''}" onclick="window.setSectionAnalyticsPeriod('daily')">Daily</button>
-          <button class="analytics-period-pill-btn ${period === 'weekly' ? 'active' : ''}" onclick="window.setSectionAnalyticsPeriod('weekly')">Weekly</button>
-          <button class="analytics-period-pill-btn ${period === 'monthly' ? 'active' : ''}" onclick="window.setSectionAnalyticsPeriod('monthly')">Monthly</button>
+        <div style="display: flex; align-items: center;">
+          <span style="font-size: 0.70rem; font-weight: 800; color: #3b82f6; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 2.5px 9px; letter-spacing: 0.04em;">Daily Live</span>
         </div>
       </div>
     </div>
@@ -1265,7 +1229,7 @@ function buildSectionAttendancePieChartCard(state, calculatedData, selectedPerio
     </div>
 
     <!-- Section Breakdown List -->
-    <div style="font-size: 0.72rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.45rem;">Section Breakdown (All Posts)</div>
+    <div style="font-size: 0.72rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.45rem;">Section Breakdown</div>
     <div class="pie-section-list" style="display: flex; flex-direction: column; gap: 4px; max-height: 380px; overflow-y: auto; padding-right: 2px;">
       ${listHtml}
     </div>
@@ -1327,7 +1291,6 @@ window.getTodayAllEntryStatus = function (state) {
   });
 
   const allSheets = [
-    { id: 'anik', name: 'Anik', title: 'Entry Sheet (Anik)' },
     { id: 'takbir', name: 'Takbir', title: 'Entry Sheet (Takbir)' },
     { id: 'monir', name: 'Monir', title: 'Entry Sheet (Monir)' },
     { id: 'anwar', name: 'Anwar', title: 'Entry Sheet (Anwar)' },
@@ -1360,12 +1323,12 @@ window.buildTodayEntryStatusBannerHtml = function (state) {
 
   if (status.allDone) {
     return `
-      <div class="today-entry-status-banner is-all-done no-print" title="All in-charges (Anik, Takbir, Monir, Anwar, Bikash) have updated their sheets today">
+      <div class="today-entry-status-banner is-all-done no-print" title="All in-charges (Takbir, Monir, Anwar, Bikash) have updated their sheets today">
         <span class="status-badge-lead">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           <span>All Updated</span>
         </span>
-        <span class="status-counter-chip">5/5 Complete</span>
+        <span class="status-counter-chip">4/4 Complete</span>
         <span class="status-pending-names-clean">All Entry Sheets Synced Today</span>
       </div>
     `;

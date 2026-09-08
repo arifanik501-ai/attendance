@@ -348,12 +348,12 @@ function createDefaultState() {
     }
   }
   // Load Default Data from user's Excel if empty
-  if (state.anik["Fan Assemble"]) {
-    let man = state.anik["Fan Assemble"].find(x => x.designation === "Manager");
+  if (state.takbir && state.takbir["Fan Assemble"]) {
+    let man = state.takbir["Fan Assemble"].find(x => x.designation === "Manager");
     if (man) { man.authorized = 1; man.existing = 1; man.present = 1; man.absent = 0; }
-    let eng = state.anik["Fan Assemble"].find(x => x.designation === "Engineer");
+    let eng = state.takbir["Fan Assemble"].find(x => x.designation === "Engineer");
     if (eng) { eng.authorized = 1; }
-    let wkr = state.anik["Fan Assemble"].find(x => x.designation === "Worker");
+    let wkr = state.takbir["Fan Assemble"].find(x => x.designation === "Worker");
     if (wkr) { wkr.authorized = 40; wkr.existing = 36; wkr.present = 35; wkr.absent = 1; }
   }
   return state;
@@ -397,31 +397,12 @@ function getAppState() {
     }
   }
 
-  // Copy Anik's "Fan Assemble" and "Fan Dimmer & Blade" to Takbir if missing, while preserving Anik intact
-  if (stateToReturn.anik && stateToReturn.takbir) {
-    if (stateToReturn.anik["Fan Assemble"] && !stateToReturn.takbir["Fan Assemble"]) {
-      stateToReturn.takbir["Fan Assemble"] = JSON.parse(JSON.stringify(stateToReturn.anik["Fan Assemble"]));
-    }
-    if (stateToReturn.anik["Fan Dimmer & Blade"] && !stateToReturn.takbir["Fan Dimmer & Blade"]) {
-      stateToReturn.takbir["Fan Dimmer & Blade"] = JSON.parse(JSON.stringify(stateToReturn.anik["Fan Dimmer & Blade"]));
-    }
+  // Ensure decommissioned Anik state is removed
+  if (stateToReturn.anik) {
+    delete stateToReturn.anik;
   }
   if (stateToReturn.branchAttendance && stateToReturn.branchAttendance.anik) {
-    if (!stateToReturn.branchAttendance.takbir) stateToReturn.branchAttendance.takbir = {};
-    for (const periodKey of Object.keys(stateToReturn.branchAttendance.anik)) {
-      const anikPeriod = stateToReturn.branchAttendance.anik[periodKey];
-      if (anikPeriod) {
-        if (!stateToReturn.branchAttendance.takbir[periodKey]) {
-          stateToReturn.branchAttendance.takbir[periodKey] = {};
-        }
-        if (anikPeriod["Fan Assemble"] && !stateToReturn.branchAttendance.takbir[periodKey]["Fan Assemble"]) {
-          stateToReturn.branchAttendance.takbir[periodKey]["Fan Assemble"] = JSON.parse(JSON.stringify(anikPeriod["Fan Assemble"]));
-        }
-        if (anikPeriod["Fan Dimmer & Blade"] && !stateToReturn.branchAttendance.takbir[periodKey]["Fan Dimmer & Blade"]) {
-          stateToReturn.branchAttendance.takbir[periodKey]["Fan Dimmer & Blade"] = JSON.parse(JSON.stringify(anikPeriod["Fan Dimmer & Blade"]));
-        }
-      }
-    }
+    delete stateToReturn.branchAttendance.anik;
   }
 
   for (const [pageKey, pageData] of Object.entries(SECTIONS_CONFIG)) {
@@ -589,72 +570,81 @@ window.sendAdminBroadcast = function () {
 };
 
 function saveAppState(state, customActionStr = null) {
-  
   // Auto-save history snapshot on every state update
   if (typeof _saveAttendanceHistory === 'function') {
     _saveAttendanceHistory(state);
   }
 
-  if (window.firebaseDb) {
-    // --- SAFE CONCURRENT WRITE FIX ---
-    // Instead of overwriting the ENTIRE state with set(), we use update()
-    // at the page level. This prevents one user's save from overwriting
-    // another user's simultaneously-saved page data.
-    localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(state));
-    localDashboardState = JSON.parse(JSON.stringify(state));
-    localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+  // Update raw state cache and local dashboard state immediately
+  // This ensures that the user's own computer sees their changes locally on their dashboard!
+  localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(state));
+  localDashboardState = JSON.parse(JSON.stringify(state));
+  localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+  localStorage.setItem('mep_local_uncommitted_update', 'true');
 
-    // Build a partial update object - isolated by page if saving from an entry sheet.
-    // This guarantees that if 100 users update different sheets (or the same sheet) 100 times,
-    // the absolute last update for every sheet is what stays stored in Firebase, without stomping other sheets.
+  const updateTs = Date.now();
+  localStorage.setItem('mep_last_update_ts', updateTs);
+  window.mepHasPendingDashboardUpdates = true;
+  if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
+    window.checkDashboardUpdateNoticeStatus();
+  }
+
+  if (window.firebaseDb) {
     const updatePayload = {};
     if (currentActivePageId && SECTIONS_CONFIG[currentActivePageId] && state[currentActivePageId]) {
-      state[currentActivePageId].lastUpdatedTimestamp = Date.now();
+      state[currentActivePageId].lastUpdatedTimestamp = updateTs;
       updatePayload[currentActivePageId] = state[currentActivePageId];
       if (state.branchAttendance && state.branchAttendance[currentActivePageId]) {
         updatePayload[`branchAttendance/${currentActivePageId}`] = state.branchAttendance[currentActivePageId];
+      }
+      if (state.history) {
+        updatePayload['history'] = state.history;
+      }
+      if (state.sectionStatus) {
+        updatePayload['sectionStatus'] = state.sectionStatus;
+      }
+      if (state.sectionStatusHistory) {
+        updatePayload['sectionStatusHistory'] = state.sectionStatusHistory;
       }
     } else {
       for (const key of Object.keys(state)) {
         updatePayload[key] = state[key];
       }
     }
-// Use update() so concurrent writes from different users don't stomp each other
-    window.firebaseDb.ref('mep_dashboard_state').update(updatePayload)
-      .catch(err => {
-        console.warn('[saveAppState] Firebase update failed, falling back to set():', err);
-        window.firebaseDb.ref('mep_dashboard_state').set(state);
-      });
 
     const sheetName = currentActivePageId ? (SECTIONS_CONFIG[currentActivePageId]?.title || 'An entry sheet') : 'The dashboard';
     const actionMessage = customActionStr || `🔄 ${sheetName} has been updated`;
 
-    const updateTs = Date.now();
-    localStorage.setItem('mep_last_update_ts', updateTs);
-    window.mepHasPendingDashboardUpdates = true;
-    if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
-      window.checkDashboardUpdateNoticeStatus();
-    }
+    const promises = [];
 
-    window.firebaseDb.ref('mep_last_update_info').set({
+    // 1. Update state payload in Firebase
+    const pState = window.firebaseDb.ref('mep_dashboard_state').update(updatePayload)
+      .catch(err => {
+        console.warn('[saveAppState] Firebase update failed, falling back to set():', err);
+        return window.firebaseDb.ref('mep_dashboard_state').set(state);
+      });
+    promises.push(pState);
+
+    // 2. Update last update info so dashboard receives "Update Available" notification
+    const pInfo = window.firebaseDb.ref('mep_last_update_info').set({
       deviceId: SESSION_DEVICE_ID,
       timestamp: updateTs,
       pageTitle: sheetName,
       actionStr: actionMessage
-    });
+    }).catch(() => {});
+    promises.push(pInfo);
 
-    // Auto-increment the global change counter
-    window.firebaseDb.ref('mep_change_count')
+    // 3. Auto-increment global change count
+    const pCount = window.firebaseDb.ref('mep_change_count')
       .transaction(current => (current || 0) + 1)
       .then(() => _loadAndDisplayChangeCount())
       .catch(() => {});
+    promises.push(pCount);
+
+    return Promise.all(promises);
   } else {
     localStorage.setItem('manpowerData', JSON.stringify(state));
-    localStorage.setItem('mep_last_update_ts', Date.now());
-    window.mepHasPendingDashboardUpdates = true;
-    if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
-      window.checkDashboardUpdateNoticeStatus();
-    }
+    return Promise.resolve();
   }
 }
 
@@ -992,7 +982,6 @@ function generateSidebar(activePage) {
     { id: 'section-status-report', title: 'Section Status', url: 'index.html#section-status-report', chipClass: 'chip-purple', icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M208,40H48A16,16,0,0,0,32,56V200a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V56A16,16,0,0,0,208,40ZM48,56H200V88H48ZM200,200H48V104H200V200Z" opacity="0.2"/><path d="M208,32H48A24,24,0,0,0,24,56V200a24,24,0,0,0,24,24H200a24,24,0,0,0,24-24V56A24,24,0,0,0,208,32ZM48,48H200a8,8,0,0,1,8,8V80H40V56A8,8,0,0,1,48,48ZM200,208H48a8,8,0,0,1-8-8V96H208V200A8,8,0,0,1,200,208Z"/></svg>' }
   ];
   const entryPages = [
-    { id: 'anik', title: 'Entry (Anik)', url: 'entry.html?page=anik', icon: entrySheetIcon },
     { id: 'takbir', title: 'Entry (Takbir)', url: 'entry.html?page=takbir', icon: entrySheetIcon },
     { id: 'monir', title: 'Entry (Monir)', url: 'entry.html?page=monir', icon: entrySheetIcon },
     { id: 'anwar', title: 'Entry (Anwar)', url: 'entry.html?page=anwar', icon: entrySheetIcon },
@@ -1059,8 +1048,7 @@ function generateSidebar(activePage) {
 
   entryPages.forEach(p => {
     let specialClass = '';
-    if (p.id === 'anik') specialClass = 'entry-sub-anik special-entry-link';
-    else if (p.id === 'takbir') specialClass = 'entry-sub-takbir special-entry-link';
+    if (p.id === 'takbir') specialClass = 'entry-sub-takbir special-entry-link';
     else if (p.id === 'monir') specialClass = 'entry-sub-monir secondary-entry-link';
     else if (p.id === 'anwar') specialClass = 'entry-sub-anwar secondary-entry-link';
     else if (p.id === 'bikash') specialClass = 'entry-sub-bikash secondary-entry-link';
@@ -1436,7 +1424,7 @@ function _renderEntryContent(pageId) {
         return;
       }
 
-      if (state[pageId] && state[pageId][g] && state[pageId][g][i] && f) {
+      if (state[pageId] && state[pageId][g] && state[pageId][g][i] !== undefined && f) {
         state[pageId][g][i][f] = val;
 
         if (f === 'existing' || f === 'present') {
@@ -1458,6 +1446,7 @@ function _renderEntryContent(pageId) {
           }
         }
 
+        globalAppState = state;
         updateGroupTotals(e.target.closest('table'), state[pageId][g]);
       }
     });
@@ -1472,56 +1461,15 @@ function _renderEntryContent(pageId) {
 
     document.getElementById('btn-save').onclick = () => {
       const saveBtn = document.getElementById('btn-save');
-
-      // Check Section Status validation for this entry page
-      const sectionsForPage = Object.keys(SECTION_STATUS_CONFIG).filter(k => SECTION_STATUS_CONFIG[k].ownerPage === pageId);
-      if (sectionsForPage.length > 0) {
-        let missingSections = [];
-        sectionsForPage.forEach(sKey => {
-          const cfg = SECTION_STATUS_CONFIG[sKey];
-          const pendingVal = (window.pendingSectionStatus && window.pendingSectionStatus[sKey]) ? window.pendingSectionStatus[sKey] : null;
-          const eff = getEffectiveSectionStatus(sKey, state);
-
-          if (!pendingVal && eff.isPending) {
-            missingSections.push(cfg.name);
-          }
-        });
-
-        if (missingSections.length > 0) {
-          if (typeof app !== 'undefined' && app.showToast) {
-            app.showToast('⚠️ Please select ON or OFF status for all sections!', 'warning');
-          }
-          alert('⚠️ Please select ON or OFF status for all sections before updating!\n\nUnselected Sections:\n• ' + missingSections.join('\n• '));
-          return;
-        }
-      }
-
       if (saveBtn.disabled) return;
+
       saveBtn.disabled = true;
-      saveBtn.style.opacity = '0.6';
-      saveBtn.querySelector('span') && (saveBtn.querySelector('span').textContent = 'Saving...');
-
-      // Commit section status updates (silent: true so single sheet notification is sent by saveAppState)
-      if (sectionsForPage.length > 0) {
-        sectionsForPage.forEach(sKey => {
-          const cfg = SECTION_STATUS_CONFIG[sKey];
-          let statusToSave = (window.pendingSectionStatus && window.pendingSectionStatus[sKey]) ? window.pendingSectionStatus[sKey] : null;
-          
-          if (!statusToSave) {
-            const eff = getEffectiveSectionStatus(sKey, state);
-            if (eff && !eff.isPending) {
-              statusToSave = eff.status;
-            }
-          }
-
-          if (statusToSave) {
-            updateSectionStatus(sKey, statusToSave, cfg.entryBy);
-            if (window.pendingSectionStatus) delete window.pendingSectionStatus[sKey];
-          }
-        });
+      saveBtn.style.opacity = '0.75';
+      if (saveBtn.querySelector('span')) {
+        saveBtn.querySelector('span').textContent = 'Syncing Cloud...';
       }
 
-      // Sync any auth-input edits into the save state
+      // 1. CRITICAL: Capture and sync all current input values from the DOM into state FIRST
       document.querySelectorAll('.auth-input').forEach(inp => {
         const g = inp.getAttribute('data-group');
         const i = parseInt(inp.getAttribute('data-index'), 10);
@@ -1531,7 +1479,6 @@ function _renderEntryContent(pageId) {
         }
       });
 
-      // Sync all regular inputs to ensure latest typed values are captured
       document.querySelectorAll('.entry-input:not(.auth-input)').forEach(inp => {
         const g = inp.getAttribute('data-group');
         const idx = parseInt(inp.getAttribute('data-index'), 10);
@@ -1545,58 +1492,100 @@ function _renderEntryContent(pageId) {
         }
       });
 
-      globalAppState = state;
-
-      // Add history notification — using timestamp for reliable today-check
+      // 2. Section Status: Commit to state without out-of-order Firebase writes
       const now = new Date();
-      if (!state.history) state.history = [];
+      const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const isoDateStr = `${year}-${month}-${day}`;
 
-      const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
-      const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      if (!state.sectionStatus) state.sectionStatus = {};
+      if (!state.sectionStatusHistory) state.sectionStatusHistory = {};
+      if (!state.sectionStatusHistory[isoDateStr]) state.sectionStatusHistory[isoDateStr] = {};
+
+      const sectionsForPage = Object.keys(SECTION_STATUS_CONFIG).filter(k => SECTION_STATUS_CONFIG[k].ownerPage === pageId);
+      if (sectionsForPage.length > 0) {
+        sectionsForPage.forEach(sKey => {
+          const cfg = SECTION_STATUS_CONFIG[sKey];
+          let statusToSave = (window.pendingSectionStatus && window.pendingSectionStatus[sKey]) ? window.pendingSectionStatus[sKey] : null;
+          
+          if (!statusToSave) {
+            const eff = getEffectiveSectionStatus(sKey, state);
+            if (eff && !eff.isPending) {
+              statusToSave = eff.status;
+            } else {
+              statusToSave = 'ON';
+            }
+          }
+
+          if (statusToSave) {
+            const entryObj = {
+              sectionKey: sKey,
+              name: cfg.name,
+              status: statusToSave,
+              entryBy: cfg.entryBy,
+              entryDate: dateFormatter.format(now),
+              entryTime: timeFormatter.format(now),
+              lastUpdated: dateFormatter.format(now) + ' ' + timeFormatter.format(now),
+              timestamp: Date.now()
+            };
+            state.sectionStatus[sKey] = entryObj;
+            state.sectionStatusHistory[isoDateStr][sKey] = entryObj;
+            if (window.pendingSectionStatus) delete window.pendingSectionStatus[sKey];
+          }
+        });
+      }
+
+      // 3. Store in global state and cache
+      globalAppState = state;
+      localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(state));
+
+      // 4. Add history notification
+      if (!state.history) state.history = [];
+      const historyDateFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
+      const historyTimeFmt = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
       const newHistoryEntry = {
         page: SECTIONS_CONFIG[pageId].title,
-        time: timeFormatter.format(now),
-        date: dateFormatter.format(now),
+        time: historyTimeFmt.format(now),
+        date: historyDateFmt.format(now),
         timestamp: Date.now()
       };
 
-      // --- CONCURRENT HISTORY FIX ---
-      // Remove any existing entry for this page today to avoid duplicates,
-      // then add fresh entry. This prevents the pending list from keeping
-      // a section as "Missing" even after it was saved.
       const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
       state.history = state.history.filter(h => 
         !(h.page === SECTIONS_CONFIG[pageId].title && h.timestamp >= startOfToday)
       );
       state.history.unshift(newHistoryEntry);
-      // Keep max 50 history items
       if (state.history.length > 50) state.history = state.history.slice(0, 50);
       localStorage.setItem('has_new_notifications', 'true');
 
-      // CRITICAL: Save history to Firebase SEPARATELY via transaction to prevent
-      // concurrent saves from overwriting each other's history entries
-      const doSaveAndNavigate = () => {
-        saveAppState(state);
-        // Re-lock the authorize manpower edit mode after saving
+      const doSaveAndNavigate = async () => {
+        try {
+          await saveAppState(state);
+        } catch (err) {
+          console.warn('[doSaveAndNavigate] save error:', err);
+        }
         localStorage.setItem(EDIT_AUTH_STORAGE_KEY, 'false');
-        // Update pending list immediately so it reflects the save
         if (typeof window.updateReminderList === 'function') {
           window.updateReminderList(true);
         }
-        window.location.href = 'index.html';
+        if (saveBtn.querySelector('span')) {
+          saveBtn.querySelector('span').textContent = '✓ Saved Successfully!';
+        }
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 250);
       };
 
       if (window.firebaseDb) {
-        // Use a Firebase transaction on the history node to safely merge
-        // concurrent saves without overwriting each other
         window.firebaseDb.ref('mep_dashboard_state/history').transaction(currentHistory => {
           const existing = Array.isArray(currentHistory) ? currentHistory : [];
-          // Remove existing entry for this page from today to avoid duplicates
           const filtered = existing.filter(h =>
             !(h.page === SECTIONS_CONFIG[pageId].title && h.timestamp >= startOfToday)
           );
           filtered.unshift(newHistoryEntry);
-          // Keep max 50
           return filtered.slice(0, 50);
         }).then(result => {
           if (result.committed) {
@@ -1605,7 +1594,6 @@ function _renderEntryContent(pageId) {
           }
           doSaveAndNavigate();
         }).catch(() => {
-          // If transaction fails, still save - don't block the user
           doSaveAndNavigate();
         });
       } else {
@@ -1889,7 +1877,9 @@ function publishDashboardUpdates() {
               _performDashboardRender();
             }
           }
+          window.firebaseDb.ref('mep_dashboard_published_state').set(globalAppState);
           window.firebaseDb.ref('mep_dashboard_publish_trigger').set(publishTs);
+          localStorage.removeItem('mep_local_uncommitted_update');
           setTimeout(() => {
             alert("Live Data published to all Dashboards successfully.");
           }, 50);
@@ -3077,7 +3067,7 @@ function initScrollReveal() {
 // Firebase Synchronization Listener
 function setupFirebaseListener() {
   if (window.firebaseDb) {
-    // Sync state
+    // Live listener for app state updates
     window.firebaseDb.ref('mep_dashboard_state').on('value', (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -3116,41 +3106,58 @@ function setupFirebaseListener() {
            localStorage.setItem('mep_mig_ot_3hr', 'true');
         }
         // --- MIGRATION BLOCK END ---
-        
-        
 
         globalAppState = data;
         localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(data));
-
-        
-
-        
       } else {
         globalAppState = createDefaultState();
         saveAppState(globalAppState);
       }
 
-      // Update the "Pending Today" badge silently in the background.
-      // The dedicated history listener (_setupPendingListRealTimeSync) handles
-      // real-time updates; this is a safety fallback for initial load.
+      // Update the "Pending Today" reminder badge
       if (typeof window.updateReminderList === 'function') {
         window.updateReminderList(true);
       }
 
-      // The state updates silently in the background (globalAppState is always fresh).
-      // We intentionally do NOT re-trigger visual rendering here.
-      // The user must click the "Refresh" (Update) button on the dashboard to see new changes.
-      // And if they are editing a sheet, their own save will push to Firebase without interrupting their typing.
+      // Check if update notice should be shown
+      if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
+        window.checkDashboardUpdateNoticeStatus();
+      }
+
+      // Entry sheets are dedicated user input forms - never re-render them from background listeners to prevent wiping user input
     });
 
-    // Listen for publish trigger to update live dashboard globally
+    // Listen to official published state as live source for all dashboards
+    window.firebaseDb.ref('mep_dashboard_published_state').on('value', (snapshot) => {
+      const pubData = snapshot.val();
+      if (!pubData) return;
+      const hasLocalUncommitted = localStorage.getItem('mep_local_uncommitted_update') === 'true';
+      const lastUpdate = Number(localStorage.getItem('mep_last_update_ts') || 0);
+      const lastPub = Number(localStorage.getItem('mep_last_publish_ts') || 0);
+
+      // If this device does NOT have uncommitted local edits, or if publish is newer than local edit:
+      if (!hasLocalUncommitted || lastPub >= lastUpdate) {
+        localDashboardState = JSON.parse(JSON.stringify(pubData));
+        localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+        localStorage.removeItem('mep_local_uncommitted_update');
+        if (typeof _performDashboardRender === 'function' && currentActivePageId === 'index') {
+          _performDashboardRender();
+        }
+      }
+    });
+
+    // Listen for publish trigger to update live dashboard globally (triggered by "Update Dashboard" button)
     let initialPublishLoad = true;
     window.firebaseDb.ref('mep_dashboard_publish_trigger').on('value', (snapshot) => {
       const trigger = snapshot.val();
       if (trigger) {
         const pubTs = (typeof trigger === 'number') ? trigger : Date.now();
         localStorage.setItem('mep_last_publish_ts', pubTs);
-        window.mepHasPendingDashboardUpdates = false;
+        const lastUpdate = Number(localStorage.getItem('mep_last_update_ts') || 0);
+        if (pubTs >= lastUpdate) {
+          window.mepHasPendingDashboardUpdates = false;
+          localStorage.removeItem('mep_local_uncommitted_update');
+        }
         if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
           window.checkDashboardUpdateNoticeStatus();
         }
@@ -3160,11 +3167,17 @@ function setupFirebaseListener() {
         return;
       }
       if (trigger) {
-        localDashboardState = JSON.parse(JSON.stringify(globalAppState));
-        localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
-        if (currentActivePageId === 'index' || currentActivePageId === 'overtime-dashboard' ) {
-          _performDashboardRender();
-        }
+        window.firebaseDb.ref('mep_dashboard_published_state').once('value').then(snap => {
+          const pub = snap.val() || globalAppState;
+          if (pub) {
+            localDashboardState = JSON.parse(JSON.stringify(pub));
+            localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+            localStorage.removeItem('mep_local_uncommitted_update');
+            if (typeof _performDashboardRender === 'function' && currentActivePageId === 'index') {
+              _performDashboardRender();
+            }
+          }
+        });
       }
     });
 

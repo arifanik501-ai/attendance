@@ -8970,162 +8970,918 @@ button:hover .pfab-push-off .pf-bell { transform: scale(0.97); transform-origin:
   }
 }
 
-/* --- Mobile Performance Optimization --- */
-/* Reduce animation, glass blur and heavy effects for max smoothness on mobile */
+/* ==========================================================================
+   📱 ULTRA-PREMIUM NATIVE MOBILE APP SYSTEM (iOS & Android Standard)
+   Responsive mobile-first engine that keeps PC / Desktop 100% untouched
+   ========================================================================== */
+
+/* Hidden on Desktop (> 768px) */
+.mobile-app-bar,
+.mobile-bottom-nav,
+.mobile-save-bar,
+.mobile-sheet-picker-overlay,
+.mobile-drawer-close-btn,
+.mobile-dropdown-close-btn,
+.mobile-sidebar-overlay {
+  display: none !important;
+}
+
 @media (max-width: 768px) {
-  /* --- Deep Mobile Performance Optimizations --- */
+  /* 1. Global Viewport & Touch Ergonomics */
   html, body {
-    /* removed overscroll-behavior-y */
     -webkit-tap-highlight-color: transparent !important;
-    text-rendering: optimizeSpeed !important;
-    background: #e0e7ff !important;
+    text-rendering: optimizeLegibility !important;
+    background: #f8fafc !important;
     background-attachment: scroll !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
   }
 
-  button, a, input, select, .nav-link, .btn, .theme-fab, .ios-hm-card, .branch-att-card {
+  body {
+    flex-direction: column !important;
+    padding-bottom: 0 !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    padding: 0.75rem 0.5rem calc(140px + env(safe-area-inset-bottom, 0px)) 0.5rem !important;
+    margin-top: 54px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  button, a, input, select, .nav-link, .btn, .theme-fab, .ios-hm-card, .branch-att-card, .mobile-nav-tab {
     touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
 
-  *, *::before, *::after {
-    animation: none !important;
-    transition: none !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-    scroll-behavior: auto !important;
-    will-change: auto !important;
+  /* Smooth 60/120fps hardware-accelerated transitions */
+  button, .btn, .ops-parent-btn, .ops-child-item, .mobile-app-bar-btn, .mobile-nav-tab, .btn-mobile-save {
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease !important;
   }
 
-  /* Disable expensive backdrops, filters, and shadows */
-  .high-refresh-motion,
-  .glass-card,
-  .page-header,
-  .table-container,
-  .sidebar,
-  .nav-link,
-  .btn,
-  .theme-fab,
-  .theme-dropdown,
-  .theme-backdrop,
-  .theme-studio-hero,
-  .theme-option,
-  .theme-fab-btn,
-  .fab-child,
-  .solid-fab-btn,
-  .smooth-mode-toggle,
-  .clock-widget,
-  .analog-clock,
-  .ios-hm-overlay,
-  .ios-hm-card,
-  .branch-att-card,
-  .branch-att-table th,
-  .branch-att-table td,
-  .ot-dashboard-wrap,
-  .ot-dashboard-stats div,
-  .ot-dashboard-table th,
-  .ot-dashboard-table td,
-  .entry-input,
-  .pin-box {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    filter: none !important;
-    box-shadow: none !important;
+  button:active, .btn:active, .ops-parent-btn:active, .ops-child-item:active, .mobile-app-bar-btn:active, .btn-mobile-save:active {
+    transform: scale(0.96) !important;
   }
 
-  /* Solid fallback backgrounds for glass elements */
-  .glass-card,
-  .page-header,
-  .table-container,
-  .theme-dropdown,
-  .clock-widget,
-  .ios-hm-card,
-  .branch-att-card {
-    background-color: #ffffff !important;
+  /* 2. Top App Bar (Native Mobile Header) */
+  .mobile-app-bar {
+    display: flex !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 52px !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    border-bottom: 1.5px solid rgba(226, 232, 240, 0.9) !important;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05) !important;
+    z-index: 9995 !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  .mobile-app-bar-btn {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+    background: #f8fafc !important;
     border: 1px solid #e2e8f0 !important;
-  }
-  
-  .sidebar { background: rgba(255, 255, 255, 0.72) !important; backdrop-filter: blur(28px) saturate(190%) !important; -webkit-backdrop-filter: blur(28px) saturate(190%) !important; }
-
-  /* Hide decorative pseudo-elements to reduce rendering load */
-  .clock-widget::before,
-  .clock-widget::after,
-  .analog-clock::before,
-  .analog-clock::after,
-  .branch-att-card::before,
-  .branch-modal-card::before,
-  .theme-swatch-sheen,
-  .theme-ripple,
-  .glass-btn-ripple,
-  .nav-link-ripple,
-  .page-title-halo,
-  .page-title-stars,
-  .ios-hm-aurora,
-  .glass-lock-halo,
-  .glass-lock-ring,
-  .glass-lock-glint,
-  .glass-lock-burst,
-  .glass-lock-sparkle,
-  .nav-link::before,
-  .entry-sheet-chevron::before {
-    display: none !important;
+    color: #334155 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    flex-shrink: 0 !important;
   }
 
-  /* Remove filter/shadows from specific items */
-  .clock-premium-badge::before,
-  .hour-hand,
-  .min-hand,
-  .second-hand,
-  .clock-center,
-  .push-icon,
-  .page-title-name,
-  .page-title-letter,
-  .branch-overview-mark.checked,
-  .ot-dashboard-cell span {
-    filter: none !important;
-    box-shadow: none !important;
+  .mobile-app-bar-title {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    min-width: 0 !important;
+    padding: 0 4px !important;
   }
 
-  /* Transform & Opacity Resets */
-  .scroll-reveal,
-  tbody tr {
+  .mobile-bar-brand {
+    font-size: 0.88rem !important;
+    font-weight: 900 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.1 !important;
+  }
+
+  .mobile-bar-sub {
+    font-size: 0.625rem !important;
+    font-weight: 800 !important;
+    color: #059669 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 170px !important;
+  }
+
+  .mobile-app-bar-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+
+  #mobile-menu-btn {
+    display: none !important; /* Replaced by elegant app-bar */
+  }
+
+  /* 3. Mobile Bottom Navigation Bar */
+  .mobile-bottom-nav {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+    border-top: 1.5px solid rgba(226, 232, 240, 0.9) !important;
+    box-shadow: 0 -4px 24px rgba(15, 23, 42, 0.08) !important;
+    z-index: 9990 !important;
+    align-items: flex-start !important;
+    justify-content: space-around !important;
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px)) !important;
+    box-sizing: border-box !important;
+  }
+
+  .mobile-nav-tab {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    height: 100% !important;
+    background: none !important;
+    border: none !important;
+    color: #64748b !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    position: relative !important;
+    padding: 4px 0 !important;
+  }
+
+  .mobile-nav-icon {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.2s !important;
+    stroke: #64748b !important;
+  }
+
+  .mobile-nav-label {
+    font-size: 0.64rem !important;
+    font-weight: 750 !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  .mobile-nav-tab.active {
+    color: #059669 !important;
+  }
+
+  .mobile-nav-tab.active .mobile-nav-icon {
+    stroke: #059669 !important;
+    transform: translateY(-1px) !important;
+  }
+
+  .mobile-nav-tab.active::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 4px !important;
+    width: 20px !important;
+    height: 3px !important;
+    border-radius: 99px !important;
+    background: #10b981 !important;
+  }
+
+  /* 4. Mobile Sticky Save Bar (for Entry Sheet) */
+  .mobile-save-bar {
+    display: flex !important;
+    position: fixed !important;
+    bottom: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 52px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(226, 232, 240, 0.9) !important;
+    box-shadow: 0 -4px 18px rgba(15, 23, 42, 0.08) !important;
+    padding: 6px 12px !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    z-index: 9989 !important;
+    gap: 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  .mobile-save-bar-stats {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+  }
+
+  .save-stat-chip {
+    padding: 3px 8px !important;
+    border-radius: 8px !important;
+    font-variant-numeric: tabular-nums !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+
+  .save-stat-pres {
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  }
+
+  .save-stat-abs {
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  }
+
+  .btn-mobile-save {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    font-weight: 850 !important;
+    font-size: 0.85rem !important;
+    padding: 7px 16px !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35) !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* 5. Mobile Sheet Switcher Modal (Bottom Sheet) */
+  .mobile-sheet-picker-overlay {
+    display: flex !important;
+    visibility: hidden !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(15, 23, 42, 0.6) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    z-index: 10015 !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.24s !important;
+  }
+
+  .mobile-sheet-picker-overlay.open {
+    visibility: visible !important;
     opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .mobile-sheet-picker-card {
+    width: 100% !important;
+    max-width: 500px !important;
+    background: #ffffff !important;
+    border-radius: 24px 24px 0 0 !important;
+    box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    border-bottom: none !important;
+    padding: 12px 16px 20px 16px !important;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+    transform: translateY(100%) !important;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-sizing: border-box !important;
+  }
+
+  .mobile-sheet-picker-overlay.open .mobile-sheet-picker-card {
+    transform: translateY(0) !important;
+  }
+
+  .mobile-sheet-drag-handle {
+    width: 36px !important;
+    height: 4px !important;
+    border-radius: 99px !important;
+    background: #cbd5e1 !important;
+    margin: 0 auto 10px auto !important;
+  }
+
+  .mobile-sheet-title-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .mobile-sheet-title-row h3 {
+    font-size: 1.05rem !important;
+    font-weight: 850 !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+  }
+
+  .mobile-sheet-close-btn {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    background: #f1f5f9 !important;
+    border: none !important;
+    color: #64748b !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .mobile-sheet-sub {
+    font-size: 0.72rem !important;
+    color: #64748b !important;
+    margin: 2px 0 12px 0 !important;
+  }
+
+  .mobile-sheet-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .mobile-sheet-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 10px 12px !important;
+    border-radius: 14px !important;
+    background: #f8fafc !important;
+    border: 1.5px solid #e2e8f0 !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+  }
+
+  .mobile-sheet-item.active {
+    background: #ecfdf5 !important;
+    border-color: #10b981 !important;
+  }
+
+  .mobile-sheet-item-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .mobile-sheet-item-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 900 !important;
+    font-size: 0.95rem !important;
+    color: white !important;
+    flex-shrink: 0 !important;
+  }
+
+  .avatar-takbir { background: linear-gradient(135deg, #10b981, #059669) !important; }
+  .avatar-monir { background: linear-gradient(135deg, #6366f1, #4f46e5) !important; }
+  .avatar-anwar { background: linear-gradient(135deg, #f59e0b, #d97706) !important; }
+  .avatar-bikash { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; }
+
+  .mobile-sheet-item-text {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .mobile-sheet-item-text strong {
+    font-size: 0.9rem !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+  }
+
+  .mobile-sheet-item-text span {
+    font-size: 0.7rem !important;
+    color: #64748b !important;
+    font-weight: 600 !important;
+  }
+
+  .mobile-sheet-item-badge {
+    font-size: 0.68rem !important;
+    font-weight: 800 !important;
+    padding: 3px 8px !important;
+    border-radius: 99px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .badge-done {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    border: 1px solid #86efac !important;
+  }
+
+  .badge-pending {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+    border: 1px solid #fde68a !important;
+  }
+
+  /* 6. Sidebar Slide-Out Drawer & Overlay */
+  #sidebar,
+  aside.sidebar,
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 10005 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s !important;
+    width: 280px !important;
+    max-width: 85vw !important;
+    box-shadow: 14px 0 40px rgba(15, 23, 42, 0.35) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+    border-right: 1.5px solid #cbd5e1 !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    opacity: 1 !important;
+  }
+
+  #sidebar.mobile-open,
+  aside.sidebar.mobile-open,
+  .sidebar.mobile-open {
+    transform: translateX(0) !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+  }
+
+  .mobile-sidebar-overlay {
+    display: block !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    background: rgba(15, 23, 42, 0.52) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    z-index: 10000 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.26s ease !important;
+  }
+
+  .mobile-sidebar-overlay.mobile-open {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .mobile-drawer-close-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-left: auto !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    background: rgba(0, 0, 0, 0.05) !important;
+    border: none !important;
+    color: #475569 !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* 7. FAB & Dropdowns (Slide-Up Bottom Sheets on Mobile) */
+  .fab-backdrop {
+    z-index: 9991 !important;
+  }
+
+  #fab-menu-wrapper {
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+    right: 14px !important;
+    z-index: 9992 !important;
+  }
+
+  #fab-toggle-btn {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 16px !important;
+  }
+
+  #fab-children {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    align-items: flex-end !important;
+    gap: 0.65rem !important;
+    margin-bottom: 0.65rem !important;
+  }
+
+  .fab-child {
+    transform: none !important;
+    will-change: auto !important;
+    transition: opacity 0.18s ease !important;
+  }
+
+  #fab-menu-wrapper.fab-open .fab-child {
     transform: none !important;
   }
 
-  .nav-link,
-  .btn.glass-btn,
-  .theme-fab,
-  .fab-child,
-  .glass-card {
-    transform: translateZ(0);
-    backface-visibility: hidden;
+  .solid-fab-btn {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 14px !important;
   }
 
-  /* Keep sidebar mechanics working */
-  .sidebar {
-    transform: translateX(-100%) !important;
-  }
-  .sidebar.mobile-open {
-    transform: translateX(0) !important;
+  #noti-dropdown,
+  #reminder-dropdown {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    max-height: 80vh !important;
+    border-radius: 24px 24px 0 0 !important;
+    margin: 0 !important;
+    box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.35) !important;
+    z-index: 10020 !important;
+    border: 1.5px solid rgba(226, 232, 240, 0.95) !important;
+    border-bottom: none !important;
+    background: #ffffff !important;
+    backdrop-filter: blur(28px) !important;
+    -webkit-backdrop-filter: blur(28px) !important;
+    animation: slideUpBottom 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-sizing: border-box !important;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
-  /* Optimize layout containment */
-  .analog-clock,
-  .clock-widget,
-  .nav-link,
-  .btn,
-  .solid-fab-btn,
-  .smooth-mode-toggle,
-  .entry-input,
+  #noti-list,
+  #reminder-list {
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  @keyframes slideUpBottom {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .mobile-dropdown-close-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    background: #f1f5f9 !important;
+    border: none !important;
+    color: #64748b !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+  }
+
+  /* 8. Entry Sheet Table & Input Ergonomics */
+  .entry-section-card {
+    border-radius: 16px !important;
+    margin-bottom: 1rem !important;
+    padding: 0.75rem !important;
+  }
+
+  .entry-card-header {
+    padding: 8px 10px !important;
+  }
+
+  .entry-card-title {
+    font-size: 0.98rem !important;
+    font-weight: 850 !important;
+  }
+
+  .entry-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 10px !important;
+  }
+
+  .entry-table {
+    min-width: 440px !important;
+  }
+
+  .entry-table th, 
+  .entry-table td {
+    padding: 8px 3px !important;
+    font-size: 0.82rem !important;
+  }
+
+  .entry-table .col-desig {
+    font-weight: 750 !important;
+    color: #1e293b !important;
+    padding-left: 8px !important;
+  }
+
+  .entry-table input.entry-input,
+  .entry-table .auth-input {
+    width: 54px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    font-size: 16px !important; /* Prevents iOS auto-zoom */
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+    border: 1.5px solid #cbd5e1 !important;
+    background: #f8fafc !important;
+    text-align: center !important;
+    padding: 2px !important;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+    outline: none !important;
+  }
+
+  .entry-table input.entry-input:focus,
+  .entry-table .auth-input:focus {
+    border-color: #10b981 !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+  }
+
+  .entry-table td.absent-val {
+    font-size: 0.92rem !important;
+    font-weight: 850 !important;
+    text-align: center !important;
+  }
+
+  .entry-table td.absent-val.has-absent {
+    color: #dc2626 !important;
+    background: #fef2f2 !important;
+    border-radius: 6px !important;
+  }
+
+  .entry-table td.absent-val.zero-absent {
+    color: #059669 !important;
+  }
+
+  /* 9. Section Status Daily Toggles */
+  .section-status-entry-card {
+    padding: 0.75rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .sec-entry-header-wrap h3 {
+    font-size: 0.95rem !important;
+    font-weight: 850 !important;
+  }
+
+  .sec-status-entry-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .section-status-item-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 8px 10px !important;
+    border-radius: 12px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  .section-status-name {
+    font-size: 0.85rem !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+  }
+
+  .btn-status-toggle {
+    min-height: 38px !important;
+    padding: 6px 14px !important;
+    border-radius: 10px !important;
+    font-size: 0.8rem !important;
+    font-weight: 850 !important;
+    cursor: pointer !important;
+  }
+
+  /* 10. Page Header Actions on Mobile (Entry Page Top Actions) */
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 0.75rem !important;
+  }
+
+  .page-header-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .page-header-actions a,
+  .page-header-actions button {
+    justify-content: center !important;
+    padding: 8px 10px !important;
+    font-size: 0.8rem !important;
+    min-height: 38px !important;
+  }
+
+  /* 11. Dashboard Layout & Header on Mobile */
+  .report-header-flex {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 0.85rem !important;
+    padding: 0.85rem 0.5rem !important;
+  }
+
+  .report-title-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .report-title-container h2 {
+    font-size: 1.45rem !important;
+    margin-top: 0.4rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .report-header-flex > div:nth-child(2) {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin: 0 !important;
+  }
+
+  .clock-widget {
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 180px !important;
+    padding: 0.55rem !important;
+    border-radius: 16px !important;
+  }
+
+  /* 12. Main Attendance Table on Mobile */
+  .table-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+  }
+
+  .report-table {
+    min-width: 580px !important;
+  }
+
+  .report-table th, 
+  .report-table td {
+    padding: 8px 4px !important;
+    font-size: 0.78rem !important;
+  }
+
+  /* 13. Section Analytics Donut Card on Mobile */
+  .section-analytics-card {
+    margin-top: 1rem !important;
+    margin-bottom: 1.5rem !important;
+    padding: 0.85rem !important;
+  }
+
+  .analytics-kpi-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  /* 14. Modals on Mobile */
+  .ios-hm-card {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    margin: auto !important;
+    padding: 0 !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+  }
+
+  .ios-hm-header {
+    position: relative !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 14px 14px 10px 14px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .ios-hm-header-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+
+  .ios-hm-header-actions button:not(.ios-hm-close) {
+    flex: 1 1 calc(50% - 6px) !important;
+    font-size: 0.72rem !important;
+    padding: 6px 8px !important;
+    min-height: 36px !important;
+    justify-content: center !important;
+  }
+
+  .ios-hm-header-actions .ios-hm-close,
+  .ios-hm-close {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    flex: 0 0 34px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.08) !important;
+    color: #1e293b !important;
+    padding: 0 !important;
+    z-index: 10 !important;
+    cursor: pointer !important;
+  }
+
+  .ios-hm-body {
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 12px !important;
+  }
+
+  .ios-hm-sidebar {
+    width: 100% !important;
+  }
+
+  .ios-hm-viewer {
+    width: 100% !important;
+    overflow-x: auto !important;
+  }
+
+  /* 15. Password Security Card */
+  .password-gate-card {
+    width: 92vw !important;
+    max-width: 380px !important;
+    padding: 2rem 1.2rem !important;
+    border-radius: 24px !important;
+  }
+
+  .pin-container {
+    gap: 0.5rem !important;
+  }
+
   .pin-box {
-    contain: layout paint;
-  }
-  
-  /* Disable smooth mode completely on mobile */
-  .smooth-mode-toggle {
-    display: none !important;
+    width: 48px !important;
+    height: 56px !important;
+    font-size: 1.5rem !important;
   }
 }
-\r\n
+
+
 /* --- NEW ADMIN MODAL LAYOUT STYLES --- */
 
 /* Sidebar Footer */

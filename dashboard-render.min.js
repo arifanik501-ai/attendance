@@ -1245,6 +1245,15 @@ window.renderDashboard = function () {
   _performDashboardRender();
 }
 
+window.addEventListener('hashchange', function () {
+  if (typeof window.closeMobileMenu === 'function') {
+    window.closeMobileMenu();
+  }
+  if (typeof window.renderDashboard === 'function') {
+    window.renderDashboard();
+  }
+});
+
 window.getTodayAllEntryStatus = function (state) {
   state = state || globalAppState || (typeof getAppState === 'function' ? getAppState() : {});
   const now = new Date();
@@ -1328,19 +1337,19 @@ window.buildTodayEntryStatusBannerHtml = function (state) {
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           <span>All Updated</span>
         </span>
-        <span class="status-counter-chip">4/4 Complete</span>
+        <span class="status-counter-chip">${status.completedCount}/${status.total} Complete</span>
         <span class="status-pending-names-clean">All Entry Sheets Synced Today</span>
       </div>
     `;
   } else {
     const pendingNames = status.pendingSheets.map(s => s.name).join(', ');
     return `
-      <div class="today-entry-status-banner is-pending no-print" onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; if(d) { d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; if(typeof updateReminderList === 'function') updateReminderList(); }" title="Pending Sheets: ${pendingNames} (Click to view details)">
+      <div class="today-entry-status-banner is-pending no-print" onclick="event.stopPropagation(); if(typeof window.ensureMobileDropdownsMoved==='function') window.ensureMobileDropdownsMoved(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; if(d) { d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; if(typeof updateReminderList === 'function') updateReminderList(); }" title="Pending Sheets: ${pendingNames} (Click to view details)">
         <span class="status-badge-lead">
           <span class="status-pulse-dot"></span>
           <span>Pending</span>
         </span>
-        <span class="status-counter-chip">${status.completedCount}/5 Updated</span>
+        <span class="status-counter-chip">${status.completedCount}/${status.total} Updated</span>
         <span class="status-pending-names-clean">Pending: <strong>${pendingNames}</strong></span>
       </div>
     `;
@@ -1382,6 +1391,7 @@ function _performDashboardRender() {
     const activeDashboardPage = hash === '#section-status-report' ? 'section-status-report' : 'index';
     currentActivePageId = activeDashboardPage;
     document.getElementById('sidebar').innerHTML = generateSidebar(activeDashboardPage);
+    if (typeof window.initMobileAppShell === 'function') window.initMobileAppShell(activeDashboardPage);
 
     // Reset entry sheet session auth when returning to main dashboard
     if (activeDashboardPage === 'index') {
@@ -1459,7 +1469,7 @@ function _performDashboardRender() {
             style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onclick="event.stopPropagation(); const d = document.getElementById('noti-dropdown'); const r = document.getElementById('reminder-dropdown'); if(r) r.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; document.getElementById('noti-badge').style.display='none'; localStorage.removeItem('has_new_notifications');">
+            onclick="event.stopPropagation(); if(typeof window.ensureMobileDropdownsMoved==='function') window.ensureMobileDropdownsMoved(); const d = document.getElementById('noti-dropdown'); const r = document.getElementById('reminder-dropdown'); if(r) r.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; document.getElementById('noti-badge').style.display='none'; localStorage.removeItem('has_new_notifications');">
             <img class="pfab pfab-feed" src="${FAB_ICONS.feed}" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Feed" />
             <span style="font-size:0.52rem; font-weight:800; color:#ef4444; letter-spacing:0.04em; font-family:'Plus Jakarta Sans', sans-serif;">FEED</span>
             <span id="noti-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#ef4444; border-radius:50%; border:2px solid white; display:${hasNewNoti ? 'block' : 'none'}; box-shadow:0 0 10px rgba(239,68,68,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
@@ -1468,6 +1478,7 @@ function _performDashboardRender() {
           <div id="noti-dropdown" class="glass-card no-print" style="position:absolute; bottom:0; left:auto; right:calc(100% + 12px); width:340px; z-index:10001; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: bottom right; animation: scaleIn 0.2s ease-out;">
             <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4); display:flex; justify-content:space-between; align-items:center;">
               <span>History Update</span>
+              <button type="button" class="mobile-dropdown-close-btn" onclick="document.getElementById('noti-dropdown').style.display='none'" aria-label="Close">✕</button>
               <button onclick="clearHistory()" title="Clear All History" style="background:none; border:1px solid rgba(239,68,68,0.3); border-radius:8px; cursor:pointer; padding:4px 10px; display:flex; align-items:center; gap:4px; color:#ef4444; font-size:0.72rem; font-weight:700; transition:all 0.2s; font-family:'Plus Jakarta Sans', sans-serif;" onmouseover="this.style.background='rgba(239,68,68,0.1)'; this.style.borderColor='#ef4444';" onmouseout="this.style.background='none'; this.style.borderColor='rgba(239,68,68,0.3)';">
                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 Clear
@@ -1485,7 +1496,7 @@ function _performDashboardRender() {
             style="background:rgba(255,255,255,0.94); border:1.5px solid rgba(255,255,255,0.88); border-radius:16px; width:56px; height:56px;
             display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px;
             cursor:pointer; box-shadow:var(--glass-shadow); position:relative; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);"
-            onclick="event.stopPropagation(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
+            onclick="event.stopPropagation(); if(typeof window.ensureMobileDropdownsMoved==='function') window.ensureMobileDropdownsMoved(); const d = document.getElementById('reminder-dropdown'); const n = document.getElementById('noti-dropdown'); if(n) n.style.display='none'; d.style.display = (d.style.display === 'none' || d.style.display === '') ? 'flex' : 'none'; updateReminderList();">
             <img class="pfab pfab-plan" src="${FAB_ICONS.pending}" width="36" height="36" style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25)); object-fit:contain;" alt="Pending" />
             <span style="font-size:0.52rem; font-weight:800; color:#eab308; letter-spacing:0.04em; font-family:'Plus Jakarta Sans', sans-serif;">PENDING</span>
             <span id="reminder-badge" style="position:absolute; top:10px; right:10px; width:9px; height:9px; background:#eab308; border-radius:50%; border:2px solid white; display:none; box-shadow:0 0 10px rgba(234,179,8,0.8); animation:pulse 1.5s ease-in-out infinite;"></span>
@@ -1494,6 +1505,7 @@ function _performDashboardRender() {
           <div id="reminder-dropdown" class="glass-card no-print" style="position:absolute; bottom:0; left:auto; right:calc(100% + 12px); width:340px; z-index:10001; display:none; flex-direction:column; padding:0; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.15); transform-origin: bottom right; animation: scaleIn 0.2s ease-out;">
             <div style="padding:1.2rem; border-bottom:1px solid rgba(0,0,0,0.08); font-weight:800; font-size:1.1rem; color:var(--text-dark); background:rgba(255,255,255,0.4); display:flex; justify-content:space-between; align-items:center;">
                <span>Pending Today</span>
+               <button type="button" class="mobile-dropdown-close-btn" onclick="document.getElementById('reminder-dropdown').style.display='none'" aria-label="Close">✕</button>
                <span id="reminder-count" style="background:#eab308; color:white; font-size:0.75rem; padding:2px 8px; border-radius:12px; font-weight:700;">0</span>
             </div>
             <div id="reminder-list" style="max-height:350px; overflow-y:auto; padding:0;">

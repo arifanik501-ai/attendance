@@ -1003,6 +1003,9 @@ function generateSidebar(activePage) {
           <h1 class="sidebar-brand-title">MEP FAN LTD</h1>
           <p class="sidebar-brand-sub">Attendance System</p>
         </div>
+        <button type="button" class="mobile-drawer-close-btn" onclick="window.closeMobileMenu()" aria-label="Close Menu">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
       </div>
     </div>
     <div class="sidebar-divider"></div>
@@ -1085,6 +1088,7 @@ function _loadAndDisplayChangeCount() {
 function renderEntryPage(pageId) {
   currentActivePageId = pageId;
   document.getElementById('sidebar').innerHTML = generateSidebar(pageId);
+  if (typeof window.initMobileAppShell === 'function') window.initMobileAppShell(pageId);
   
   if (pageId === 'section-status-report') {
     document.getElementById('page-title').innerHTML = `
@@ -1407,6 +1411,10 @@ function _renderEntryContent(pageId) {
     container.appendChild(card);
   }
 
+  if (typeof window._renderMobileSaveBar === 'function') {
+    window._renderMobileSaveBar(pageId);
+  }
+
   document.querySelectorAll('.entry-input').forEach(input => {
     input.addEventListener('input', (e) => {
       const g = e.target.getAttribute('data-group');
@@ -1448,6 +1456,9 @@ function _renderEntryContent(pageId) {
 
         globalAppState = state;
         updateGroupTotals(e.target.closest('table'), state[pageId][g]);
+        if (typeof window._updateMobileSaveBarTotals === 'function') {
+          window._updateMobileSaveBarTotals(pageId);
+        }
       }
     });
   });
@@ -1462,6 +1473,13 @@ function _renderEntryContent(pageId) {
     document.getElementById('btn-save').onclick = () => {
       const saveBtn = document.getElementById('btn-save');
       if (saveBtn.disabled) return;
+
+      const mobileSaveBtn = document.getElementById('btn-mobile-save');
+      if (mobileSaveBtn) {
+        mobileSaveBtn.disabled = true;
+        mobileSaveBtn.style.opacity = '0.75';
+        if (mobileSaveBtn.querySelector('span')) mobileSaveBtn.querySelector('span').textContent = 'Syncing...';
+      }
 
       saveBtn.disabled = true;
       saveBtn.style.opacity = '0.75';
@@ -1573,6 +1591,10 @@ function _renderEntryContent(pageId) {
         }
         if (saveBtn.querySelector('span')) {
           saveBtn.querySelector('span').textContent = '✓ Saved Successfully!';
+        }
+        const mobileSaveBtn = document.getElementById('btn-mobile-save');
+        if (mobileSaveBtn && mobileSaveBtn.querySelector('span')) {
+          mobileSaveBtn.querySelector('span').textContent = '✓ Saved!';
         }
         setTimeout(() => {
           window.location.href = 'index.html';
@@ -3951,8 +3973,32 @@ window.dismissInstallBanner = function () {
 };
 
 /* =========================================================================
-   FAB MENU TOGGLE
+   FAB MENU TOGGLE & MOBILE DROPDOWN TELEPORTATION
    ========================================================================= */
+
+window.ensureMobileDropdownsMoved = function() {
+  if (typeof window === 'undefined' || !document.body) return;
+  const isMobile = window.innerWidth <= 768;
+  const rd = document.getElementById('reminder-dropdown');
+  const nd = document.getElementById('noti-dropdown');
+  if (isMobile) {
+    if (rd && rd.parentElement && rd.parentElement !== document.body) {
+      document.body.appendChild(rd);
+    }
+    if (nd && nd.parentElement && nd.parentElement !== document.body) {
+      document.body.appendChild(nd);
+    }
+  } else {
+    const rContainer = document.querySelector('.reminder-container');
+    const nContainer = document.querySelector('.notification-container');
+    if (rd && rContainer && rd.parentElement === document.body) {
+      rContainer.appendChild(rd);
+    }
+    if (nd && nContainer && nd.parentElement === document.body) {
+      nContainer.appendChild(nd);
+    }
+  }
+};
 
 window._fabOpen = false;
 window.toggleFabMenu = function(e) {
@@ -3960,6 +4006,10 @@ window.toggleFabMenu = function(e) {
   var wrapper = document.getElementById('fab-menu-wrapper');
   var backdrop = document.getElementById('fab-backdrop');
   if (!wrapper) return;
+
+  if (typeof window.ensureMobileDropdownsMoved === 'function') {
+    window.ensureMobileDropdownsMoved();
+  }
 
   window._fabOpen = !window._fabOpen;
 
@@ -3996,3 +4046,307 @@ window.forceSaveHistory = function(silent) {
 };
 
 
+
+
+/* =========================================================================
+   MOBILE FIRST APP SHELL & NAVIGATION SYSTEM
+   ========================================================================= */
+
+window.toggleMobileMenu = function(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('mobile-sidebar-overlay');
+  if (sidebar) sidebar.classList.toggle('mobile-open');
+  if (overlay) overlay.classList.toggle('mobile-open');
+};
+
+window.closeMobileMenu = function() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('mobile-sidebar-overlay');
+  if (sidebar) sidebar.classList.remove('mobile-open');
+  if (overlay) overlay.classList.remove('mobile-open');
+};
+
+window.openMobileSheetPicker = function() {
+  const modal = document.getElementById('mobile-sheet-picker-modal');
+  if (modal) modal.classList.add('open');
+};
+
+window.closeMobileSheetPicker = function() {
+  const modal = document.getElementById('mobile-sheet-picker-modal');
+  if (modal) modal.classList.remove('open');
+};
+
+window.initMobileAppShell = function(activePage) {
+  // 1. Overlay
+  let overlay = document.getElementById('mobile-sidebar-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'mobile-sidebar-overlay';
+    overlay.className = 'mobile-sidebar-overlay';
+    document.body.prepend(overlay);
+  }
+  overlay.onclick = window.closeMobileMenu;
+  const sidebarEl = document.querySelector('.sidebar') || document.getElementById('sidebar');
+  if (sidebarEl && !sidebarEl._mobileClickBound) {
+    sidebarEl._mobileClickBound = true;
+    sidebarEl.addEventListener('click', function (e) {
+      if (e.target.closest('a') || e.target.closest('.mobile-drawer-close-btn')) {
+        window.closeMobileMenu();
+      }
+    });
+  }
+
+  // Ensure dropdown elements are outside transform-containing blocks on mobile
+  if (typeof window.ensureMobileDropdownsMoved === 'function') {
+    window.ensureMobileDropdownsMoved();
+  }
+
+  if (!window._mobileDropdownDismissBound) {
+    window._mobileDropdownDismissBound = true;
+    document.addEventListener('click', function (e) {
+      if (window.innerWidth <= 768) {
+        const rd = document.getElementById('reminder-dropdown');
+        const nd = document.getElementById('noti-dropdown');
+        if (rd && rd.style.display === 'flex' && !e.target.closest('#reminder-dropdown') && !e.target.closest('#reminder-btn') && !e.target.closest('.today-entry-status-banner')) {
+          rd.style.display = 'none';
+        }
+        if (nd && nd.style.display === 'flex' && !e.target.closest('#noti-dropdown') && !e.target.closest('#noti-btn')) {
+          nd.style.display = 'none';
+        }
+      }
+    });
+    window.addEventListener('resize', function () {
+      if (typeof window.ensureMobileDropdownsMoved === 'function') {
+        window.ensureMobileDropdownsMoved();
+      }
+    });
+  }
+
+  // 2. Mobile App Bar
+  let appBar = document.getElementById('mobile-app-bar');
+  if (!appBar) {
+    appBar = document.createElement('header');
+    appBar.id = 'mobile-app-bar';
+    appBar.className = 'mobile-app-bar no-print';
+    document.body.prepend(appBar);
+  }
+
+  const isEntry = ['takbir', 'monir', 'anwar', 'bikash'].includes(activePage);
+  const isStatus = activePage === 'section-status-report';
+  const isHome = activePage === 'index';
+
+  if (!isEntry) {
+    const existingSaveBar = document.getElementById('mobile-save-bar');
+    if (existingSaveBar) existingSaveBar.remove();
+  }
+
+  let subTitle = 'Dashboard';
+  if (isEntry) {
+    const cfg = (typeof SECTIONS_CONFIG !== 'undefined' && SECTIONS_CONFIG[activePage]) ? SECTIONS_CONFIG[activePage] : {};
+    subTitle = cfg.title ? cfg.title.replace('Entry Sheet ', '').replace(/[()]/g, '') : (activePage.charAt(0).toUpperCase() + activePage.slice(1));
+  } else if (isStatus) {
+    subTitle = 'Section Status';
+  }
+
+  if (isEntry) {
+    appBar.innerHTML = `
+      <a href="index.html" class="mobile-app-bar-btn" aria-label="Back to Dashboard" title="Back to Dashboard">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+      </a>
+      <div class="mobile-app-bar-title">
+        <span class="mobile-bar-brand">MEP FAN</span>
+        <span class="mobile-bar-sub">${subTitle}</span>
+      </div>
+      <div class="mobile-app-bar-actions">
+        <button type="button" class="mobile-app-bar-btn" onclick="var b=document.getElementById('btn-export');if(b)b.click();" title="Export JPG" aria-label="Export JPG">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        </button>
+        <button type="button" class="mobile-app-bar-btn" onclick="window.openSettingsModal();" title="Settings" aria-label="Settings">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><circle cx="12" cy="12" r="3" stroke-width="2.2"></circle></svg>
+        </button>
+        <button type="button" class="mobile-app-bar-btn" onclick="window.toggleMobileMenu()" title="Menu" aria-label="Toggle Menu">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
+    `;
+  } else {
+    appBar.innerHTML = `
+      <button type="button" class="mobile-app-bar-btn" onclick="window.toggleMobileMenu()" title="Menu" aria-label="Toggle Menu">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+      <div class="mobile-app-bar-title">
+        <span class="mobile-bar-brand">MEP FAN</span>
+        <span class="mobile-bar-sub">${subTitle}</span>
+      </div>
+      <div class="mobile-app-bar-actions">
+        <button type="button" class="mobile-app-bar-btn" onclick="if(typeof window.renderDashboard==='function') window.renderDashboard();" title="Refresh" aria-label="Refresh Dashboard">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
+        <button type="button" class="mobile-app-bar-btn" onclick="window.openSettingsModal();" title="Settings" aria-label="Settings">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><circle cx="12" cy="12" r="3" stroke-width="2.2"></circle></svg>
+        </button>
+      </div>
+    `;
+  }
+
+  // 3. Bottom Nav
+  let bottomNav = document.getElementById('mobile-bottom-nav');
+  if (!bottomNav) {
+    bottomNav = document.createElement('nav');
+    bottomNav.id = 'mobile-bottom-nav';
+    bottomNav.className = 'mobile-bottom-nav no-print';
+    document.body.appendChild(bottomNav);
+  }
+
+  bottomNav.innerHTML = `
+    <a href="index.html" class="mobile-nav-tab ${isHome ? 'active' : ''}" id="nav-tab-dashboard" onclick="if(location.pathname.includes('index.html')||location.pathname.endsWith('/')){if(location.hash){location.hash='';event.preventDefault();}else if(typeof renderDashboard==='function'){renderDashboard();event.preventDefault();}}">
+      <svg class="mobile-nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <span class="mobile-nav-label">Home</span>
+    </a>
+    <button type="button" class="mobile-nav-tab ${isEntry ? 'active' : ''}" onclick="window.openMobileSheetPicker()" id="nav-tab-sheets">
+      <svg class="mobile-nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      <span class="mobile-nav-label">Sheets</span>
+    </button>
+    <a href="index.html#section-status-report" class="mobile-nav-tab ${isStatus ? 'active' : ''}" id="nav-tab-status" onclick="if(location.pathname.includes('index.html')||location.pathname.endsWith('/')){if(location.hash==='#section-status-report'){if(typeof renderDashboard==='function')renderDashboard();event.preventDefault();}}">
+      <svg class="mobile-nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+      <span class="mobile-nav-label">Status</span>
+    </a>
+    <button type="button" class="mobile-nav-tab" onclick="window.openAdminHistoryModal()" id="nav-tab-admin">
+      <svg class="mobile-nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      <span class="mobile-nav-label">Admin</span>
+    </button>
+    <button type="button" class="mobile-nav-tab" onclick="window.toggleMobileMenu()" id="nav-tab-menu">
+      <svg class="mobile-nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      <span class="mobile-nav-label">Menu</span>
+    </button>
+  `;
+
+  // 4. Sheet Picker Modal
+  let sheetModal = document.getElementById('mobile-sheet-picker-modal');
+  if (!sheetModal) {
+    sheetModal = document.createElement('div');
+    sheetModal.id = 'mobile-sheet-picker-modal';
+    sheetModal.className = 'mobile-sheet-picker-overlay no-print';
+    document.body.appendChild(sheetModal);
+  }
+
+  const todayStatus = (typeof window.getTodayAllEntryStatus === 'function') 
+    ? window.getTodayAllEntryStatus() 
+    : { completedSheets: [], pendingSheets: [] };
+  const doneMap = {};
+  if (todayStatus && todayStatus.completedSheets) {
+    todayStatus.completedSheets.forEach(s => { doneMap[s.id] = true; });
+  }
+
+  sheetModal.innerHTML = `
+    <div class="mobile-sheet-picker-card">
+      <div class="mobile-sheet-picker-header">
+        <div class="mobile-sheet-drag-handle"></div>
+        <div class="mobile-sheet-title-row">
+          <h3>Select Entry Sheet</h3>
+          <button type="button" class="mobile-sheet-close-btn" onclick="window.closeMobileSheetPicker()" aria-label="Close">✕</button>
+        </div>
+        <p class="mobile-sheet-sub">Switch between supervisor entry sheets</p>
+      </div>
+      <div class="mobile-sheet-grid">
+        <a href="entry.html?page=takbir" class="mobile-sheet-item ${activePage==='takbir'?'active':''}" onclick="window.closeMobileSheetPicker();">
+          <div class="mobile-sheet-item-left">
+            <div class="mobile-sheet-item-avatar avatar-takbir">T</div>
+            <div class="mobile-sheet-item-text">
+              <strong>Takbir</strong>
+              <span>Armature, Assemble, Dimmer</span>
+            </div>
+          </div>
+          <span class="mobile-sheet-item-badge ${doneMap['takbir'] ? 'badge-done' : 'badge-pending'}">
+            ${doneMap['takbir'] ? '✓ Updated' : 'Pending'}
+          </span>
+        </a>
+        <a href="entry.html?page=monir" class="mobile-sheet-item ${activePage==='monir'?'active':''}" onclick="window.closeMobileSheetPicker();">
+          <div class="mobile-sheet-item-left">
+            <div class="mobile-sheet-item-avatar avatar-monir">M</div>
+            <div class="mobile-sheet-item-text">
+              <strong>Monir</strong>
+              <span>Power Press, Die Casting</span>
+            </div>
+          </div>
+          <span class="mobile-sheet-item-badge ${doneMap['monir'] ? 'badge-done' : 'badge-pending'}">
+            ${doneMap['monir'] ? '✓ Updated' : 'Pending'}
+          </span>
+        </a>
+        <a href="entry.html?page=anwar" class="mobile-sheet-item ${activePage==='anwar'?'active':''}" onclick="window.closeMobileSheetPicker();">
+          <div class="mobile-sheet-item-left">
+            <div class="mobile-sheet-item-avatar avatar-anwar">A</div>
+            <div class="mobile-sheet-item-text">
+              <strong>Anwar</strong>
+              <span>Powder Coating, Lathe</span>
+            </div>
+          </div>
+          <span class="mobile-sheet-item-badge ${doneMap['anwar'] ? 'badge-done' : 'badge-pending'}">
+            ${doneMap['anwar'] ? '✓ Updated' : 'Pending'}
+          </span>
+        </a>
+        <a href="entry.html?page=bikash" class="mobile-sheet-item ${activePage==='bikash'?'active':''}" onclick="window.closeMobileSheetPicker();">
+          <div class="mobile-sheet-item-left">
+            <div class="mobile-sheet-item-avatar avatar-bikash">B</div>
+            <div class="mobile-sheet-item-text">
+              <strong>Bikash</strong>
+              <span>Rojonigondha, Sada Shapla, Replace</span>
+            </div>
+          </div>
+          <span class="mobile-sheet-item-badge ${doneMap['bikash'] ? 'badge-done' : 'badge-pending'}">
+            ${doneMap['bikash'] ? '✓ Updated' : 'Pending'}
+          </span>
+        </a>
+      </div>
+    </div>
+  `;
+
+  sheetModal.onclick = function(e) {
+    if (e.target === sheetModal) window.closeMobileSheetPicker();
+  };
+};
+
+window._renderMobileSaveBar = function(pageId) {
+  let saveBar = document.getElementById('mobile-save-bar');
+  if (!saveBar) {
+    saveBar = document.createElement('div');
+    saveBar.id = 'mobile-save-bar';
+    saveBar.className = 'mobile-save-bar no-print';
+    document.body.appendChild(saveBar);
+  }
+
+  saveBar.innerHTML = `
+    <div class="mobile-save-bar-stats">
+      <span class="save-stat-chip save-stat-pres">Present: <strong id="mobile-total-pres">0</strong></span>
+      <span class="save-stat-chip save-stat-abs">Absent: <strong id="mobile-total-abs">0</strong></span>
+    </div>
+    <button type="button" class="btn-mobile-save" id="btn-mobile-save" onclick="var b = document.getElementById('btn-save'); if(b) b.click();">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+      <span>Entry Update</span>
+    </button>
+  `;
+
+  window._updateMobileSaveBarTotals(pageId);
+};
+
+window._updateMobileSaveBarTotals = function(pageId) {
+  const state = (typeof getAppState === 'function') ? getAppState() : (window.globalAppState || {});
+  const pageState = state ? state[pageId] : null;
+  let totalPres = 0;
+  let totalAbs = 0;
+  if (pageState) {
+    for (const group of Object.values(pageState)) {
+      if (Array.isArray(group)) {
+        group.forEach(r => {
+          totalPres += parseInt(r.present) || 0;
+          totalAbs += parseInt(r.absent) || 0;
+        });
+      }
+    }
+  }
+  const presEl = document.getElementById('mobile-total-pres');
+  const absEl = document.getElementById('mobile-total-abs');
+  if (presEl) presEl.textContent = totalPres;
+  if (absEl) absEl.textContent = totalAbs;
+};

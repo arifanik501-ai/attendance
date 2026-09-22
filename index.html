@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.min.css?v=179">
+  <link rel="stylesheet" href="style.min.css?v=186">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
 
@@ -40,37 +40,29 @@
   <!-- Firebase Realtime Database -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="config.min.js?v=23"></script>
-  <script src="app.min.js?v=199"></script>
-  <script src="dashboard-render.min.js?v=74"></script>
-  <script src="history.min.js?v=18"></script>
+  <script src="app.min.js?v=206"></script>
+  <script src="dashboard-render.min.js?v=81"></script>
+  <script src="history.min.js?v=19"></script>
   <script src="tooltip.js?v=109" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // Mobile Menu Logic
       const mobileBtn = document.getElementById('mobile-menu-btn');
-      const sidebar = document.getElementById('sidebar');
       const overlay = document.getElementById('mobile-sidebar-overlay');
 
-      function toggleMobileMenu() {
-        sidebar.classList.toggle('mobile-open');
-        overlay.classList.toggle('mobile-open');
-      }
+      if (mobileBtn) mobileBtn.addEventListener('click', () => { if (typeof window.toggleMobileMenu === 'function') window.toggleMobileMenu(); });
+      if (overlay) overlay.addEventListener('click', () => { if (typeof window.closeMobileMenu === 'function') window.closeMobileMenu(); });
 
-      if(mobileBtn) mobileBtn.addEventListener('click', toggleMobileMenu);
-      if(overlay) overlay.addEventListener('click', toggleMobileMenu);
-
-      // Close sidebar when clicking a nav link on mobile (except the Entry Sheet toggle)
+      // Close sidebar when clicking any link inside sidebar on mobile
       document.body.addEventListener('click', (e) => {
-        const navLink = e.target.closest('.nav-link');
-        if (window.innerWidth <= 768 && navLink && !navLink.classList.contains('entry-sheet-toggle')) {
-          sidebar.classList.remove('mobile-open');
-          overlay.classList.remove('mobile-open');
+        const link = e.target.closest('a');
+        if (window.innerWidth <= 768 && link && link.closest('#sidebar')) {
+          if (typeof window.closeMobileMenu === 'function') window.closeMobileMenu();
         }
       });
 
       renderDashboard();
       window.addEventListener('hashchange', () => {
-        
         renderDashboard();
       });
     });

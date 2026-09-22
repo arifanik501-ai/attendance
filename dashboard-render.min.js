@@ -1810,6 +1810,85 @@ const SECTION_STATUS_ICONS = {
   </div>`
 };
 
+window.quickUpdateSectionStatus = function(sectionKey, statusVal) {
+  if (typeof window.updateSectionStatus === 'function') {
+    window.updateSectionStatus(sectionKey, statusVal);
+  }
+
+  // Instant 0ms visual feedback on the mobile card
+  const card = document.querySelector(`.sec-status-mobile-card[data-section="${sectionKey}"]`);
+  if (card) {
+    card.classList.remove('is-operational', 'is-stopped', 'is-pending');
+    card.classList.add(statusVal === 'ON' ? 'is-operational' : 'is-stopped');
+
+    const banner = card.querySelector('.sec-status-display-banner');
+    if (banner) {
+      banner.className = `sec-status-display-banner ${statusVal === 'ON' ? 'banner-operational' : 'banner-stopped'}`;
+      const pulseCircle = banner.querySelector('.sec-status-pulse-circle');
+      if (pulseCircle) {
+        pulseCircle.className = `sec-status-pulse-circle ${statusVal === 'ON' ? 'circle-green' : 'circle-red'}`;
+      }
+      const title = banner.querySelector('.sec-status-state-main');
+      if (title) {
+        title.textContent = statusVal === 'ON' ? 'OPERATIONAL' : 'STOPPED (OFF)';
+      }
+      const sub = banner.querySelector('.sec-status-state-sub');
+      if (sub) {
+        sub.textContent = statusVal === 'ON' ? 'Section Running & Active' : 'Section Closed / Stopped';
+      }
+      const chip = banner.querySelector('.state-badge-chip');
+      if (chip) {
+        chip.className = `state-badge-chip ${statusVal === 'ON' ? 'chip-green' : 'chip-red'}`;
+        chip.textContent = statusVal === 'ON' ? '✓ ON' : '✕ OFF';
+      }
+    }
+  }
+
+  // Update desktop row if present
+  const row = document.querySelector(`.sec-status-table tbody tr[data-section="${sectionKey}"]`);
+  if (row) {
+    const badgeCol = row.querySelector('.sec-status-badge-col');
+    if (badgeCol) {
+      if (statusVal === 'ON') {
+        badgeCol.innerHTML = `<span class="sec-status-badge" style="background:#dcfce7; color:#15803d; border:1px solid #86efac; padding:6px 18px; border-radius:20px; font-weight:900; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(34,197,94,0.15);"><span style="width:8px; height:8px; background:#22c55e; border-radius:50%; display:inline-block; box-shadow:0 0 8px #22c55e;"></span> ON</span>`;
+      } else {
+        badgeCol.innerHTML = `<span class="sec-status-badge" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:6px 18px; border-radius:20px; font-weight:900; font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(239,68,68,0.15);"><span style="width:8px; height:8px; background:#ef4444; border-radius:50%; display:inline-block; box-shadow:0 0 8px #ef4444;"></span> OFF</span>`;
+      }
+    }
+  }
+
+  // Update KPI counters dynamically
+  if (typeof window._updateSectionStatusKpiCounts === 'function') {
+    window._updateSectionStatusKpiCounts();
+  }
+};
+
+window._updateSectionStatusKpiCounts = function() {
+  const keys = (typeof SECTION_STATUS_CONFIG !== 'undefined') ? Object.keys(SECTION_STATUS_CONFIG) : ['fan_power_press', 'fan_die_casting', 'fan_auto_powder_coating'];
+  const state = (localDashboardState || (typeof getAppState === 'function' ? getAppState() : {}));
+  let onCount = 0;
+  let offCount = 0;
+  let pendingCount = 0;
+
+  keys.forEach(k => {
+    const eff = (typeof getEffectiveSectionStatus === 'function') ? getEffectiveSectionStatus(k, state) : null;
+    const st = eff ? eff.status : 'PENDING';
+    if (st === 'ON') onCount++;
+    else if (st === 'OFF') offCount++;
+    else pendingCount++;
+  });
+
+  const onEl = document.getElementById('sec-kpi-on-count');
+  const offEl = document.getElementById('sec-kpi-off-count');
+  const pendEl = document.getElementById('sec-kpi-pending-count');
+  const totalEl = document.getElementById('sec-kpi-total-count');
+
+  if (onEl) onEl.textContent = onCount;
+  if (offEl) offEl.textContent = offCount;
+  if (pendEl) pendEl.textContent = pendingCount;
+  if (totalEl) totalEl.textContent = keys.length;
+};
+
 window.buildSectionStatusReportHtml = function(state = (localDashboardState || getAppState())) {
   const keys = (typeof SECTION_STATUS_CONFIG !== 'undefined') ? Object.keys(SECTION_STATUS_CONFIG) : ['fan_power_press', 'fan_die_casting', 'fan_auto_powder_coating'];
   
@@ -1844,7 +1923,7 @@ window.buildSectionStatusReportHtml = function(state = (localDashboardState || g
     const rowBg = (index % 2 === 0) ? '#ffffff' : '#f8fafc';
 
     return `
-      <tr style="background:${rowBg}; border-bottom:1px solid #e2e8f0; transition:background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${rowBg}'">
+      <tr style="background:${rowBg}; border-bottom:1px solid #e2e8f0; transition:background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${rowBg}'" data-section="${sKey}">
         <td class="sec-status-sl-col" style="padding:0.75rem 0.5rem; text-align:center; font-size:0.85rem; font-weight:800; color:#475569;">
           ${index + 1}
         </td>
@@ -1859,47 +1938,271 @@ window.buildSectionStatusReportHtml = function(state = (localDashboardState || g
     `;
   }).join('');
 
+  const mobileCardsHtml = keys.map((sKey, index) => {
+    const eff = (typeof getEffectiveSectionStatus === 'function') ? getEffectiveSectionStatus(sKey, state) : null;
+    const cfg = (typeof SECTION_STATUS_CONFIG !== 'undefined' ? SECTION_STATUS_CONFIG[sKey] : null);
+    const name = eff ? eff.name : (cfg ? cfg.name : sKey);
+    const status = eff ? eff.status : 'PENDING';
+    const entryBy = eff ? (eff.entryBy || (cfg ? cfg.entryBy : 'Supervisor')) : (cfg ? cfg.entryBy : 'Supervisor');
+    const icon = SECTION_STATUS_ICONS[sKey] || SECTION_STATUS_ICONS.fan_power_press;
+    const isON = status === 'ON';
+    const isOFF = status === 'OFF';
+
+    const statusTitle = isON ? 'OPERATIONAL' : (isOFF ? 'STOPPED (OFF)' : 'PENDING');
+    const statusSub = isON ? 'Section Running & Active' : (isOFF ? 'Section Closed / Stopped' : 'Awaiting Supervisor Update');
+    const badgeText = isON ? '✓ ON' : (isOFF ? '✕ OFF' : '⏳ PENDING');
+    const badgeClass = isON ? 'chip-green' : (isOFF ? 'chip-red' : 'chip-amber');
+    const circleClass = isON ? 'circle-green' : (isOFF ? 'circle-red' : 'circle-amber');
+    const bannerClass = isON ? 'banner-operational' : (isOFF ? 'banner-stopped' : 'banner-pending');
+
+    return `
+      <div class="sec-status-mobile-card ${isON ? 'is-operational' : (isOFF ? 'is-stopped' : 'is-pending')}" data-section="${sKey}">
+        <div class="sec-status-mobile-card-top">
+          <div class="sec-status-mobile-icon-box">
+            ${icon}
+          </div>
+          <div class="sec-status-mobile-title-wrap">
+            <div class="sec-status-name-row">
+              <span class="sec-status-sl-chip">#${index + 1}</span>
+              <div class="sec-status-mobile-name">${name}</div>
+            </div>
+            <div class="sec-status-mobile-sub">
+              <span class="sec-status-supervisor-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                In-charge: <strong>${entryBy}</strong>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec-status-display-banner ${bannerClass}">
+          <div class="sec-status-display-left">
+            <span class="sec-status-pulse-circle ${circleClass}"></span>
+            <div class="sec-status-display-text-wrap">
+              <span class="sec-status-state-main">${statusTitle}</span>
+              <span class="sec-status-state-sub">${statusSub}</span>
+            </div>
+          </div>
+          <div class="sec-status-display-badge">
+            <span class="state-badge-chip ${badgeClass}">${badgeText}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
   return `
     <div id="section-status-report-card" style="padding:1.2rem; background:#ffffff; border-radius:18px; border:1px solid #cbd5e1; box-shadow:0 6px 20px rgba(15,23,42,0.04);">
       <style>
+        .sec-status-mobile-only { display: none !important; }
+        .sec-status-desktop-only { display: block !important; }
+
         @media (max-width: 768px) {
-          #section-status-report-card { padding: 0.35rem !important; border-radius: 12px !important; }
-          .sec-status-header-wrap { flex-direction: column !important; align-items: stretch !important; gap: 0.45rem !important; padding: 0.55rem 0.65rem !important; border-radius: 10px !important; margin-bottom: 0.5rem !important; }
-          .sec-status-header-wrap h2 { font-size: 1.05rem !important; }
-          .sec-status-header-wrap p { font-size: 0.65rem !important; display: none !important; }
-          .sec-status-header-wrap > div:first-child > div:first-child { width: 32px !important; height: 32px !important; border-radius: 8px !important; }
-          .sec-status-header-wrap > div:first-child > div:first-child img { width: 24px !important; height: 24px !important; }
-          .sec-status-actions-wrap { width: 100% !important; display: flex !important; gap: 0.3rem !important; }
-          .sec-status-action-btn { flex: 1 !important; justify-content: center !important; padding: 0.45rem 0.2rem !important; font-size: 0.72rem !important; border-radius: 8px !important; gap: 3px !important; }
-          .sec-status-action-btn svg { width: 13px !important; height: 13px !important; }
-          .sec-status-action-btn span { font-size: 0.72rem !important; }
-          .sec-status-kpi-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 0.25rem !important; margin-bottom: 0.5rem !important; }
-          .sec-status-kpi-card { padding: 0.4rem 0.3rem !important; border-radius: 8px !important; }
-          .sec-status-kpi-card > div:first-child { font-size: 0.52rem !important; letter-spacing: 0 !important; margin-bottom: 1px !important; line-height: 1.15 !important; }
-          .sec-status-kpi-val { font-size: 1.1rem !important; margin-top: 1px !important; }
-          .sec-status-table-wrap { border-radius: 8px !important; width: 100% !important; overflow: hidden !important; border-width: 1px !important; }
-          .sec-status-table { width: 100% !important; table-layout: fixed !important; }
-          .sec-status-col-sl { width: 30px !important; }
-          .sec-status-col-name { width: auto !important; }
-          .sec-status-col-status { width: 85px !important; }
-          .sec-status-sl-col { width: 30px !important; padding: 0.5rem 2px !important; font-size: 0.75rem !important; font-weight: 800 !important; text-align: center !important; }
-          .sec-status-name-col { padding: 0.5rem 6px !important; text-align: left !important; }
-          .sec-status-badge-col { width: 85px !important; padding: 0.5rem 2px !important; text-align: center !important; }
-          .sec-status-icon-wrap { display: none !important; }
-          .sec-status-name-cell { font-size: 0.78rem !important; font-weight: 800 !important; line-height: 1.25 !important; white-space: normal !important; word-break: break-word !important; display: block !important; }
-          .sec-status-badge { padding: 3px 8px !important; font-size: 0.68rem !important; font-weight: 900 !important; border-radius: 999px !important; gap: 4px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; box-shadow: none !important; }
-          .sec-status-badge > span:first-child { width: 6px !important; height: 6px !important; }
+          .sec-status-desktop-only { display: none !important; }
+          .sec-status-mobile-only { display: flex !important; flex-direction: column !important; gap: 0.75rem !important; }
+          #section-status-report-card { padding: 0.75rem 0.6rem !important; border-radius: 14px !important; }
+          .sec-status-header-wrap { flex-direction: column !important; align-items: stretch !important; gap: 0.65rem !important; padding: 0.75rem 0.85rem !important; border-radius: 12px !important; margin-bottom: 0.65rem !important; }
+          .sec-status-header-wrap h2 { font-size: 1.15rem !important; }
+          .sec-status-header-wrap p, .sec-status-header-wrap .sec-status-header-sub { font-size: 0.72rem !important; display: block !important; }
+          .sec-status-header-wrap > div:first-child > div:first-child { width: 38px !important; height: 38px !important; border-radius: 10px !important; }
+          .sec-status-header-wrap > div:first-child > div:first-child img { width: 26px !important; height: 26px !important; }
+          .sec-status-actions-wrap { width: 100% !important; display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 0.35rem !important; }
+          .sec-status-action-btn { width: 100% !important; justify-content: center !important; padding: 0.5rem 0.25rem !important; font-size: 0.76rem !important; border-radius: 8px !important; gap: 4px !important; min-height: 38px !important; }
+          .sec-status-action-btn svg { width: 14px !important; height: 14px !important; }
+          .sec-status-action-btn span { font-size: 0.76rem !important; font-weight: 800 !important; }
+          .sec-status-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.45rem !important; margin-bottom: 0.75rem !important; }
+          .sec-status-kpi-card { padding: 0.6rem 0.7rem !important; border-radius: 10px !important; }
+          .sec-status-kpi-card .sec-status-kpi-label { font-size: 0.68rem !important; letter-spacing: 0.02em !important; margin-bottom: 2px !important; line-height: 1.2 !important; }
+          .sec-status-kpi-val { font-size: 1.35rem !important; margin-top: 1px !important; }
+
+          /* Mobile Cards Inner Styling */
+          .sec-status-mobile-card {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 0.85rem;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-sizing: border-box;
+            width: 100%;
+          }
+          .sec-status-mobile-card.is-operational {
+            border-color: #86efac;
+            background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.08);
+          }
+          .sec-status-mobile-card.is-stopped {
+            border-color: #fca5a5;
+            background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.08);
+          }
+          .sec-status-mobile-card.is-pending {
+            border-color: #fde68a;
+            background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.06);
+          }
+          .sec-status-mobile-card-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+            width: 100%;
+          }
+          .sec-status-mobile-icon-box {
+            flex-shrink: 0;
+          }
+          .sec-status-mobile-icon-box > div {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+          }
+          .sec-status-mobile-title-wrap {
+            flex: 1;
+            min-width: 0;
+          }
+          .sec-status-name-row {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+          }
+          .sec-status-mobile-name {
+            font-size: 0.92rem;
+            font-weight: 850;
+            color: #0f172a;
+            line-height: 1.25;
+            word-break: break-word;
+          }
+          .sec-status-mobile-sub {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+          }
+          .sec-status-supervisor-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #475569;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 2px 7px;
+            border-radius: 6px;
+          }
+          .sec-status-sl-chip {
+            font-size: 0.68rem;
+            font-weight: 850;
+            color: #64748b;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 1px 5px;
+            border-radius: 5px;
+            flex-shrink: 0;
+          }
+
+          /* Full-Width Prominent Status Display Banner */
+          .sec-status-display-banner {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0.85rem;
+            border-radius: 10px;
+            box-sizing: border-box;
+            gap: 8px;
+          }
+          .sec-status-display-banner.banner-operational {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border: 1.5px solid #86efac;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+          }
+          .sec-status-display-banner.banner-stopped {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 1.5px solid #fca5a5;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+          }
+          .sec-status-display-banner.banner-pending {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1.5px solid #fcd34d;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.12);
+          }
+          .sec-status-display-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+          }
+          .sec-status-pulse-circle {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+          }
+          .sec-status-pulse-circle.circle-green {
+            background: #16a34a;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+          }
+          .sec-status-pulse-circle.circle-red {
+            background: #dc2626;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+          }
+          .sec-status-pulse-circle.circle-amber {
+            background: #d97706;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+          }
+          .sec-status-display-text-wrap {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+          }
+          .sec-status-state-main {
+            font-size: 0.88rem;
+            font-weight: 900;
+            letter-spacing: 0.02em;
+            line-height: 1.15;
+          }
+          .banner-operational .sec-status-state-main { color: #15803d; }
+          .banner-stopped .sec-status-state-main { color: #b91c1c; }
+          .banner-pending .sec-status-state-main { color: #b45309; }
+
+          .sec-status-state-sub {
+            font-size: 0.68rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-top: 1px;
+          }
+          .banner-operational .sec-status-state-sub { color: #166534; }
+          .banner-stopped .sec-status-state-sub { color: #991b1b; }
+          .banner-pending .sec-status-state-sub { color: #92400e; }
+
+          .state-badge-chip {
+            font-size: 0.72rem;
+            font-weight: 850;
+            padding: 3px 8px;
+            border-radius: 999px;
+            white-space: nowrap;
+            flex-shrink: 0;
+          }
+          .state-badge-chip.chip-green { background: #15803d; color: #ffffff; }
+          .state-badge-chip.chip-red { background: #b91c1c; color: #ffffff; }
+          .state-badge-chip.chip-amber { background: #b45309; color: #ffffff; }
         }
       </style>
 
       <!-- Premium Top Header Banner -->
       <div class="sec-status-header-wrap" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.2rem; background:#f8fafc; border:1px solid #cbd5e1; padding:1.1rem 1.4rem; border-radius:14px;">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div style="width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg, rgba(124,58,237,0.14), rgba(168,85,247,0.22)); border:1.5px solid rgba(168,85,247,0.4); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(124,58,237,0.22); flex-shrink:0; backdrop-filter:blur(10px);">
+        <div class="sec-status-header-left" style="display:flex; align-items:center; gap:12px;">
+          <div class="sec-status-header-icon" style="width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg, rgba(124,58,237,0.14), rgba(168,85,247,0.22)); border:1.5px solid rgba(168,85,247,0.4); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(124,58,237,0.22); flex-shrink:0; backdrop-filter:blur(10px);">
             <img src="${FAB_ICONS.secStatusHeader}" width="38" height="38" style="object-fit:contain; filter:drop-shadow(0 4px 10px rgba(124,58,237,0.45));" alt="Section Status" />
           </div>
           <div>
-            <h2 style="margin:0; font-size:1.35rem; font-weight:900; color:#0f172a; letter-spacing:-0.02em;">Section Status Report</h2>
+            <h2 class="sec-status-header-title" style="margin:0; font-size:1.35rem; font-weight:900; color:#0f172a; letter-spacing:-0.02em;">Section Status Report</h2>
+            <div class="sec-status-header-sub" style="font-size:0.75rem; color:#64748b; font-weight:700; margin-top:2px;">Live Operational Section Monitoring</div>
           </div>
         </div>
 
@@ -1926,30 +2229,35 @@ window.buildSectionStatusReportHtml = function(state = (localDashboardState || g
       <!-- Modern KPI Metric Cards Grid -->
       <div class="sec-status-kpi-grid" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.8rem; margin-bottom:1.2rem;">
         
-        <div class="sec-status-kpi-card" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:0.8rem 1rem; box-shadow:0 2px 6px rgba(15,23,42,0.04);">
-          <div style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.04em;">Total Sections</div>
-          <div class="sec-status-kpi-val" style="font-size:1.45rem; font-weight:900; color:#0f172a; margin-top:2px;">${keys.length}</div>
+        <div class="sec-status-kpi-card sec-kpi-total" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:0.8rem 1rem; box-shadow:0 2px 6px rgba(15,23,42,0.04);">
+          <div class="sec-status-kpi-label" style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.04em;">Total Sections</div>
+          <div class="sec-status-kpi-val" id="sec-kpi-total-count" style="font-size:1.45rem; font-weight:900; color:#0f172a; margin-top:2px;">${keys.length}</div>
         </div>
 
-        <div class="sec-status-kpi-card" style="background:#ffffff; border:1px solid #86efac; border-radius:12px; padding:0.8rem 1rem; box-shadow:0 2px 6px rgba(15,23,42,0.04);">
-          <div style="font-size:0.75rem; font-weight:800; color:#047857; text-transform:uppercase; letter-spacing:0.04em;">Operational (ON)</div>
-          <div class="sec-status-kpi-val" style="font-size:1.45rem; font-weight:900; color:#059669; margin-top:2px;">${onCount}</div>
+        <div class="sec-status-kpi-card sec-kpi-on" style="background:#ffffff; border:1px solid #86efac; border-radius:12px; padding:0.8rem 1rem; box-shadow:0 2px 6px rgba(15,23,42,0.04);">
+          <div class="sec-status-kpi-label" style="font-size:0.75rem; font-weight:800; color:#047857; text-transform:uppercase; letter-spacing:0.04em;">Operational (ON)</div>
+          <div class="sec-status-kpi-val" id="sec-kpi-on-count" style="font-size:1.45rem; font-weight:900; color:#059669; margin-top:2px;">${onCount}</div>
         </div>
 
-        <div class="sec-status-kpi-card" style="background:#ffffff; border:1px solid ${offCount > 0 ? '#fca5a5' : '#cbd5e1'}; border-radius:12px; padding:0.8rem 1rem; box-shadow:0 2px 6px rgba(15,23,42,0.04);">
-          <div style="font-size:0.75rem; font-weight:800; color:${offCount > 0 ? '#b91c1c' : '#475569'}; text-transform:uppercase; letter-spacing:0.04em;">Stopped (OFF)</div>
-          <div class="sec-status-kpi-val" style="font-size:1.45rem; font-weight:900; color:${offCount > 0 ? '#dc2626' : '#64748b'}; margin-top:2px;">${offCount}</div>
+        <div class="sec-status-kpi-card sec-kpi-off" style="background:#ffffff; border:1px solid ${offCount > 0 ? '#fca5a5' : '#cbd5e1'}; border-radius:12px; padding:0.8rem 1rem; box-shadow:0 2px 6px rgba(15,23,42,0.04);">
+          <div class="sec-status-kpi-label" style="font-size:0.75rem; font-weight:800; color:${offCount > 0 ? '#b91c1c' : '#475569'}; text-transform:uppercase; letter-spacing:0.04em;">Stopped (OFF)</div>
+          <div class="sec-status-kpi-val" id="sec-kpi-off-count" style="font-size:1.45rem; font-weight:900; color:${offCount > 0 ? '#dc2626' : '#64748b'}; margin-top:2px;">${offCount}</div>
         </div>
 
-        <div class="sec-status-kpi-card" style="background:#ffffff; border:1px solid ${pendingCount > 0 ? '#fde68a' : '#cbd5e1'}; border-radius:12px; padding:0.8rem 1rem; box-shadow:0 2px 6px rgba(15,23,42,0.04);">
-          <div style="font-size:0.75rem; font-weight:800; color:${pendingCount > 0 ? '#b45309' : '#475569'}; text-transform:uppercase; letter-spacing:0.04em;">Pending</div>
-          <div class="sec-status-kpi-val" style="font-size:1.45rem; font-weight:900; color:${pendingCount > 0 ? '#d97706' : '#64748b'}; margin-top:2px;">${pendingCount}</div>
+        <div class="sec-status-kpi-card sec-kpi-pending" style="background:#ffffff; border:1px solid ${pendingCount > 0 ? '#fde68a' : '#cbd5e1'}; border-radius:12px; padding:0.8rem 1rem; box-shadow:0 2px 6px rgba(15,23,42,0.04);">
+          <div class="sec-status-kpi-label" style="font-size:0.75rem; font-weight:800; color:${pendingCount > 0 ? '#b45309' : '#475569'}; text-transform:uppercase; letter-spacing:0.04em;">Pending</div>
+          <div class="sec-status-kpi-val" id="sec-kpi-pending-count" style="font-size:1.45rem; font-weight:900; color:${pendingCount > 0 ? '#d97706' : '#64748b'}; margin-top:2px;">${pendingCount}</div>
         </div>
 
       </div>
 
-      <!-- Clean Section Table -->
-      <div class="sec-status-table-wrap" style="border-radius:12px; overflow:hidden; border:1px solid #cbd5e1; box-shadow:0 2px 10px rgba(15,23,42,0.03);">
+      <!-- Mobile Native Card View (Phone view only) -->
+      <div class="sec-status-mobile-cards sec-status-mobile-only">
+        ${mobileCardsHtml}
+      </div>
+
+      <!-- Clean Section Table (PC/Desktop view) -->
+      <div class="sec-status-table-wrap sec-status-desktop-only" style="border-radius:12px; overflow:hidden; border:1px solid #cbd5e1; box-shadow:0 2px 10px rgba(15,23,42,0.03);">
         <table class="sec-status-table" style="width:100%; border-collapse:collapse; background:#ffffff; font-family:'Plus Jakarta Sans', sans-serif;">
           <colgroup>
             <col class="sec-status-col-sl" style="width:50px;">

@@ -946,8 +946,12 @@ window.handleSectionStatusToggle = function(sectionKey, statusVal) {
   if (!window.pendingSectionStatus) window.pendingSectionStatus = {};
   window.pendingSectionStatus[sectionKey] = statusVal;
 
+  if (!window.sectionStatusClicked) window.sectionStatusClicked = {};
+  window.sectionStatusClicked[sectionKey] = statusVal;
+
   const row = document.querySelector(`.section-status-item-row[data-section="${sectionKey}"]`);
   if (row) {
+    row.classList.remove('row-unselected-warning');
     const btnOn = row.querySelector('.btn-status-on');
     const btnOff = row.querySelector('.btn-status-off');
     const pendingTag = row.querySelector('.status-pending-tag');
@@ -969,8 +973,38 @@ window.handleSectionStatusToggle = function(sectionKey, statusVal) {
         btnOn.classList.remove('active-off');
       }
       btnOn.removeAttribute('style');
-      btnOff.removeAttribute('style');
     }
+
+    const badge = row.querySelector('.sec-status-badge-indicator');
+    if (badge) {
+      if (statusVal === 'ON') {
+        badge.className = 'sec-status-badge-indicator tag-selected-on';
+        badge.innerHTML = '✓ Selected: ON';
+      } else {
+        badge.className = 'sec-status-badge-indicator tag-selected-off';
+        badge.innerHTML = '✓ Selected: OFF';
+      }
+    }
+  }
+
+  const card = document.querySelector('.section-status-entry-card');
+  if (card) {
+    const errorBanner = card.querySelector('.sec-status-card-warning-banner');
+    if (errorBanner) {
+      const pageId = currentActivePageId;
+      const sectionsForPage = Object.keys(SECTION_STATUS_CONFIG).filter(k => SECTION_STATUS_CONFIG[k].ownerPage === pageId);
+      const remaining = sectionsForPage.filter(sKey => !window.sectionStatusClicked || !window.sectionStatusClicked[sKey]);
+      if (remaining.length === 0) {
+        errorBanner.style.display = 'none';
+        card.classList.remove('has-error-shake');
+      }
+    }
+  }
+};
+
+window.quickUpdateSectionStatus = window.quickUpdateSectionStatus || function(sectionKey, statusVal) {
+  if (typeof window.updateSectionStatus === 'function') {
+    window.updateSectionStatus(sectionKey, statusVal);
   }
 };
 
@@ -1293,9 +1327,11 @@ function _renderEntryContent(pageId) {
   const container = document.getElementById('report-container');
   container.innerHTML = '';
 
-  // Section Status Entry Card for Monir, Anwar, Takbir
+  // Section Status Entry Card for Monir, Anwar, Takbir, Bikash
   const sectionsForPage = Object.keys(SECTION_STATUS_CONFIG).filter(k => SECTION_STATUS_CONFIG[k].ownerPage === pageId);
   if (sectionsForPage.length > 0) {
+    if (!window.sectionStatusClicked) window.sectionStatusClicked = {};
+
     const statusCard = document.createElement('div');
     statusCard.className = 'glass-card section-status-entry-card';
 
@@ -1304,8 +1340,13 @@ function _renderEntryContent(pageId) {
         <div>
           <h3>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-            Section Operational Status (Daily Entry)
+            Section Status (ON / OFF)
           </h3>
+        </div>
+        <div class="sec-entry-header-right">
+          <span class="sec-status-header-req-pill">
+            <span class="req-pulse-dot"></span> Mandatory Selection
+          </span>
         </div>
       </div>
       <div class="sec-status-entry-list">
@@ -1313,24 +1354,38 @@ function _renderEntryContent(pageId) {
 
     sectionsForPage.forEach(sKey => {
       const eff = getEffectiveSectionStatus(sKey, state);
-      const pendingVal = (window.pendingSectionStatus && window.pendingSectionStatus[sKey]) ? window.pendingSectionStatus[sKey] : (eff.isPending ? null : eff.status);
-      const isON = pendingVal === 'ON';
-      const isOFF = pendingVal === 'OFF';
+      const clickedVal = (window.sectionStatusClicked && window.sectionStatusClicked[sKey]) 
+        ? window.sectionStatusClicked[sKey] 
+        : null;
+      const isON = clickedVal === 'ON';
+      const isOFF = clickedVal === 'OFF';
+
+      let badgeHtml = '';
+      if (isON) {
+        badgeHtml = `<span class="sec-status-badge-indicator tag-selected-on">✓ Selected: ON</span>`;
+      } else if (isOFF) {
+        badgeHtml = `<span class="sec-status-badge-indicator tag-selected-off">✓ Selected: OFF</span>`;
+      } else {
+        badgeHtml = `<span class="sec-status-badge-indicator tag-pending-selection"><span class="pulse-warning-dot"></span> Click ON or OFF</span>`;
+      }
 
       cardHtml += `
         <div class="section-status-item-row" data-section="${sKey}">
           <div class="section-status-name-wrap">
             <span class="section-status-name">${eff.name}</span>
+            ${badgeHtml}
           </div>
           <div class="section-status-toggle-wrap">
             <div class="section-status-toggle-box">
               <button type="button" class="btn-status-toggle btn-status-on ${isON ? 'active-on' : ''}" 
-                onclick="window.handleSectionStatusToggle('${sKey}', 'ON')">
-                🟢 ON
+                onclick="window.handleSectionStatusToggle('${sKey}', 'ON')"
+                aria-label="Set ${eff.name} to ON">
+                <span class="btn-status-icon">🟢</span> <span class="btn-status-text">ON</span>
               </button>
               <button type="button" class="btn-status-toggle btn-status-off ${isOFF ? 'active-off' : ''}" 
-                onclick="window.handleSectionStatusToggle('${sKey}', 'OFF')">
-                🔴 OFF
+                onclick="window.handleSectionStatusToggle('${sKey}', 'OFF')"
+                aria-label="Set ${eff.name} to OFF">
+                <span class="btn-status-icon">🔴</span> <span class="btn-status-text">OFF</span>
               </button>
             </div>
           </div>
@@ -1474,6 +1529,60 @@ function _renderEntryContent(pageId) {
       const saveBtn = document.getElementById('btn-save');
       if (saveBtn.disabled) return;
 
+      // 0. MANDATORY VALIDATION: Section status MUST be clicked/selected before updating entry!
+      const sectionsForPage = Object.keys(SECTION_STATUS_CONFIG).filter(k => SECTION_STATUS_CONFIG[k].ownerPage === pageId);
+      if (sectionsForPage.length > 0) {
+        const unclickedSections = sectionsForPage.filter(sKey => !window.sectionStatusClicked || !window.sectionStatusClicked[sKey]);
+        if (unclickedSections.length > 0) {
+          const statusCard = document.querySelector('.section-status-entry-card');
+          if (statusCard) {
+            let warnBanner = statusCard.querySelector('.sec-status-card-warning-banner');
+            if (!warnBanner) {
+              warnBanner = document.createElement('div');
+              warnBanner.className = 'sec-status-card-warning-banner';
+              statusCard.insertBefore(warnBanner, statusCard.querySelector('.sec-status-entry-list'));
+            }
+            warnBanner.innerHTML = `
+              <div class="sec-status-warning-content">
+                <span class="sec-status-warning-icon">⚠️</span>
+                <div>
+                  <div class="sec-status-warning-title">Section Status Selection Required!</div>
+                  <div class="sec-status-warning-desc">Please select <strong>ON</strong> or <strong>OFF</strong> for all sections before updating the entry.</div>
+                </div>
+              </div>
+            `;
+            warnBanner.style.display = 'block';
+
+            statusCard.classList.remove('has-error-shake');
+            void statusCard.offsetWidth; // force DOM reflow
+            statusCard.classList.add('has-error-shake');
+            statusCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+
+          unclickedSections.forEach(sKey => {
+            const row = document.querySelector(`.section-status-item-row[data-section="${sKey}"]`);
+            if (row) {
+              row.classList.add('row-unselected-warning');
+              const badge = row.querySelector('.sec-status-badge-indicator');
+              if (badge) {
+                badge.className = 'sec-status-badge-indicator tag-error-pulse';
+                badge.innerHTML = '⚠️ Select ON or OFF';
+              }
+            }
+          });
+
+          if (typeof app !== 'undefined' && app.showToast) {
+            app.showToast('⚠️ Please select Section Status (ON or OFF) for all sections!', 'warning');
+          }
+
+          if (navigator && typeof navigator.vibrate === 'function') {
+            navigator.vibrate([60, 40, 60]);
+          }
+
+          return; // STOP EXECUTION! Do not save.
+        }
+      }
+
       const mobileSaveBtn = document.getElementById('btn-mobile-save');
       if (mobileSaveBtn) {
         mobileSaveBtn.disabled = true;
@@ -1510,7 +1619,7 @@ function _renderEntryContent(pageId) {
         }
       });
 
-      // 2. Section Status: Commit to state without out-of-order Firebase writes
+      // 2. Section Status: Commit user-selected status to state
       const now = new Date();
       const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
       const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
@@ -1523,20 +1632,12 @@ function _renderEntryContent(pageId) {
       if (!state.sectionStatusHistory) state.sectionStatusHistory = {};
       if (!state.sectionStatusHistory[isoDateStr]) state.sectionStatusHistory[isoDateStr] = {};
 
-      const sectionsForPage = Object.keys(SECTION_STATUS_CONFIG).filter(k => SECTION_STATUS_CONFIG[k].ownerPage === pageId);
       if (sectionsForPage.length > 0) {
         sectionsForPage.forEach(sKey => {
           const cfg = SECTION_STATUS_CONFIG[sKey];
-          let statusToSave = (window.pendingSectionStatus && window.pendingSectionStatus[sKey]) ? window.pendingSectionStatus[sKey] : null;
-          
-          if (!statusToSave) {
-            const eff = getEffectiveSectionStatus(sKey, state);
-            if (eff && !eff.isPending) {
-              statusToSave = eff.status;
-            } else {
-              statusToSave = 'ON';
-            }
-          }
+          let statusToSave = (window.sectionStatusClicked && window.sectionStatusClicked[sKey])
+            ? window.sectionStatusClicked[sKey]
+            : (window.pendingSectionStatus && window.pendingSectionStatus[sKey]);
 
           if (statusToSave) {
             const entryObj = {
@@ -1552,6 +1653,7 @@ function _renderEntryContent(pageId) {
             state.sectionStatus[sKey] = entryObj;
             state.sectionStatusHistory[isoDateStr][sKey] = entryObj;
             if (window.pendingSectionStatus) delete window.pendingSectionStatus[sKey];
+            if (window.sectionStatusClicked) delete window.sectionStatusClicked[sKey];
           }
         });
       }

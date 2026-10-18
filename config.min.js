@@ -3,7 +3,7 @@
 // new release. The change count below auto-increments
 // on every data save.
 // ═══════════════════════════════════════════════════
-const APP_VERSION = '2.6.64';
+const APP_VERSION = '2.6.68';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcjbR7Qu7M-RnHUtLJ9zeehILqQHYLw4E",
@@ -134,4 +134,4 @@ const EDIT_AUTH_STORAGE_KEY = 'mep_edit_auth_enabled';
 
 function isMetaStateKey(key) {
   return META_STATE_KEYS.includes(key);
-}
+}

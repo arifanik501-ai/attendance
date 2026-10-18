@@ -46,7 +46,7 @@ window.sendTestWhatsAppMessage = function() {
       btn.innerHTML = '<span>✅ Sent!</span>';
       setTimeout(function() { btn.innerHTML = originalHtml; }, 2500);
     }
-    alert('✅ WhatsApp গ্রুপে "Test Message." পাঠানো হয়েছে!');
+    alert('✅ WhatsApp group: "Test Message" sent successfully!');
   })
   .catch(function(err) {
     if (btn) {
@@ -54,7 +54,7 @@ window.sendTestWhatsAppMessage = function() {
       btn.innerHTML = originalHtml;
     }
     console.error('WhatsApp Test Error:', err);
-    alert('❌ মেসেজ পাঠানো যায়নি: ' + err.message);
+    alert('❌ Failed to send WhatsApp message: ' + err.message);
   });
 };
 

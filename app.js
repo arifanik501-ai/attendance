@@ -1604,31 +1604,64 @@ function _renderEntryContent(pageId) {
         }
       }
 
+      // 0.1 Check internet connectivity before attempting upload
+      if (typeof navigator !== 'undefined' && 'onLine' in navigator && !navigator.onLine) {
+        if (saveBtn.querySelector('span')) saveBtn.querySelector('span').textContent = '⚠️ No Internet Connection!';
+        if (mobileSaveBtn && mobileSaveBtn.querySelector('span')) mobileSaveBtn.querySelector('span').textContent = '⚠️ No Internet!';
+        saveBtn.style.background = '#dc2626';
+        if (mobileSaveBtn) mobileSaveBtn.style.background = '#dc2626';
+        if (navigator && typeof navigator.vibrate === 'function') navigator.vibrate([100, 50, 100]);
+        if (typeof app !== 'undefined' && app.showToast) {
+          app.showToast('⚠️ No internet connection! Please check your network.', 'danger');
+        }
+        alert('⚠️ No Internet Connection!\n\nYour device is currently offline. Attendance data cannot be uploaded to Firebase without an active internet connection, and your sheet will remain in the Pending list.\n\nPlease check your internet connection and click "Entry Update" again.');
+        setTimeout(() => {
+          saveBtn.style.background = '';
+          if (mobileSaveBtn) mobileSaveBtn.style.background = '';
+          if (saveBtn.querySelector('span')) saveBtn.querySelector('span').textContent = 'Entry Update';
+          if (mobileSaveBtn && mobileSaveBtn.querySelector('span')) mobileSaveBtn.querySelector('span').textContent = 'Entry Update';
+        }, 3000);
+        return;
+      }
+
       const mobileSaveBtn = document.getElementById('btn-mobile-save');
       if (mobileSaveBtn) {
         mobileSaveBtn.disabled = true;
-        mobileSaveBtn.style.opacity = '0.75';
-        if (mobileSaveBtn.querySelector('span')) mobileSaveBtn.querySelector('span').textContent = 'Syncing Cloud...';
+        mobileSaveBtn.style.opacity = '0.85';
+        if (mobileSaveBtn.querySelector('span')) mobileSaveBtn.querySelector('span').textContent = '☁️ Uploading...';
       }
 
       saveBtn.disabled = true;
-      saveBtn.style.opacity = '0.75';
+      saveBtn.style.opacity = '0.85';
       if (saveBtn.querySelector('span')) {
-        saveBtn.querySelector('span').textContent = 'Syncing Cloud...';
+        saveBtn.querySelector('span').textContent = '☁️ Uploading to Firebase...';
       }
 
-      const resetButtons = () => {
+      const resetButtons = (errorMsg = null, isNetError = false) => {
         saveBtn.disabled = false;
         saveBtn.style.opacity = '1';
-        if (saveBtn.querySelector('span')) {
-          saveBtn.querySelector('span').textContent = 'Entry Update';
-        }
         if (mobileSaveBtn) {
           mobileSaveBtn.disabled = false;
           mobileSaveBtn.style.opacity = '1';
-          if (mobileSaveBtn.querySelector('span')) {
-            mobileSaveBtn.querySelector('span').textContent = 'Entry Update';
+        }
+        if (errorMsg) {
+          if (saveBtn.querySelector('span')) saveBtn.querySelector('span').textContent = errorMsg;
+          if (mobileSaveBtn && mobileSaveBtn.querySelector('span')) {
+            mobileSaveBtn.querySelector('span').textContent = isNetError ? '❌ No Internet!' : '❌ Upload Failed!';
           }
+          saveBtn.style.background = '#dc2626';
+          if (mobileSaveBtn) mobileSaveBtn.style.background = '#dc2626';
+          setTimeout(() => {
+            saveBtn.style.background = '';
+            if (mobileSaveBtn) mobileSaveBtn.style.background = '';
+            if (saveBtn.querySelector('span')) saveBtn.querySelector('span').textContent = 'Entry Update';
+            if (mobileSaveBtn && mobileSaveBtn.querySelector('span')) mobileSaveBtn.querySelector('span').textContent = 'Entry Update';
+          }, 3500);
+        } else {
+          saveBtn.style.background = '';
+          if (mobileSaveBtn) mobileSaveBtn.style.background = '';
+          if (saveBtn.querySelector('span')) saveBtn.querySelector('span').textContent = 'Entry Update';
+          if (mobileSaveBtn && mobileSaveBtn.querySelector('span')) mobileSaveBtn.querySelector('span').textContent = 'Entry Update';
         }
       };
 
@@ -1768,9 +1801,9 @@ function _renderEntryContent(pageId) {
           return historyResult;
         })();
 
-        // 6 second timeout for cloud confirmation
+        // 7 second timeout for cloud confirmation
         const cloudTimeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Cloud sync timed out (no response from Firebase server)')), 6000);
+          setTimeout(() => reject(new Error('Firebase upload timed out (network slow or server unreachable)')), 7000);
         });
 
         const confirmedHistory = await Promise.race([cloudWritePromise, cloudTimeoutPromise]);
@@ -1820,25 +1853,53 @@ function _renderEntryContent(pageId) {
         }
 
         // Show success status on buttons
+        saveBtn.style.background = '#059669';
+        if (mobileSaveBtn) mobileSaveBtn.style.background = '#059669';
         if (saveBtn.querySelector('span')) {
-          saveBtn.querySelector('span').textContent = '✓ Saved Successfully!';
+          saveBtn.querySelector('span').textContent = '✓ Uploaded to Firebase!';
         }
         if (mobileSaveBtn && mobileSaveBtn.querySelector('span')) {
-          mobileSaveBtn.querySelector('span').textContent = '✓ Saved!';
+          mobileSaveBtn.querySelector('span').textContent = '✓ Uploaded!';
+        }
+        if (typeof app !== 'undefined' && app.showToast) {
+          app.showToast('✓ Successfully uploaded to Firebase!', 'success');
         }
 
         // Smooth redirect to dashboard
         setTimeout(() => {
           window.location.href = 'index.html';
-        }, 300);
+        }, 500);
 
       } catch (err) {
         console.error('[btn-save] Cloud update failed or timed out:', err);
-        resetButtons();
+        const isOffline = (typeof navigator !== 'undefined' && 'onLine' in navigator && !navigator.onLine) ||
+                          (err && err.message && err.message.toLowerCase().includes('network'));
+        const isTimeout = err && err.message && (err.message.toLowerCase().includes('timed out') || err.message.toLowerCase().includes('timeout'));
 
-        // Inform the user in clear Bengali that Firebase did NOT get the update
-        // and therefore the section remains in the Pending list
-        alert('⚠️ ফায়ারবেস ক্লাউড সার্ভারে আপডেট পৌঁছায়নি!\n\n(ইন্টারনেট সংযোগ স্লো অথবা সংযোগ বিচ্ছিন্ন হয়েছে)\n\n👉 ফায়ারবেসে নিশ্চিতভাবে আপডেট না হওয়া পর্যন্ত আপনার নামটি পেন্ডিং লিস্টেই থাকবে। অনুগ্রহ করে ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় "Entry Update" ক্লিক করুন।');
+        let buttonErrMsg = '❌ Firebase Upload Failed! Retry';
+        let alertErrMsg = '';
+
+        if (isOffline) {
+          buttonErrMsg = '❌ Internet Connection Error!';
+          alertErrMsg = '⚠️ Internet Connection Error!\n\nUnable to upload data to Firebase due to a weak or interrupted internet connection.\n\n👉 Your sheet will remain in the Pending list until Firebase confirms the upload. Please check your connection and click "Entry Update" again.';
+        } else if (isTimeout) {
+          buttonErrMsg = '❌ Firebase Timed Out! Retry';
+          alertErrMsg = '⚠️ Firebase Cloud Response Timed Out!\n\nThe cloud confirmation timed out due to slow network latency.\n\n👉 Your sheet will remain in the Pending list until Firebase confirms the write. Please click "Entry Update" again.';
+        } else {
+          buttonErrMsg = '❌ Firebase Error! Retry';
+          alertErrMsg = `⚠️ Firebase Upload Error!\n\nServer response: ${err.message || 'Unknown error'}\n\n👉 Your sheet will remain in the Pending list until Firebase confirms the write. Please click "Entry Update" again.`;
+        }
+
+        resetButtons(buttonErrMsg, isOffline);
+
+        if (typeof app !== 'undefined' && app.showToast) {
+          app.showToast(buttonErrMsg, 'danger');
+        }
+        if (navigator && typeof navigator.vibrate === 'function') {
+          navigator.vibrate([100, 60, 100]);
+        }
+
+        alert(alertErrMsg);
       }
     };
 }
@@ -3373,6 +3434,11 @@ function setupFirebaseListener() {
         }
       }
 
+      // Real-time update of download button state
+      if (typeof window.updateDashboardDownloadButtonState === 'function') {
+        window.updateDashboardDownloadButtonState(globalAppState);
+      }
+
       // Check if update notice should be shown
       if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
         window.checkDashboardUpdateNoticeStatus();
@@ -3447,6 +3513,24 @@ function setupFirebaseListener() {
         }
         if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
           window.checkDashboardUpdateNoticeStatus();
+        }
+        // Immediately sync the pending status across UI components
+        if (typeof window.updateReminderList === 'function') {
+          window.updateReminderList(true);
+        }
+        const bannerEl = document.querySelector('.today-entry-status-banner');
+        if (bannerEl && typeof window.buildTodayEntryStatusBannerHtml === 'function') {
+          const parent = bannerEl.parentElement;
+          if (parent) {
+            const temp = document.createElement('div');
+            temp.innerHTML = window.buildTodayEntryStatusBannerHtml(globalAppState);
+            if (temp.firstElementChild) {
+              parent.replaceChild(temp.firstElementChild, bannerEl);
+            }
+          }
+        }
+        if (typeof window.updateDashboardDownloadButtonState === 'function') {
+          window.updateDashboardDownloadButtonState(globalAppState);
         }
       }
       if (initialUpdateLoad) {
@@ -3645,37 +3729,16 @@ window.clearHistory = function () {
 
 // Reminder Logic
 window.updateReminderList = function (silent = false) {
-  // ALWAYS use globalAppState for history — it is kept fresh by the Firebase listener.
-  // Falling back to getAppState() can return stale local data and cause the pending
-  // list to show a section as "Missing" even after it was already saved.
-  const state = globalAppState || getAppState();
-  const now = new Date();
-  const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
-  const todayStr = dateFormatter.format(now);
-  const history = state.history || [];
+  // Use window.getTodayAllEntryStatus() so reminder badge, dropdown list,
+  // and the top banner are 100% synchronized with the exact same data source!
+  const todayStatus = (typeof window.getTodayAllEntryStatus === 'function')
+    ? window.getTodayAllEntryStatus(globalAppState)
+    : { allDone: true, pendingSheets: [], completedSheets: [] };
 
-  // Find which sections have been updated today
-  const updatedTodayMap = {};
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const cleanTodayStr = todayStr.replace(/[\u200E\u200F]/g, '').trim();
-
-  history.forEach(h => {
-    const cleanDate = h.date ? h.date.replace(/[\u200E\u200F]/g, '').trim() : '';
-    // Primary check: use timestamp (most reliable, independent of locale/format)
-    if (h.timestamp && h.timestamp >= startOfToday) {
-      updatedTodayMap[h.page] = true;
-    } else if (cleanDate === cleanTodayStr) {
-      // Fallback: string date comparison (for older history entries without timestamp)
-      updatedTodayMap[h.page] = true;
-    }
-  });
-
-  const missingSections = [];
-  for (const [pageKey, config] of Object.entries(SECTIONS_CONFIG)) {
-    if (!updatedTodayMap[config.title]) {
-      missingSections.push({ title: config.title, id: pageKey });
-    }
-  }
+  const missingSections = (todayStatus.pendingSheets || []).map(s => ({
+    title: s.title,
+    id: s.id
+  }));
 
   const badge = document.getElementById('reminder-badge');
   const countSpan = document.getElementById('reminder-count');
@@ -3713,7 +3776,7 @@ window.updateReminderList = function (silent = false) {
     const parent = bannerContainer.parentElement;
     if (parent) {
       const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = window.buildTodayEntryStatusBannerHtml(state);
+      tempDiv.innerHTML = window.buildTodayEntryStatusBannerHtml(globalAppState);
       if (tempDiv.firstElementChild) {
         parent.replaceChild(tempDiv.firstElementChild, bannerContainer);
       }
@@ -3722,7 +3785,7 @@ window.updateReminderList = function (silent = false) {
 
   // Dynamically refresh the download button state (Red locked vs amber normal)
   if (typeof window.updateDashboardDownloadButtonState === 'function') {
-    window.updateDashboardDownloadButtonState(state);
+    window.updateDashboardDownloadButtonState(globalAppState);
   }
 };
 

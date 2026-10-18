@@ -572,21 +572,33 @@ window.sendAdminBroadcast = function () {
 function saveAppState(state, customActionStr = null) {
   // Auto-save history snapshot on every state update
   if (typeof _saveAttendanceHistory === 'function') {
-    _saveAttendanceHistory(state);
+    try {
+      _saveAttendanceHistory(state);
+    } catch (e) {
+      console.warn('[_saveAttendanceHistory] error:', e);
+    }
   }
 
   // Update raw state cache and local dashboard state immediately
   // This ensures that the user's own computer sees their changes locally on their dashboard!
-  localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(state));
-  localDashboardState = JSON.parse(JSON.stringify(state));
-  localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
-  localStorage.setItem('mep_local_uncommitted_update', 'true');
+  try {
+    localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(state));
+    localDashboardState = JSON.parse(JSON.stringify(state));
+    localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+    localStorage.setItem('mep_local_uncommitted_update', 'true');
+  } catch (e) {
+    console.warn('[saveAppState] localStorage error:', e);
+  }
 
   const updateTs = Date.now();
-  localStorage.setItem('mep_last_update_ts', updateTs);
+  try {
+    localStorage.setItem('mep_last_update_ts', updateTs);
+  } catch (e) {}
   window.mepHasPendingDashboardUpdates = true;
   if (typeof window.checkDashboardUpdateNoticeStatus === 'function') {
-    window.checkDashboardUpdateNoticeStatus();
+    try {
+      window.checkDashboardUpdateNoticeStatus();
+    } catch (e) {}
   }
 
   if (window.firebaseDb) {
@@ -617,11 +629,11 @@ function saveAppState(state, customActionStr = null) {
 
     const promises = [];
 
-    // 1. Update state payload in Firebase
+    // 1. Update state payload in Firebase with safety catch
     const pState = window.firebaseDb.ref('mep_dashboard_state').update(updatePayload)
       .catch(err => {
         console.warn('[saveAppState] Firebase update failed, falling back to set():', err);
-        return window.firebaseDb.ref('mep_dashboard_state').set(state);
+        return window.firebaseDb.ref('mep_dashboard_state').set(state).catch(() => {});
       });
     promises.push(pState);
 
@@ -634,16 +646,25 @@ function saveAppState(state, customActionStr = null) {
     }).catch(() => {});
     promises.push(pInfo);
 
-    // 3. Auto-increment global change count
-    const pCount = window.firebaseDb.ref('mep_change_count')
-      .transaction(current => (current || 0) + 1)
-      .then(() => _loadAndDisplayChangeCount())
-      .catch(() => {});
-    promises.push(pCount);
+    // 3. Auto-increment global change count in background (non-blocking)
+    try {
+      window.firebaseDb.ref('mep_change_count')
+        .transaction(current => (current || 0) + 1)
+        .then(() => {
+          if (typeof _loadAndDisplayChangeCount === 'function') {
+            _loadAndDisplayChangeCount();
+          }
+        })
+        .catch(() => {});
+    } catch (e) {}
 
-    return Promise.all(promises);
+    // Bounded promise: max 1200ms so cloud sync never blocks UI flow or navigation
+    const timeoutPromise = new Promise(resolve => setTimeout(resolve, 1200));
+    return Promise.race([Promise.all(promises), timeoutPromise]);
   } else {
-    localStorage.setItem('manpowerData', JSON.stringify(state));
+    try {
+      localStorage.setItem('manpowerData', JSON.stringify(state));
+    } catch (e) {}
     return Promise.resolve();
   }
 }
@@ -1525,7 +1546,7 @@ function _renderEntryContent(pageId) {
       exportEntryReport(pageId, config.title);
     };
 
-    document.getElementById('btn-save').onclick = () => {
+    document.getElementById('btn-save').onclick = async () => {
       const saveBtn = document.getElementById('btn-save');
       if (saveBtn.disabled) return;
 
@@ -1587,7 +1608,7 @@ function _renderEntryContent(pageId) {
       if (mobileSaveBtn) {
         mobileSaveBtn.disabled = true;
         mobileSaveBtn.style.opacity = '0.75';
-        if (mobileSaveBtn.querySelector('span')) mobileSaveBtn.querySelector('span').textContent = 'Syncing...';
+        if (mobileSaveBtn.querySelector('span')) mobileSaveBtn.querySelector('span').textContent = 'Syncing Cloud...';
       }
 
       saveBtn.disabled = true;
@@ -1596,132 +1617,228 @@ function _renderEntryContent(pageId) {
         saveBtn.querySelector('span').textContent = 'Syncing Cloud...';
       }
 
-      // 1. CRITICAL: Capture and sync all current input values from the DOM into state FIRST
-      document.querySelectorAll('.auth-input').forEach(inp => {
-        const g = inp.getAttribute('data-group');
-        const i = parseInt(inp.getAttribute('data-index'), 10);
-        const val = parseInt(inp.value) || 0;
-        if (state[pageId] && state[pageId][g] && state[pageId][g][i] !== undefined) {
-          state[pageId][g][i].authorized = val;
+      const resetButtons = () => {
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = '1';
+        if (saveBtn.querySelector('span')) {
+          saveBtn.querySelector('span').textContent = 'Entry Update';
         }
-      });
-
-      document.querySelectorAll('.entry-input:not(.auth-input)').forEach(inp => {
-        const g = inp.getAttribute('data-group');
-        const idx = parseInt(inp.getAttribute('data-index'), 10);
-        const f = inp.getAttribute('data-field');
-        const val = parseInt(inp.value) || 0;
-        if (state[pageId] && state[pageId][g] && state[pageId][g][idx] !== undefined && f) {
-          state[pageId][g][idx][f] = val;
-          if (f === 'existing' || f === 'present') {
-            calculateRow(state[pageId][g][idx]);
+        if (mobileSaveBtn) {
+          mobileSaveBtn.disabled = false;
+          mobileSaveBtn.style.opacity = '1';
+          if (mobileSaveBtn.querySelector('span')) {
+            mobileSaveBtn.querySelector('span').textContent = 'Entry Update';
           }
         }
-      });
-
-      // 2. Section Status: Commit user-selected status to state
-      const now = new Date();
-      const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-      const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const isoDateStr = `${year}-${month}-${day}`;
-
-      if (!state.sectionStatus) state.sectionStatus = {};
-      if (!state.sectionStatusHistory) state.sectionStatusHistory = {};
-      if (!state.sectionStatusHistory[isoDateStr]) state.sectionStatusHistory[isoDateStr] = {};
-
-      if (sectionsForPage.length > 0) {
-        sectionsForPage.forEach(sKey => {
-          const cfg = SECTION_STATUS_CONFIG[sKey];
-          let statusToSave = (window.sectionStatusClicked && window.sectionStatusClicked[sKey])
-            ? window.sectionStatusClicked[sKey]
-            : (window.pendingSectionStatus && window.pendingSectionStatus[sKey]);
-
-          if (statusToSave) {
-            const entryObj = {
-              sectionKey: sKey,
-              name: cfg.name,
-              status: statusToSave,
-              entryBy: cfg.entryBy,
-              entryDate: dateFormatter.format(now),
-              entryTime: timeFormatter.format(now),
-              lastUpdated: dateFormatter.format(now) + ' ' + timeFormatter.format(now),
-              timestamp: Date.now()
-            };
-            state.sectionStatus[sKey] = entryObj;
-            state.sectionStatusHistory[isoDateStr][sKey] = entryObj;
-            if (window.pendingSectionStatus) delete window.pendingSectionStatus[sKey];
-            if (window.sectionStatusClicked) delete window.sectionStatusClicked[sKey];
-          }
-        });
-      }
-
-      // 3. Store in global state and cache
-      globalAppState = state;
-      localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(state));
-
-      // 4. Add history notification
-      if (!state.history) state.history = [];
-      const historyDateFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
-      const historyTimeFmt = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-      const newHistoryEntry = {
-        page: SECTIONS_CONFIG[pageId].title,
-        time: historyTimeFmt.format(now),
-        date: historyDateFmt.format(now),
-        timestamp: Date.now()
       };
 
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-      state.history = state.history.filter(h => 
-        !(h.page === SECTIONS_CONFIG[pageId].title && h.timestamp >= startOfToday)
-      );
-      state.history.unshift(newHistoryEntry);
-      if (state.history.length > 50) state.history = state.history.slice(0, 50);
-      localStorage.setItem('has_new_notifications', 'true');
+      try {
+        // 1. Capture and sync all current input values from the DOM into state FIRST
+        document.querySelectorAll('.auth-input').forEach(inp => {
+          const g = inp.getAttribute('data-group');
+          const i = parseInt(inp.getAttribute('data-index'), 10);
+          const val = parseInt(inp.value) || 0;
+          if (state[pageId] && state[pageId][g] && state[pageId][g][i] !== undefined) {
+            state[pageId][g][i].authorized = val;
+          }
+        });
 
-      const doSaveAndNavigate = async () => {
-        try {
-          await saveAppState(state);
-        } catch (err) {
-          console.warn('[doSaveAndNavigate] save error:', err);
+        document.querySelectorAll('.entry-input:not(.auth-input)').forEach(inp => {
+          const g = inp.getAttribute('data-group');
+          const idx = parseInt(inp.getAttribute('data-index'), 10);
+          const f = inp.getAttribute('data-field');
+          const val = parseInt(inp.value) || 0;
+          if (state[pageId] && state[pageId][g] && state[pageId][g][idx] !== undefined && f) {
+            state[pageId][g][idx][f] = val;
+            if (f === 'existing' || f === 'present') {
+              calculateRow(state[pageId][g][idx]);
+            }
+          }
+        });
+
+        // 2. Section Status: Commit user-selected status to state
+        const now = new Date();
+        const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const isoDateStr = `${year}-${month}-${day}`;
+
+        if (!state.sectionStatus) state.sectionStatus = {};
+        if (!state.sectionStatusHistory) state.sectionStatusHistory = {};
+        if (!state.sectionStatusHistory[isoDateStr]) state.sectionStatusHistory[isoDateStr] = {};
+
+        if (sectionsForPage.length > 0) {
+          sectionsForPage.forEach(sKey => {
+            const cfg = SECTION_STATUS_CONFIG[sKey];
+            let statusToSave = (window.sectionStatusClicked && window.sectionStatusClicked[sKey])
+              ? window.sectionStatusClicked[sKey]
+              : (window.pendingSectionStatus && window.pendingSectionStatus[sKey]);
+
+            if (statusToSave) {
+              const entryObj = {
+                sectionKey: sKey,
+                name: cfg.name,
+                status: statusToSave,
+                entryBy: cfg.entryBy,
+                entryDate: dateFormatter.format(now),
+                entryTime: timeFormatter.format(now),
+                lastUpdated: dateFormatter.format(now) + ' ' + timeFormatter.format(now),
+                timestamp: Date.now()
+              };
+              state.sectionStatus[sKey] = entryObj;
+              state.sectionStatusHistory[isoDateStr][sKey] = entryObj;
+            }
+          });
         }
-        localStorage.setItem(EDIT_AUTH_STORAGE_KEY, 'false');
+
+        // 3. Prepare the new history notification entry
+        const historyDateFmt = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
+        const historyTimeFmt = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        const newHistoryEntry = {
+          page: SECTIONS_CONFIG[pageId].title,
+          time: historyTimeFmt.format(now),
+          date: historyDateFmt.format(now),
+          timestamp: Date.now()
+        };
+
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+        // 4. CRITICAL: REQUIRE CONFIRMED FIREBASE CLOUD UPDATE BEFORE REMOVING FROM PENDING!
+        if (!window.firebaseDb) {
+          throw new Error('Firebase Database connection is not available');
+        }
+
+        // Prepare Firebase update payload
+        const updateTs = Date.now();
+        state[pageId].lastUpdatedTimestamp = updateTs;
+        const updatePayload = {};
+        updatePayload[pageId] = state[pageId];
+        if (state.branchAttendance && state.branchAttendance[pageId]) {
+          updatePayload[`branchAttendance/${pageId}`] = state.branchAttendance[pageId];
+        }
+        if (state.sectionStatus) {
+          updatePayload['sectionStatus'] = state.sectionStatus;
+        }
+        if (state.sectionStatusHistory) {
+          updatePayload['sectionStatusHistory'] = state.sectionStatusHistory;
+        }
+
+        const sheetName = SECTIONS_CONFIG[pageId]?.title || 'An entry sheet';
+
+        // Execute cloud writes with a 6-second timeout race
+        const cloudWritePromise = (async () => {
+          // A) Write section data and section statuses to Firebase
+          await window.firebaseDb.ref('mep_dashboard_state').update(updatePayload);
+
+          // B) Add history entry to Firebase history via transaction
+          const historyResult = await new Promise((resolve, reject) => {
+            window.firebaseDb.ref('mep_dashboard_state/history').transaction(currentHistory => {
+              const existing = Array.isArray(currentHistory) ? currentHistory : [];
+              const filtered = existing.filter(h =>
+                !(h && h.page === SECTIONS_CONFIG[pageId].title && h.timestamp >= startOfToday)
+              );
+              filtered.unshift(newHistoryEntry);
+              return filtered.slice(0, 50);
+            }, (error, committed, snapshot) => {
+              if (error) {
+                reject(error);
+              } else if (!committed) {
+                reject(new Error('History transaction could not be committed'));
+              } else {
+                resolve(snapshot ? snapshot.val() : null);
+              }
+            });
+          });
+
+          // C) Set last update info in Firebase
+          await window.firebaseDb.ref('mep_last_update_info').set({
+            deviceId: SESSION_DEVICE_ID,
+            timestamp: updateTs,
+            pageTitle: sheetName,
+            actionStr: `🔄 ${sheetName} has been updated`
+          });
+
+          // D) Background change counter increment (non-blocking)
+          try {
+            window.firebaseDb.ref('mep_change_count').transaction(c => (c || 0) + 1).catch(() => {});
+          } catch(e) {}
+
+          return historyResult;
+        })();
+
+        // 6 second timeout for cloud confirmation
+        const cloudTimeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Cloud sync timed out (no response from Firebase server)')), 6000);
+        });
+
+        const confirmedHistory = await Promise.race([cloudWritePromise, cloudTimeoutPromise]);
+
+        // ========================================================
+        // ONLY REACHED IF FIREBASE CONFIRMED THE UPDATE SUCCESSFULLY!
+        // ========================================================
+        
+        // Clean up pending section status clicks now that cloud has confirmed
+        if (sectionsForPage.length > 0) {
+          sectionsForPage.forEach(sKey => {
+            if (window.pendingSectionStatus) delete window.pendingSectionStatus[sKey];
+            if (window.sectionStatusClicked) delete window.sectionStatusClicked[sKey];
+          });
+        }
+
+        // Commit confirmed history into state and localStorage
+        if (confirmedHistory && Array.isArray(confirmedHistory)) {
+          state.history = confirmedHistory;
+        } else {
+          if (!state.history) state.history = [];
+          state.history = state.history.filter(h =>
+            !(h && h.page === SECTIONS_CONFIG[pageId].title && h.timestamp >= startOfToday)
+          );
+          state.history.unshift(newHistoryEntry);
+          if (state.history.length > 50) state.history = state.history.slice(0, 50);
+        }
+
+        globalAppState = state;
+        try {
+          localStorage.setItem('mep_dashboard_state_cache', JSON.stringify(state));
+          localDashboardState = JSON.parse(JSON.stringify(state));
+          localStorage.setItem('mep_dashboard_live_cache', JSON.stringify(localDashboardState));
+          localStorage.setItem('mep_last_update_ts', updateTs);
+          localStorage.setItem('has_new_notifications', 'true');
+          localStorage.setItem(EDIT_AUTH_STORAGE_KEY, 'false');
+        } catch(e) {}
+
+        // Auto-save history snapshot locally and to cloud
+        if (typeof _saveAttendanceHistory === 'function') {
+          try { _saveAttendanceHistory(state); } catch(e) {}
+        }
+
+        // Update reminder list locally
         if (typeof window.updateReminderList === 'function') {
           window.updateReminderList(true);
         }
+
+        // Show success status on buttons
         if (saveBtn.querySelector('span')) {
           saveBtn.querySelector('span').textContent = '✓ Saved Successfully!';
         }
-        const mobileSaveBtn = document.getElementById('btn-mobile-save');
         if (mobileSaveBtn && mobileSaveBtn.querySelector('span')) {
           mobileSaveBtn.querySelector('span').textContent = '✓ Saved!';
         }
+
+        // Smooth redirect to dashboard
         setTimeout(() => {
           window.location.href = 'index.html';
-        }, 250);
-      };
+        }, 300);
 
-      if (window.firebaseDb) {
-        window.firebaseDb.ref('mep_dashboard_state/history').transaction(currentHistory => {
-          const existing = Array.isArray(currentHistory) ? currentHistory : [];
-          const filtered = existing.filter(h =>
-            !(h.page === SECTIONS_CONFIG[pageId].title && h.timestamp >= startOfToday)
-          );
-          filtered.unshift(newHistoryEntry);
-          return filtered.slice(0, 50);
-        }).then(result => {
-          if (result.committed) {
-            state.history = result.snapshot.val() || state.history;
-            globalAppState = state;
-          }
-          doSaveAndNavigate();
-        }).catch(() => {
-          doSaveAndNavigate();
-        });
-      } else {
-        doSaveAndNavigate();
+      } catch (err) {
+        console.error('[btn-save] Cloud update failed or timed out:', err);
+        resetButtons();
+
+        // Inform the user in clear Bengali that Firebase did NOT get the update
+        // and therefore the section remains in the Pending list
+        alert('⚠️ ফায়ারবেস ক্লাউড সার্ভারে আপডেট পৌঁছায়নি!\n\n(ইন্টারনেট সংযোগ স্লো অথবা সংযোগ বিচ্ছিন্ন হয়েছে)\n\n👉 ফায়ারবেসে নিশ্চিতভাবে আপডেট না হওয়া পর্যন্ত আপনার নামটি পেন্ডিং লিস্টেই থাকবে। অনুগ্রহ করে ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় "Entry Update" ক্লিক করুন।');
       }
     };
 }
@@ -3241,6 +3358,19 @@ function setupFirebaseListener() {
       // Update the "Pending Today" reminder badge
       if (typeof window.updateReminderList === 'function') {
         window.updateReminderList(true);
+      }
+
+      // Real-time update of Today Entry Status Banner on dashboard
+      const bannerEl = document.querySelector('.today-entry-status-banner');
+      if (bannerEl && typeof window.buildTodayEntryStatusBannerHtml === 'function') {
+        const parent = bannerEl.parentElement;
+        if (parent) {
+          const temp = document.createElement('div');
+          temp.innerHTML = window.buildTodayEntryStatusBannerHtml(globalAppState);
+          if (temp.firstElementChild) {
+            parent.replaceChild(temp.firstElementChild, bannerEl);
+          }
+        }
       }
 
       // Check if update notice should be shown
